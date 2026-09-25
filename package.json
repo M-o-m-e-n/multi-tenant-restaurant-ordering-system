@@ -1,0 +1,43 @@
+{
+  "name": "restaurant-ordering-system",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Restaurant Ordering System (ROS) — dine-in QR, takeaway, delivery, KDS, payments and reports",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "engines": {
+    "node": ">=20.17"
+  },
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test --workspaces --if-present",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test",
+    "build": "npm run build -w server -w client",
+    "dev": "concurrently -k -n api,web -c red,yellow \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev -w server",
+    "dev:web": "npm run dev -w client"
+  },
+  "devDependencies": {
+    "@eslint/js": "~9.39",
+    "@types/node": "^20.19.43",
+    "concurrently": "^9.2.4",
+    "eslint": "~9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "globals": "^16.5.0",
+    "prettier": "^3.9.9",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "~2.1.9"
+  }
+}

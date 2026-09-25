@@ -1,0 +1,26 @@
+# Local development infrastructure (NFR-B1). Postgres is pinned so every
+# developer and CI run the same engine.
+name: ros
+
+services:
+  postgres:
+    image: postgres:15.8-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ros
+      POSTGRES_PASSWORD: ros
+      POSTGRES_DB: ros
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Creates the separate integration-test database on first start.
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ros -d ros']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
