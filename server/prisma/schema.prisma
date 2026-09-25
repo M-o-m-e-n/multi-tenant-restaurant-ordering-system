@@ -9,3 +9,74 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ---------------------------------------------------------------------------
+// Enums. Members mirror shared/src/domain/enums.ts exactly (LLD section 2.1).
+// OrderStatus has no REFUNDED: a refund is a payment event (BR-07).
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+}
+
+enum OrderStatus {
+  PLACED
+  CONFIRMED
+  PREPARING
+  READY
+  SERVED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED
+}
+
+enum PaymentState {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  STRIPE
+  CASH
+}
+
+enum TableStatus {
+  FREE
+  SEATED
+  DIRTY
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  PICKED_UP
+  DELIVERED
+}
+
+enum ReservationStatus {
+  PENDING
+  SEATED
+  CANCELLED
+  COMPLETED
+}
