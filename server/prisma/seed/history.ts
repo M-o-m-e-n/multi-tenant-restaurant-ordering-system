@@ -312,6 +312,7 @@ export async function seedHistory(
           lineTotal: priced[i]?.lineTotal ?? 0,
           station: l.dish.station,
           addedAt: placedAt,
+          lineNo: i + 1,
         });
       });
 

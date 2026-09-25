@@ -136,8 +136,9 @@ export async function createOrder(
     });
     await repo.insertItems(
       tx,
-      priced.lines.map((l) => ({
+      priced.lines.map((l, i) => ({
         orderId: order.id,
+        lineNo: i + 1,
         menuItemId: l.menuItemId,
         nameSnapshot: l.nameSnapshot,
         unitPrice: l.unitPrice,

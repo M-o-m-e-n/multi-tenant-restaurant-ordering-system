@@ -328,6 +328,8 @@ model OrderItem {
   station       String?  @db.VarChar(40)
   // When the line was added; later rounds are badged on the KDS (ORD-12).
   addedAt       DateTime @default(now()) @db.Timestamptz
+  // Position on the order, so kitchen tickets and receipts keep the guest's order.
+  lineNo        Int      @default(0)
 
   order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItem MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)

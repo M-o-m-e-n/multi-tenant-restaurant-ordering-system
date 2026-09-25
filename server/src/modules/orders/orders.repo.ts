@@ -6,7 +6,7 @@ import { prisma, type Tx } from '../../lib/prisma';
 type Db = Tx | ReturnType<typeof prisma>;
 
 export const orderInclude = {
-  items: { orderBy: [{ addedAt: 'asc' }, { id: 'asc' }] },
+  items: { orderBy: [{ lineNo: 'asc' }] },
   table: { select: { id: true, number: true } },
   delivery: true,
   payments: { select: { amount: true, state: true } },
