@@ -5,8 +5,9 @@ restaurant. It covers dine-in by QR code, takeaway, delivery, reservations, a re
 (KDS), Stripe payments (test mode), and owner reports. It is a portfolio project built to be *correct*
 about money, state and time.
 
-**Status:** M0–M8 are built and merged to `main` (auth, menu, tables/QR, cart and pricing, orders,
-realtime KDS). M9 (payments) is next. Read `docs/PROJECT_STATE.md` first in every session.
+**Status:** M0–M13 are built and merged to `main`. The system is feature-complete and verified on local
+production builds (docs/ACCEPTANCE.md). Open items: the staging deploy and a live Stripe webhook
+(M13-S11/S12) and the folder rename (M0-S1). Read `docs/PROJECT_STATE.md` first in every session.
 
 ## Documents: which one wins
 
@@ -43,6 +44,9 @@ npm workspaces `shared` / `server` / `client`, all TypeScript 5.9 `strict`, Node
 | `npm run check` | **The gate before every commit:** format check, lint, typecheck, all tests |
 | `npm test -w shared` / `-w server` / `-w client` | One workspace's tests |
 | `npm run build` | tsup server bundle and Vite client build |
+| `npm run e2e` | Build, reseed, and run Playwright (scenarios, acceptance, axe) on the production builds. Needs about 1 GB of free memory |
+| `npm run perf` | Load test `GET /menu` (after `npm run build`) |
+| `npm run openapi -w server` | Regenerate `docs/openapi.json`. A test fails if it is stale or misses a route |
 
 Demo logins (password `password123`): `admin@`, `staff@`, `guest@forkandflame.test`.
 

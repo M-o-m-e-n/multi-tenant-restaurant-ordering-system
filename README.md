@@ -4,11 +4,17 @@ A full-stack ordering system for a single restaurant. Guests scan a table QR cod
 menu and track their order live. The kitchen works from a realtime display, staff run tables and
 take payments, and the owner gets reports they can trust.
 
-**What works today (M0–M8):** register and sign in (rotating refresh tokens), browse the menu,
-scan a table QR code to order dine-in, build a cart with modifiers, tips and promo codes priced
-identically on client and server, check out, follow the order live, and run the kitchen from a
-real-time display. Admins manage the menu (including 86ing a dish), tables and staff. Payments,
-amendments, receipts, reports, delivery tracking and reservations come in M9–M12.
+**What works (M0–M13):**
+- **Guests:** scan a table QR code or order takeaway or delivery; build a cart with modifiers, tips
+  and promo codes, priced identically on client and server; pay by card (Stripe, test mode) or
+  with staff; follow the order and its delivery live; add a second round; print a receipt; book a
+  table.
+- **Kitchen:** runs from a realtime display.
+- **Staff:** take cash and split payments at the POS, assign drivers, and seat bookings.
+- **Owner:** manages the menu, including 86ing a dish, and reads reports built on one revenue
+  definition.
+
+Every acceptance criterion is recorded in [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md).
 
 The design lives in [`docs/`](docs/KICKOFF.md): requirements (SRS), architecture (HLD), detailed
 design (LLD), ERD, API contract, coding standards and the milestone plan.
@@ -72,12 +78,25 @@ Run from the repository root.
 | `npm run db:migrate` | apply Prisma migrations to the dev database |
 | `npm run db:seed` | wipe and reload the demo data |
 | `npm run db:studio` | browse the database in Prisma Studio |
+| `npm run e2e` | build, reseed, and run the 15 Playwright tests (scenarios, acceptance, axe) on the production builds |
+| `npm run perf` | 100 concurrent `GET /menu` for 30 s against the built API (needs `npm run build`) |
+| `npm run openapi -w server` | regenerate `docs/openapi.json` from the Zod schemas |
+| `scripts/backup.sh` / `scripts/restore.sh` | nightly `pg_dump` with 30-day retention, and restore into an empty database |
 
 ## Configuration
 
 Every variable is documented in [`server/.env.example`](server/.env.example). The server refuses to
 start with a missing or malformed value and names the problem. Runtime settings (tax, service
 charge, timezone, KDS thresholds) live in the database and are edited by an admin.
+
+## Quality and operations
+
+| Document | What it records |
+|---|---|
+| [docs/ACCEPTANCE.md](docs/ACCEPTANCE.md) | Every SRS acceptance criterion (AC-1…22) with its result and the test that proves it |
+| [docs/SECURITY.md](docs/SECURITY.md) | NFR-S1…S10 mapped to code and tests, findings fixed, and accepted risks |
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | Backups and the restore drill, scaling past one instance, the deploy checklist, and the Stripe webhook round trip |
+| [docs/openapi.json](docs/openapi.json) | OpenAPI 3 for every endpoint, generated from the shared Zod schemas |
 
 ## Money
 

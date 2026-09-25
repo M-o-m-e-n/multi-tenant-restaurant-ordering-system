@@ -12,7 +12,29 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
 
 ## [Unreleased]
 
+Nothing yet.
+
+---
+
+## [0.5.0] — 2026-09-25 — Feature-complete: M9–M13
+
+Everything in the SRS is built. 21 of 22 acceptance criteria pass outright on local production
+builds, and AC-5 passes with a named exception (see docs/ACCEPTANCE.md). Staging deploy and a live
+Stripe webhook remain.
+
 ### Added
+- **Hardening (M13):**
+  - helmet with a JSON-API CSP and HSTS
+  - one structured log line per request, carrying the request id, with the query string dropped
+  - wider log redaction
+  - a guard sweep over all 39 mutating endpoints
+  - docs/SECURITY.md (NFR-S1…S10 mapped to code and tests)
+  - an OpenAPI 3 document generated from the Zod schemas and checked against the mounted routes
+  - Playwright E2E for LLD §10.3 scenarios 1–6 and AC-1/2/22
+  - axe on 17 screens
+  - an autocannon load test (p95 ≈ 69 ms)
+  - backup and restore scripts with a recorded drill
+  - docs/OPERATIONS.md and docs/ACCEPTANCE.md
 - **Payments (M9):** a `PaymentGateway` abstraction with Stripe in test mode only (live keys
   refused; with no keys card payment is off and cash still works); intents for the balance or a
   split amount with `Idempotency-Key`; a raw-body, signature-checked, deduped webhook; cash with
@@ -31,12 +53,18 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
   quote band, reviews, visit/hours, footer); a photo banner on the menu.
 
 ### Changed
+- The client lazy-loads staff, admin and pay routes; the guest bundle drops from 880 kB to 444 kB.
+- `bcrypt` 6 (drops the vulnerable `tar` install chain).
 - `GET /settings` also returns `timezone`; the pure time helpers moved to `@ros/shared`
   (ADR-024). LLD 1.3 records the M12 endpoints and error codes (ADR-025).
 - `MenuItem.imageUrl` accepts a same-origin `/images/...` path as well as an http(s) URL
   (ADR-026).
 
 ### Fixed
+- **Security:** the post-login `returnTo` accepted `/\host`, an open redirect; backslashes and
+  control characters are now refused.
+- The KDS badged a second round only if it came more than a minute after placement.
+- The KDS board and the cancellations list could not be scrolled from the keyboard.
 - A refunded order no longer shows its total as still owed in the POS, and cannot take a further
   payment (`409 ORDER_REFUNDED`).
 

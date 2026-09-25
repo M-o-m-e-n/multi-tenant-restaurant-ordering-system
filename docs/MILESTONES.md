@@ -489,20 +489,25 @@ it to `DELIVERED`.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M13-S1** | Helmet, CORS allow-list from env, 256 KB body cap | M | NFR-S8 · LLD §9 | The webhook route keeps its raw body |
-| ☐ | **M13-S2** | Rate limits: auth 10/15 min/IP, `POST /orders` 30/5 min/user, general 300/5 min | S | NFR-S8 | Each returns `429 RATE_LIMITED` |
-| ☐ | **M13-S3** | `pino` structured logs, request id propagated, `authorization`/`password`/`token` redacted | M | HLD §12.2 | A request id appears in both the log and the error response |
-| ☐ | **M13-S4** | Security pass against NFR-S1…S10, plus the `/security-review` skill on the diff | L | NFR-S1…S10 | Every control has a test or a documented reason it does not |
-| ☐ | **M13-S5** | Accessibility pass: keyboard paths, contrast ≥ 4.5:1, 44 px targets, no colour-only state | L | NFR-U2, NFR-U3 | KDS operable by touch alone; axe reports no violations |
-| ☐ | **M13-S6** | Performance: k6 or autocannon, 100 concurrent `GET /menu` for 30 s | M | NFR-P1 · LLD §10.4 | p95 < 300 ms |
-| ☐ | **M13-S7** | Playwright E2E scenarios 1–6 | L | LLD §10.3 | Including the tip and the amendment flows |
-| ☐ | **M13-S8** | OpenAPI document generated from the Zod schemas | M | NFR-M5 | Every endpoint in LLD §5 appears |
-| ☐ | **M13-S9** | Redis: Socket.IO adapter and cross-instance menu-cache invalidation | M | NFR-A1 · HLD §6.4 | Only needed at more than one instance — skip if deploying single |
-| ☐ | **M13-S10** | Nightly `pg_dump` to object storage, 30-day retention, plus a documented restore drill | M | NFR-A3 · HLD §11.5 | The restore has actually been run once |
-| ☐ | **M13-S11** | Deploy to staging: TLS, HSTS, env config, migrations on release | L | NFR-S1 · HLD §11.1 | A public HTTPS URL Stripe can reach for webhooks |
-| ☐ | **M13-S12** | Point the Stripe webhook at staging and verify signature handling end to end | M | PAY-03 | A real test-mode event arrives and is processed once |
-| ☐ | **M13-S13** | Walk **AC-1 … AC-19** on staging and record the result of each | L | SRS §9 | Nineteen passes, or a named exception with a reason |
-| ☐ | **M13-S14** | Update SRS/HLD/LLD for anything the build changed; bump to v1.2 | M | — | The docs describe what was actually built |
+| ☑ | **M13-S1** | Helmet, CORS allow-list from env, 256 KB body cap | M | NFR-S8 · LLD §9 | The webhook route keeps its raw body |
+| ☑ | **M13-S2** | Rate limits: auth 10/15 min/IP, `POST /orders` 30/5 min/user, general 300/5 min | S | NFR-S8 | Each returns `429 RATE_LIMITED` |
+| ☑ | **M13-S3** | `pino` structured logs, request id propagated, `authorization`/`password`/`token` redacted | M | HLD §12.2 | A request id appears in both the log and the error response |
+| ☑ | **M13-S4** | Security pass against NFR-S1…S10, plus the `/security-review` skill on the diff | L | NFR-S1…S10 | Every control has a test or a documented reason it does not |
+| ☑ | **M13-S5** | Accessibility pass: keyboard paths, contrast ≥ 4.5:1, 44 px targets, no colour-only state | L | NFR-U2, NFR-U3 | KDS operable by touch alone; axe reports no violations |
+| ☑ | **M13-S6** | Performance: k6 or autocannon, 100 concurrent `GET /menu` for 30 s | M | NFR-P1 · LLD §10.4 | p95 < 300 ms |
+| ☑ | **M13-S7** | Playwright E2E scenarios 1–6 | L | LLD §10.3 | Including the tip and the amendment flows |
+| ☑ | **M13-S8** | OpenAPI document generated from the Zod schemas | M | NFR-M5 | Every endpoint in LLD §5 appears |
+| ◐ | **M13-S9** | Redis: Socket.IO adapter and cross-instance menu-cache invalidation | M | NFR-A1 · HLD §6.4 | Only needed at more than one instance — skip if deploying single |
+| ☑ | **M13-S10** | Nightly `pg_dump` to object storage, 30-day retention, plus a documented restore drill | M | NFR-A3 · HLD §11.5 | The restore has actually been run once |
+| ◐ | **M13-S11** | Deploy to staging: TLS, HSTS, env config, migrations on release | L | NFR-S1 · HLD §11.1 | A public HTTPS URL Stripe can reach for webhooks |
+| ◐ | **M13-S12** | Point the Stripe webhook at staging and verify signature handling end to end | M | PAY-03 | A real test-mode event arrives and is processed once |
+| ☑ | **M13-S13** | Walk **AC-1 … AC-19** on staging and record the result of each | L | SRS §9 | Nineteen passes, or a named exception with a reason |
+| ☑ | **M13-S14** | Update SRS/HLD/LLD for anything the build changed; bump to v1.2 | M | — | The docs describe what was actually built |
+
+**Build note (2026-09-25).** S9 is skipped (single instance; what Redis would replace is in
+OPERATIONS.md §2). S11/S12 need a public host and Stripe test keys, neither available in the build
+environment; the deploy checklist and webhook steps are written down in OPERATIONS.md §3–4, and S13
+was walked on local production builds instead of staging (ACCEPTANCE.md).
 
 **Traps.** M13-S13 is the real exit gate — not "the features are done". Run every criterion against
 staging, not localhost, and write down what happened. M13-S14 matters for a portfolio project:
