@@ -26,27 +26,6 @@ export const GUESTS = [
   },
 ] as const;
 
-export const STEPS = [
-  {
-    n: '01',
-    title: 'Scan your table',
-    body: 'Every table has its own QR code. Scan it and the menu already knows where you are sitting.',
-    photo: '/images/interior.jpg',
-  },
-  {
-    n: '02',
-    title: 'Order your way',
-    body: 'Pick sizes, doneness and extras. Pay by card, or settle up with your server at the end.',
-    photo: '/images/spread.jpg',
-  },
-  {
-    n: '03',
-    title: 'Track it live',
-    body: 'Watch your order move from the pass to the grill to your table, in real time.',
-    photo: '/images/dining.jpg',
-  },
-] as const;
-
 export const HOURS = [
   { days: 'Mon – Thu', time: '12:00 – 22:00' },
   { days: 'Fri – Sat', time: '12:00 – 23:00' },
@@ -60,4 +39,36 @@ export const MARQUEE = [
   'Scan & order',
   'Live order tracking',
   'Split the bill',
+] as const;
+
+/** The "fire to table" story: each stage drives the phone mock as you scroll. */
+export const FIRE_STAGES = [
+  {
+    n: '01',
+    title: 'Scan your table',
+    body: 'Every table has its own QR code. Scan it and the menu already knows where you sit.',
+    status: 'Table 7 · menu open',
+    progress: 0.12,
+  },
+  {
+    n: '02',
+    title: 'Order your way',
+    body: 'Large, medium-rare, no bun. Every choice is priced live and checked by the kitchen.',
+    status: 'Order received',
+    progress: 0.38,
+  },
+  {
+    n: '03',
+    title: 'It meets the fire',
+    body: 'Your ticket lands on the kitchen screen in under a tenth of a second, and the grill starts.',
+    status: 'On the grill',
+    progress: 0.7,
+  },
+  {
+    n: '04',
+    title: 'Straight to your table',
+    body: 'Watch every step live on your phone. Add a second round or pay without waving anyone down.',
+    status: 'Served · enjoy',
+    progress: 1,
+  },
 ] as const;

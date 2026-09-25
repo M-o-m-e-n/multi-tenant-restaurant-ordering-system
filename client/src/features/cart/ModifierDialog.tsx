@@ -4,9 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { formatDelta, formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { Modal } from '../../shared/ui/Modal';
+import { flyToCart } from '../../shared/ui/motionUtils';
+import { toast } from '../../shared/ui/toastStore';
 import { DishImage } from '../menu/DishImage';
 import { useMenuItem } from '../menu/menuApi';
-import { type CartLine, useCart } from './cartStore';
+import { type CartLine, lineKey, useCart } from './cartStore';
 import {
   defaultSelection,
   type Selection,
@@ -34,15 +36,30 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
   const full = detail.data;
   const groups = useMemo(() => full?.modifierGroups ?? [], [full]);
   const add = useCart((s) => s.add);
-  const [sel, setSel] = useState<Selection>({});
+  // The selection is derived during render, so the defaults are present on the
+  // very first paint after the item loads; an effect would flash "Choose size
+  // and doneness" for a frame. Picks are kept only for the groups they were
+  // made against.
+  const defaults = useMemo(() => defaultSelection(groups), [groups]);
+  const [picked, setPicked] = useState<{ for: typeof groups; sel: Selection } | null>(null);
+  const sel = picked?.for === groups ? picked.sel : defaults;
+  const setSel = (update: (s: Selection) => Selection) =>
+    setPicked((prev) => ({
+      for: groups,
+      sel: update(prev?.for === groups ? prev.sel : defaults),
+    }));
   const [qty, setQty] = useState(1);
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
-    setSel(defaultSelection(groups));
     setQty(1);
     setNotes('');
   }, [groups, item?.id]);
+
+  // Closing forgets the picks, so reopening a dish starts from its defaults.
+  useEffect(() => {
+    if (!item) setPicked(null);
+  }, [item]);
 
   const unmet = unmetGroups(groups, sel);
   const snapshot = toSnapshot(groups, sel);
@@ -57,7 +74,7 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
 
   function addToCart() {
     if (!full || unmet.length > 0 || soldOut) return;
-    (onPick ?? add)({
+    const line = {
       menuItemId: full.id,
       name: full.name,
       category,
@@ -66,7 +83,25 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
       qty,
       modifiers: snapshot,
       notes,
-    });
+    };
+    if (onPick) {
+      onPick(line);
+    } else {
+      add(line);
+      const added = qty;
+      toast({
+        title: `${added > 1 ? `${added} × ` : ''}${full.name} added`,
+        detail: 'In your order · review it in the cart',
+        imageUrl: full.imageUrl,
+        action: {
+          label: 'Undo',
+          run: () => {
+            const key = lineKey(line);
+            for (let i = 0; i < added; i++) useCart.getState().decrement(key);
+          },
+        },
+      });
+    }
     onAdded?.(full.name);
     onClose();
   }
@@ -182,7 +217,12 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
               type="button"
               className={buttonClass('primary', 'lg')}
               disabled={unmet.length > 0 || soldOut}
-              onClick={addToCart}
+              onClick={(e) => {
+                if (!full || unmet.length > 0 || soldOut) return;
+                // The flight is decorative; amending an order has no cart to fly to.
+                if (!onPick) flyToCart(e.currentTarget, full.imageUrl, full.name);
+                addToCart();
+              }}
             >
               {soldOut ? 'Sold out' : `Add · ${formatMoney(price)}`}
             </button>

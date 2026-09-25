@@ -85,9 +85,9 @@ export function OrderTrackerPage() {
                 <li key={step} className="flex gap-4" aria-current={now ? 'step' : undefined}>
                   <div className="flex flex-col items-center">
                     <span
-                      className={`grid size-8 place-items-center rounded-full border-2 text-xs font-bold ${
+                      className={`grid size-8 place-items-center rounded-full border-2 text-xs font-bold transition-colors duration-500 ${
                         now
-                          ? 'border-flame bg-flame text-white'
+                          ? 'border-flame bg-flame text-white motion-safe:animate-pulse'
                           : done
                             ? 'border-ok text-ok'
                             : 'border-line-strong text-ink-muted'
@@ -97,7 +97,9 @@ export function OrderTrackerPage() {
                       {done ? '✓' : i + 1}
                     </span>
                     {i < TRACKER_STEPS.length - 1 && (
-                      <span className={`w-0.5 flex-1 ${done ? 'bg-ok' : 'bg-line'}`} />
+                      <span
+                        className={`w-0.5 flex-1 transition-colors duration-500 ${done ? 'bg-ok' : 'bg-line'}`}
+                      />
                     )}
                   </div>
                   <div className="pb-6">

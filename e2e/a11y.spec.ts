@@ -42,9 +42,10 @@ test('keyboard: the landing CTA and menu are reachable and operable without a mo
   for (let i = 0; i < 12; i++) {
     await page.keyboard.press('Tab');
     const text = await page.evaluate(() => document.activeElement?.textContent?.trim() ?? '');
-    if (text === 'View Menu') break;
+    if (text.startsWith('View Menu')) break;
   }
-  await expect(page.locator(':focus')).toHaveText('View Menu');
+  // The arrow after the label is aria-hidden, so the accessible name stays "View Menu".
+  await expect(page.locator(':focus')).toHaveAccessibleName('View Menu');
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/menu$/);
 });

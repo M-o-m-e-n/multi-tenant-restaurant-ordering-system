@@ -1,6 +1,6 @@
 export function Logo() {
   return (
-    <span className="font-display text-2xl font-bold text-ink">
+    <span className="whitespace-nowrap font-display text-xl font-bold text-ink sm:text-2xl">
       Fork <span className="text-flame">&amp;</span> Flame
     </span>
   );

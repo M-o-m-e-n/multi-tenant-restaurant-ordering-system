@@ -44,7 +44,7 @@ npm workspaces `shared` / `server` / `client`, all TypeScript 5.9 `strict`, Node
 | `npm run check` | **The gate before every commit:** format check, lint, typecheck, all tests |
 | `npm test -w shared` / `-w server` / `-w client` | One workspace's tests |
 | `npm run build` | tsup server bundle and Vite client build |
-| `npm run e2e` | Build, reseed, and run Playwright (scenarios, acceptance, axe) on the production builds. Needs about 1 GB of free memory |
+| `npm run e2e` | Build, reseed, and run Playwright (scenarios, acceptance, axe) on the production builds. Needs about 1 GB of free memory. With dev servers running: `E2E_SKIP_SEED=1 E2E_API_PORT=4100 E2E_WEB_PORT=5273 npx playwright test` |
 | `npm run perf` | Load test `GET /menu` (after `npm run build`) |
 | `npm run openapi -w server` | Regenerate `docs/openapi.json`. A test fails if it is stale or misses a route |
 

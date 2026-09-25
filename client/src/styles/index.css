@@ -20,6 +20,278 @@
   }
 }
 
+@layer components {
+  /* Scroll entrance for Reveal (shared/ui/motion). The global
+     prefers-reduced-motion rule below switches it off. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Shimmer placeholder behind async content (menu, tables). */
+  .skeleton {
+    @apply bg-surface-raised;
+    position: relative;
+    overflow: hidden;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.07) 50%,
+      transparent 80%
+    );
+    animation: skeleton-sweep 1.6s ease-in-out infinite;
+  }
+  @keyframes skeleton-sweep {
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  /* The dot a dish flies in when added to the cart (flyToCart). */
+  .fly-dot {
+    position: fixed;
+    z-index: 60;
+    display: grid;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: #e5322d;
+    color: #fff;
+    font-weight: 700;
+    pointer-events: none;
+    box-shadow: 0 8px 22px rgba(229, 50, 45, 0.45);
+  }
+  .fly-dot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+@layer components {
+  /* KineticText: each word rises out of a clipped line. */
+  .kinetic-word {
+    display: inline-block;
+    animation: word-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  @keyframes word-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.55em) rotate(2deg);
+      filter: blur(6px);
+    }
+  }
+
+  /* A slow band of heat moving across large flame text (headline sizes only:
+     the darkest stop still clears 3:1 for large text on bg). */
+  .flame-shimmer {
+    background-image: linear-gradient(
+      100deg,
+      theme('colors.flame.DEFAULT') 0%,
+      theme('colors.flame.light') 35%,
+      theme('colors.star') 50%,
+      theme('colors.flame.light') 65%,
+      theme('colors.flame.DEFAULT') 100%
+    );
+    background-size: 250% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation:
+      word-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+      shimmer 5s ease-in-out 1.2s infinite;
+  }
+  @keyframes shimmer {
+    0%,
+    100% {
+      background-position: 100% 0;
+    }
+    50% {
+      background-position: 0% 0;
+    }
+  }
+
+  /* Pointer-following light on cards (useSpotlight writes --mx/--my). */
+  .spotlight {
+    position: relative;
+    isolation: isolate;
+  }
+  .spotlight::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    background: radial-gradient(
+      340px circle at var(--mx, 50%) var(--my, 50%),
+      theme('colors.flame.DEFAULT / 18%'),
+      transparent 60%
+    );
+  }
+  .spotlight:hover::before {
+    opacity: 1;
+  }
+
+  /* Nav links: a flame underline that grows from the centre. The active link
+     keeps it, so "you are here" never depends on colour alone. */
+  .nav-link {
+    position: relative;
+    padding-block: 0.35rem;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: -2px;
+    height: 2px;
+    border-radius: 9999px;
+    background: theme('colors.flame.light');
+    transform: scaleX(0);
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .nav-link:hover::after,
+  .nav-link.is-active::after {
+    transform: scaleX(1);
+  }
+
+  /* Burger ↔ close morph for the mobile menu button. */
+  .burger {
+    position: relative;
+    display: block;
+    width: 20px;
+    height: 14px;
+  }
+  .burger > span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition:
+      transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+      opacity 0.2s;
+  }
+  .burger > span:nth-child(1) {
+    top: 0;
+  }
+  .burger > span:nth-child(2) {
+    top: 6px;
+  }
+  .burger > span:nth-child(3) {
+    top: 12px;
+  }
+  .burger.is-open > span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+  .burger.is-open > span:nth-child(2) {
+    opacity: 0;
+  }
+  .burger.is-open > span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .mobile-sheet {
+    transform-origin: top right;
+    animation: sheet-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  .mobile-item {
+    animation: route-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.97);
+    }
+  }
+
+  /* Toasts slide in from the right; a thin bar shows the time left. */
+  .toast {
+    position: relative;
+    animation: toast-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .toast-timer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 100%;
+    transform-origin: left;
+    background: theme('colors.flame.light');
+    animation: toast-timer 3.8s linear both;
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateX(24px) scale(0.96);
+    }
+  }
+  @keyframes toast-timer {
+    to {
+      transform: scaleX(0);
+    }
+  }
+
+  /* The hero plate's highlight follows the pointer (--px/--py from the stage). */
+  .plate-sheen {
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+    background: radial-gradient(
+      circle at calc(50% + var(--px, 0) * 30%) calc(35% + var(--py, 0) * 30%),
+      theme('colors.ink.DEFAULT / 45%'),
+      transparent 55%
+    );
+  }
+
+  /* Route change: the new page settles in. */
+  .route-enter {
+    animation: route-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  @keyframes route-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+}
+
+/* Native dialogs get an entrance; the backdrop fades with them. */
+dialog[open] {
+  animation: modal-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+dialog[open]::backdrop {
+  animation: backdrop-in 0.25s ease-out;
+}
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Receipts and kitchen tickets print black on white (fork-flame-ui §6). */
 @media print {
   html,

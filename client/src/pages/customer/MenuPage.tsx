@@ -3,8 +3,10 @@ import { useMemo, useState } from 'react';
 
 import { CartBar } from '../../features/cart/CartBar';
 import { ModifierDialog } from '../../features/cart/ModifierDialog';
+import { CategoryChips } from '../../features/menu/CategoryChips';
 import { useMenu } from '../../features/menu/menuApi';
 import { MenuRow } from '../../features/menu/MenuRow';
+import { MenuSkeleton } from '../../features/menu/MenuSkeleton';
 import { SignatureRail } from '../../features/menu/SignatureRail';
 import { pickSignatures } from '../../features/menu/signatures';
 import { TableBanner } from '../../features/table/TableBanner';
@@ -50,9 +52,9 @@ export function MenuPage() {
 
   if (isLoading) {
     return (
-      <p role="status" className="p-10 text-center text-ink-muted">
-        Setting the table…
-      </p>
+      <main className="mx-auto w-full max-w-content px-5 pb-24 pt-6 md:px-10">
+        <MenuSkeleton />
+      </main>
     );
   }
   if (isError || !data) {
@@ -73,7 +75,7 @@ export function MenuPage() {
   return (
     <main className="mx-auto w-full max-w-content px-5 pb-24 md:px-10">
       <TableBanner />
-      <header className="relative mb-6 overflow-hidden rounded-frame border border-line">
+      <header className="relative mb-6 overflow-hidden rounded-frame border border-line motion-safe:animate-rise">
         <img
           src="/images/spread.jpg"
           alt=""
@@ -116,28 +118,11 @@ export function MenuPage() {
             />
           </label>
         </div>
-        <div
-          role="tablist"
-          aria-label="Categories"
-          className="mt-4 flex gap-2 overflow-x-auto pb-2"
-        >
-          {[{ id: 'all', name: 'All' }, ...data.categories].map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              role="tab"
-              aria-selected={category === c.id}
-              onClick={() => setCategory(c.id)}
-              className={`min-h-11 whitespace-nowrap rounded-btn border px-4 text-xs font-semibold ${
-                category === c.id
-                  ? 'border-flame bg-flame text-white'
-                  : 'border-line-strong bg-surface-raised text-ink'
-              }`}
-            >
-              {c.name}
-            </button>
-          ))}
-        </div>
+        <CategoryChips
+          chips={[{ id: 'all', name: 'All' }, ...data.categories]}
+          value={category}
+          onChange={setCategory}
+        />
         {visible.length === 0 ? (
           <p className="py-10 text-center text-ink-muted">No dishes match &ldquo;{query}&rdquo;.</p>
         ) : (
@@ -147,8 +132,14 @@ export function MenuPage() {
                 {c.name}
               </h3>
               <ul>
-                {c.items.map((item) => (
-                  <MenuRow key={item.id} item={item} category={c.name} onOpen={openItem} />
+                {c.items.map((item, i) => (
+                  <MenuRow
+                    key={item.id}
+                    item={item}
+                    category={c.name}
+                    onOpen={openItem}
+                    index={i}
+                  />
                 ))}
               </ul>
             </div>

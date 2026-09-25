@@ -37,7 +37,7 @@ export function TicketCard({ order, nowMs, settings, station, fresh, onBump }: P
   return (
     <article
       aria-label={`Order ${order.orderNumber}, ${badge(order)}, ${age.label}`}
-      className={`flex flex-col gap-3 rounded-icon border border-line border-l-8 bg-surface p-4 ${done ? 'border-l-line opacity-60' : style.edge} ${fresh ? 'ring-4 ring-flame-light motion-safe:animate-pulse' : ''}`}
+      className={`flex flex-col gap-3 rounded-icon border border-line border-l-8 bg-surface p-4 motion-safe:animate-drop-in ${done ? 'border-l-line opacity-60' : style.edge} ${fresh ? 'ring-4 ring-flame-light motion-safe:animate-pulse' : ''}`}
     >
       <header className="flex items-start justify-between gap-2">
         <div>

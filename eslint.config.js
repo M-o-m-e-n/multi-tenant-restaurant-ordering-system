@@ -16,6 +16,7 @@ export default tseslint.config(
       '**/coverage/**',
       'designs/**',
       '.shots.mjs',
+      '.shots-*.mjs',
       '.sheet.mjs',
       '.overflow.mjs',
       'scripts/*.mjs',

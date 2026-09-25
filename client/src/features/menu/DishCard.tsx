@@ -16,8 +16,8 @@ interface Props {
 export function DishCard({ item, category, onOpen }: Props) {
   const soldOut = !item.isAvailable;
   return (
-    <article className="relative flex w-52 shrink-0 snap-start flex-col items-center rounded-card border border-line bg-card px-4 pb-4 text-center shadow-dish">
-      <div className="-mt-10">
+    <article className="group relative flex w-52 shrink-0 snap-start flex-col items-center rounded-card border border-line bg-card px-4 pb-4 text-center shadow-dish transition duration-300 hover:-translate-y-1.5 hover:border-line-strong">
+      <div className="-mt-10 transition-transform duration-300 group-hover:rotate-3 group-hover:scale-105">
         <DishImage
           name={item.name}
           imageUrl={item.imageUrl}

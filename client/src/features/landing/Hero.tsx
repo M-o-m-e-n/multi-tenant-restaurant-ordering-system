@@ -1,43 +1,100 @@
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { buttonClass } from '../../shared/ui/buttonClass';
+import { KineticText, Magnetic } from '../../shared/ui/interactive';
+import { usePointerParallax } from '../../shared/ui/pointerFx';
+import { useSettings } from '../cart/cartApi';
 import { GUESTS } from './content';
+import { EmberField } from './EmberField';
+import { openStatus } from './openHours';
+
+/** A layer that drifts `px` pixels with the pointer (negative = against it). */
+const depth = (px: number): CSSProperties => ({
+  transform: `translate3d(calc(var(--px, 0) * ${px}px), calc(var(--py, 0) * ${px}px), 0)`,
+});
+
+/** The live "open now" chip, on the restaurant's clock; re-checked every minute. */
+function OpenChip() {
+  const { data: settings } = useSettings();
+  const tz = settings?.timezone ?? 'America/New_York';
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+  const status = openStatus(now, tz);
+  return (
+    <p className="inline-flex items-center gap-2 rounded-btn border border-line-strong bg-surface/80 px-4 py-1.5 text-xs font-medium text-ink-muted backdrop-blur">
+      <span className="relative flex size-2" aria-hidden="true">
+        {status.open && (
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-ok opacity-75" />
+        )}
+        <span
+          className={`relative inline-flex size-2 rounded-full ${status.open ? 'bg-ok' : 'bg-ink-muted'}`}
+        />
+      </span>
+      {status.label}
+    </p>
+  );
+}
 
 /**
- * Landing hero (fork-flame-ui §4): headline and CTAs on the left, a plated
- * dish on a slate disc on the right with floating garnish and info chips.
+ * Landing hero (fork-flame-ui §4), made reactive: embers rise off the plate
+ * and scatter from the pointer; the plate tilts and the garnish and chips
+ * float at different depths as the pointer moves; the headline assembles
+ * word by word and the CTAs lean toward the cursor. All of it is decoration
+ * layered over the same content, and all of it stands still under reduced
+ * motion or on touch.
  */
 export function Hero() {
+  const stage = useRef<HTMLElement>(null);
+  usePointerParallax(stage);
+
   return (
-    <section className="relative mx-auto grid w-full max-w-content items-center gap-12 px-5 pb-20 pt-6 md:grid-cols-[1.05fr_1fr] md:px-10 md:pt-10">
-      <div className="animate-rise text-center md:text-left">
-        <p className="inline-flex items-center gap-2 rounded-btn border border-line-strong bg-surface/80 px-4 py-1.5 text-xs font-medium text-ink-muted">
-          <span className="size-2 animate-pulse rounded-full bg-ok" aria-hidden="true" />
-          Open tonight · 12 pm – 11 pm
-        </p>
+    <section
+      ref={stage}
+      className="relative isolate mx-auto grid w-full max-w-content items-center gap-12 overflow-x-clip px-5 pb-20 pt-6 md:grid-cols-[1.05fr_1fr] md:px-10 md:pt-10"
+    >
+      <EmberField className="-z-10 opacity-80" />
+
+      <div className="text-center md:text-left">
+        <div className="motion-safe:animate-rise">
+          <OpenChip />
+        </div>
         <h1 className="mt-6 font-display text-hero-sm font-bold md:text-hero">
-          it&rsquo;s not just Food, It&rsquo;s an <span className="text-flame">Experience.</span>
+          <KineticText text="it’s not just Food, It’s an Experience." highlight="Experience." />
         </h1>
-        <p className="mx-auto mt-5 max-w-md text-ink-muted md:mx-0">
+        <p className="mx-auto mt-5 max-w-md text-ink-muted motion-safe:animate-rise motion-safe:[animation-delay:.5s] md:mx-0">
           Seasonal plates cooked over open flame. Order from your table, watch it move through the
           kitchen live, and pay in a tap.
         </p>
-        <div className="mt-8 flex flex-wrap justify-center gap-3 md:justify-start">
-          <Link to="/menu" className={buttonClass('primary', 'lg')}>
-            View Menu
-          </Link>
-          <Link to="/reserve" className={buttonClass('secondary', 'lg')}>
-            Book A Table
-          </Link>
+        <div className="mt-8 flex flex-wrap justify-center gap-3 motion-safe:animate-rise motion-safe:[animation-delay:.65s] md:justify-start">
+          <Magnetic>
+            <Link to="/menu" className={`${buttonClass('primary', 'lg')} group`}>
+              View Menu
+              <span
+                aria-hidden="true"
+                className="transition-transform duration-300 group-hover:translate-x-1"
+              >
+                →
+              </span>
+            </Link>
+          </Magnetic>
+          <Magnetic strength={6}>
+            <Link to="/reserve" className={buttonClass('secondary', 'lg')}>
+              Book A Table
+            </Link>
+          </Magnetic>
         </div>
-        <div className="mt-10 flex items-center justify-center gap-4 md:justify-start">
+        <div className="mt-10 flex items-center justify-center gap-4 motion-safe:animate-rise motion-safe:[animation-delay:.8s] md:justify-start">
           <div className="flex -space-x-3">
             {GUESTS.slice(0, 3).map((g) => (
               <img
                 key={g.photo}
                 src={g.photo}
                 alt=""
-                className="size-10 rounded-full border-2 border-bg object-cover"
+                className="size-10 rounded-full border-2 border-bg object-cover transition-transform duration-300 hover:z-10 hover:-translate-y-1 hover:scale-110"
               />
             ))}
             <span className="grid size-10 place-items-center rounded-full border-2 border-bg bg-flame text-[0.7rem] font-bold text-white">
@@ -55,52 +112,70 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="relative mx-auto aspect-square w-full max-w-[480px]">
-        <div className="absolute inset-[8%] rounded-full bg-flame/25 blur-3xl" aria-hidden="true" />
+      <div className="relative mx-auto aspect-square w-full max-w-[480px] [perspective:900px] motion-safe:animate-rise motion-safe:[animation-delay:150ms]">
         <div
-          className="absolute inset-[4%] rounded-full bg-slate shadow-plate"
+          className="absolute inset-[8%] animate-pulse rounded-full bg-flame/25 blur-3xl [animation-duration:4s]"
           aria-hidden="true"
+          style={depth(-10)}
         />
-        <img
-          src="/images/hero-plate.jpg"
-          alt="A harvest bowl of greens, feta and pickled onion on a dark plate"
-          loading="eager"
-          className="absolute inset-[9%] size-[82%] animate-spin-slow rounded-full object-cover shadow-plate"
-        />
-        <img
-          src="/images/tomatoes.jpg"
-          alt=""
-          aria-hidden="true"
-          className="absolute -right-1 top-[4%] size-20 animate-bob rounded-full border-4 border-card-top object-cover shadow-dish md:size-24"
-        />
-        <span
-          aria-hidden="true"
-          className="absolute left-[2%] top-[30%] animate-bob text-4xl [animation-delay:.8s]"
-        >
-          🌿
-        </span>
-        <span
-          aria-hidden="true"
-          className="absolute bottom-[12%] right-[4%] animate-bob text-3xl [animation-delay:1.6s]"
-        >
-          🌶️
-        </span>
-        <div className="absolute -left-2 bottom-[8%] animate-float rounded-card border border-line bg-surface/90 px-4 py-3 shadow-dish backdrop-blur md:-left-6">
-          <p className="text-[0.7rem] font-medium uppercase tracking-wider text-ink-muted">
-            Chef&rsquo;s pick
-          </p>
-          <p className="font-display text-lg font-bold">Harvest Bowl</p>
-          <p className="text-xs text-star">
-            ★ 4.9 <span className="text-ink-muted">· 320 orders</span>
-          </p>
+        <div aria-hidden="true" className="absolute inset-0" style={depth(-6)}>
+          <div className="absolute inset-[-3%] animate-spin-slow rounded-full border border-dashed border-flame/40" />
         </div>
-        <div className="absolute right-0 top-[48%] hidden animate-float items-center gap-3 rounded-card border border-line bg-surface/90 px-4 py-3 shadow-dish backdrop-blur [animation-delay:1.2s] sm:flex">
-          <span className="grid size-9 place-items-center rounded-icon bg-flame text-white shadow-glow">
-            ⏱
-          </span>
-          <div>
-            <p className="text-sm font-semibold">~18 min</p>
-            <p className="text-xs text-ink-muted">avg. to your table</p>
+        {/* The plate tilts toward the pointer like a dish turned to the light. */}
+        <div
+          className="absolute inset-0 transition-transform duration-100 [transform-style:preserve-3d]"
+          style={{
+            transform: 'rotateX(calc(var(--py, 0) * -9deg)) rotateY(calc(var(--px, 0) * 11deg))',
+          }}
+        >
+          <div
+            className="absolute inset-[4%] rounded-full bg-slate shadow-plate"
+            aria-hidden="true"
+          />
+          <img
+            src="/images/hero-plate.jpg"
+            alt="A harvest bowl of greens, feta and pickled onion on a dark plate"
+            loading="eager"
+            className="absolute inset-[9%] size-[82%] animate-spin-slow rounded-full object-cover shadow-plate"
+          />
+          {/* A soft specular highlight that slides across the plate. */}
+          <div aria-hidden="true" className="plate-sheen absolute inset-[9%] rounded-full" />
+        </div>
+
+        <div className="absolute -right-1 top-[4%]" style={depth(28)} aria-hidden="true">
+          <img
+            src="/images/tomatoes.jpg"
+            alt=""
+            className="size-20 animate-bob rounded-full border-4 border-card-top object-cover shadow-dish md:size-24"
+          />
+        </div>
+        <span aria-hidden="true" className="absolute left-[2%] top-[30%]" style={depth(36)}>
+          <span className="inline-block animate-bob text-4xl [animation-delay:.8s]">🌿</span>
+        </span>
+        <span aria-hidden="true" className="absolute bottom-[12%] right-[4%]" style={depth(22)}>
+          <span className="inline-block animate-bob text-3xl [animation-delay:1.6s]">🌶️</span>
+        </span>
+
+        <div className="absolute -left-2 bottom-[8%] md:-left-6" style={depth(18)}>
+          <div className="animate-float rounded-card border border-line bg-surface/90 px-4 py-3 shadow-dish backdrop-blur">
+            <p className="text-[0.7rem] font-medium uppercase tracking-wider text-ink-muted">
+              Chef&rsquo;s pick
+            </p>
+            <p className="font-display text-lg font-bold">Harvest Bowl</p>
+            <p className="text-xs text-star">
+              ★ 4.9 <span className="text-ink-muted">· 320 orders</span>
+            </p>
+          </div>
+        </div>
+        <div className="absolute right-0 top-[48%] hidden sm:block" style={depth(12)}>
+          <div className="flex animate-float items-center gap-3 rounded-card border border-line bg-surface/90 px-4 py-3 shadow-dish backdrop-blur [animation-delay:1.2s]">
+            <span className="grid size-9 place-items-center rounded-icon bg-flame text-white shadow-glow">
+              ⏱
+            </span>
+            <div>
+              <p className="text-sm font-semibold">~18 min</p>
+              <p className="text-xs text-ink-muted">avg. to your table</p>
+            </div>
           </div>
         </div>
       </div>

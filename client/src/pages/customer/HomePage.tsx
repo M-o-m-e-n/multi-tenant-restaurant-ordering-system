@@ -4,16 +4,9 @@ import { Link } from 'react-router-dom';
 
 import { CartBar } from '../../features/cart/CartBar';
 import { ModifierDialog } from '../../features/cart/ModifierDialog';
+import { FireToTable } from '../../features/landing/FireToTable';
 import { Hero } from '../../features/landing/Hero';
-import {
-  Footer,
-  HowItWorks,
-  Marquee,
-  QuoteBand,
-  Reviews,
-  Story,
-  Visit,
-} from '../../features/landing/Sections';
+import { Footer, Marquee, QuoteBand, Reviews, Story, Visit } from '../../features/landing/Sections';
 import { useMenu } from '../../features/menu/menuApi';
 import { SignatureRail } from '../../features/menu/SignatureRail';
 import { pickSignatures } from '../../features/menu/signatures';
@@ -51,7 +44,7 @@ export function HomePage() {
             </div>
           </div>
         )}
-        <HowItWorks />
+        <FireToTable />
         <Story />
         <QuoteBand />
         <Reviews />
