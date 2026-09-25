@@ -256,7 +256,11 @@ export function ReportsPage() {
                 {r.cancellations.cancelled.length} cancelled · {r.cancellations.refunded.length}{' '}
                 refunded
               </p>
-              <ul className="mt-2 flex max-h-48 flex-col gap-1 overflow-y-auto text-xs text-ink-muted">
+              <ul
+                tabIndex={0}
+                aria-label="Cancelled orders"
+                className="mt-2 flex max-h-48 flex-col gap-1 overflow-y-auto text-xs text-ink-muted"
+              >
                 {r.cancellations.cancelled.slice(0, 20).map((c) => (
                   <li key={c.orderId}>
                     {c.businessDate} · {c.orderNumber} · {c.reason ?? 'no reason given'}

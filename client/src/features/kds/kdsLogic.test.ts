@@ -32,10 +32,13 @@ describe('KDS logic', () => {
     expect(bumpTarget('CANCELLED')).toBeNull();
   });
 
-  it('marks items added over a minute after placement as a later round', () => {
+  it('marks items added after placement as a later round', () => {
     const placedAt = '2026-09-25T19:00:00Z';
     expect(isLaterRound({ addedAt: '2026-09-25T19:00:00Z' }, placedAt)).toBe(false);
     expect(isLaterRound({ addedAt: '2026-09-25T19:20:00Z' }, placedAt)).toBe(true);
+    // A quick second round still counts; the first round shares placedAt exactly.
+    expect(isLaterRound({ addedAt: '2026-09-25T19:00:10Z' }, placedAt)).toBe(true);
+    expect(isLaterRound({ addedAt: '2026-09-25T19:00:00.400Z' }, placedAt)).toBe(false);
   });
 
   it('filters tickets by the station snapshotted on their items (KDS-05)', () => {

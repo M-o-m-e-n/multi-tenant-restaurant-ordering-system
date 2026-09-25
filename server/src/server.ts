@@ -12,7 +12,7 @@ import { createRealtime } from './realtime';
 /** Bootstrap order: env → http → sockets → jobs (CODING-STANDARDS §4). */
 function main(): void {
   const env = getEnv();
-  const app = createApp();
+  const app = createApp({ rateLimits: !env.RATE_LIMITS_DISABLED });
   const server = createServer(app);
   const realtime = createRealtime(server);
 

@@ -17,6 +17,8 @@ const envSchema = z
     ACCESS_TOKEN_TTL_SEC: z.coerce.number().int().positive().max(900).default(900),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
     COOKIE_SECURE: bool.optional(),
+    // E2E runs log in many times from one IP; never allowed in production.
+    RATE_LIMITS_DISABLED: bool.default('false'),
 
     // AUTH-07: bcrypt cost >= 12. Tests may lower it for speed only.
     BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
@@ -52,6 +54,13 @@ const envSchema = z
       .refine((list) => list.every((o) => o !== '*'), 'a wildcard origin is not allowed'),
   })
   .superRefine((env, ctx) => {
+    if (env.NODE_ENV === 'production' && env.RATE_LIMITS_DISABLED) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['RATE_LIMITS_DISABLED'],
+        message: 'rate limits cannot be disabled in production (NFR-S8)',
+      });
+    }
     if (env.NODE_ENV !== 'test' && env.BCRYPT_ROUNDS < 12) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

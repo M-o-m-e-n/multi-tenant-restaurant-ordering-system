@@ -35,12 +35,17 @@ export function bumpTarget(status: OrderStatus): OrderStatus | null {
   return FORWARD_TRANSITION[status];
 }
 
-/** Items added more than a minute after placement are a later round (ORD-12). */
+/**
+ * A line added after placement is a later round (ORD-12). Placement stamps
+ * `placedAt` and every first-round `addedAt` with the same instant, so any
+ * gap means an amendment — even one made ten seconds later. The one-second
+ * tolerance only absorbs clock rounding.
+ */
 export function isLaterRound(
   item: Pick<OrderDto['items'][number], 'addedAt'>,
   placedAt: string,
 ): boolean {
-  return new Date(item.addedAt).getTime() - new Date(placedAt).getTime() > 60_000;
+  return new Date(item.addedAt).getTime() - new Date(placedAt).getTime() > 1_000;
 }
 
 /** Every station on the board, for the filter chips (KDS-05). */

@@ -41,6 +41,13 @@ describe('parseEnv', () => {
     expect(() => parseEnv({ ...valid, CLIENT_ORIGINS: '*' })).toThrow(/wildcard/);
   });
 
+  it('never lets production switch the rate limits off', () => {
+    expect(parseEnv({ ...valid, RATE_LIMITS_DISABLED: 'true' }).RATE_LIMITS_DISABLED).toBe(true);
+    expect(() =>
+      parseEnv({ ...valid, NODE_ENV: 'production', RATE_LIMITS_DISABLED: 'true' }),
+    ).toThrow(/cannot be disabled in production/);
+  });
+
   it('refuses a bcrypt cost below 12 outside tests', () => {
     expect(() => parseEnv({ ...valid, BCRYPT_ROUNDS: '4' })).toThrow(/BCRYPT_ROUNDS/);
     expect(parseEnv({ ...valid, NODE_ENV: 'test', BCRYPT_ROUNDS: '4' }).BCRYPT_ROUNDS).toBe(4);
