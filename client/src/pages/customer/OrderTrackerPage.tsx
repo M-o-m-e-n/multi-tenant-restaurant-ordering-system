@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import { useCancelOrder, useOrder, useOrderEvents } from '../../features/orders/ordersApi';
 import { paymentLabel, statusLabel, TRACKER_STEPS } from '../../features/orders/status';
+import { usePaymentsConfig } from '../../features/payments/paymentsApi';
 import { ApiError } from '../../shared/api/client';
 import { formatMoney } from '../../shared/money';
 import { useWatchOrder } from '../../shared/realtime/useWatchOrder';
@@ -20,6 +21,7 @@ export function OrderTrackerPage() {
   useWatchOrder(order ? id : undefined);
   const { data: events } = useOrderEvents(id, order?.status);
   const cancel = useCancelOrder(id);
+  const { data: payConfig } = usePaymentsConfig();
 
   if (isLoading)
     return (
@@ -162,6 +164,17 @@ export function OrderTrackerPage() {
             </div>
           )}
         </dl>
+        {order.balanceDue > 0 &&
+          !cancelled &&
+          (payConfig?.cardEnabled ? (
+            <Link to={`/orders/${order.id}/pay`} className={buttonClass('primary', 'lg')}>
+              Pay {formatMoney(order.balanceDue)} by card
+            </Link>
+          ) : (
+            <p className="text-xs text-ink-muted">
+              Pay with our staff — cash or card at the counter.
+            </p>
+          ))}
       </aside>
     </main>
   );

@@ -10,9 +10,11 @@ import { HomePage } from './pages/customer/HomePage';
 import { MenuPage } from './pages/customer/MenuPage';
 import { MyOrdersPage } from './pages/customer/MyOrdersPage';
 import { OrderTrackerPage } from './pages/customer/OrderTrackerPage';
+import { PayPage } from './pages/customer/PayPage';
 import { TableLandingPage } from './pages/customer/TableLandingPage';
 import { KdsPage } from './pages/kitchen/KdsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { PosPage } from './pages/pos/PosPage';
 import { TableMapPage } from './pages/pos/TableMapPage';
 import { StaffPlaceholder } from './pages/StaffPlaceholder';
 import { AppShell } from './shared/ui/AppShell';
@@ -42,6 +44,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/orders/:id/pay',
+        element: (
+          <RequireRole roles={['CUSTOMER', 'STAFF', 'ADMIN']}>
+            <PayPage />
+          </RequireRole>
+        ),
+      },
+      {
         path: '/orders/:id',
         element: (
           <RequireRole roles={['CUSTOMER', 'STAFF', 'ADMIN']}>
@@ -63,10 +73,7 @@ export const router = createBrowserRouter([
         path: '/pos',
         element: (
           <RequireRole roles={['STAFF', 'ADMIN']}>
-            <StaffPlaceholder
-              title="Point of sale"
-              note="Tables and payments arrive in M5 and M9."
-            />
+            <PosPage />
           </RequireRole>
         ),
       },
