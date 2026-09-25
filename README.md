@@ -21,11 +21,27 @@ cp server/.env.example server/.env
 # 3. Start Postgres (creates the ros and ros_test databases)
 docker compose up -d
 
-# 4. Run the API (:4000) and the web app (:5173) together
+# 4. Create the schema and load demo data (prints each table's QR link)
+npm run db:migrate
+npm run db:seed
+
+# 5. Run the API (:4000) and the web app (:5173) together
 npm run dev
 ```
 
 Open <http://localhost:5173>. The API health check is at <http://localhost:4000/health>.
+
+## Demo data
+
+The seed creates 30 business days of trading history, the Fork & Flame menu, 14 tables and two
+promo codes (`SAVE10`, `WELCOME5`). It also writes `server/prisma/seed-fixture.json`, the figures
+that the report tests check against. The password for every account is `password123`.
+
+| Role | Email |
+|---|---|
+| Admin | `admin@forkandflame.test` |
+| Staff | `staff@forkandflame.test` |
+| Customer | `guest@forkandflame.test` |
 
 ## Workspaces
 
@@ -46,6 +62,9 @@ Run from the repository root.
 | `npm test` | all unit and integration tests (Postgres must be running) |
 | `npm run lint` / `npm run typecheck` | the individual gates |
 | `npm run build` | production build of server and client |
+| `npm run db:migrate` | apply Prisma migrations to the dev database |
+| `npm run db:seed` | wipe and reload the demo data |
+| `npm run db:studio` | browse the database in Prisma Studio |
 
 ## Configuration
 

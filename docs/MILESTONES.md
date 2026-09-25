@@ -179,18 +179,18 @@ have something to show from day one.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M2-S1** | Prisma init, datasource, client generation wired to the build | S | HLD §5 | `prisma generate` runs in CI |
-| ☐ | **M2-S2** | Enums in `schema.prisma`, mirroring M1-S1 exactly | S | LLD §2.1 | Prisma enums and shared enums have identical members |
-| ☐ | **M2-S3** | Menu models: `MenuCategory`, `MenuItem`, `ModifierGroup`, `ModifierItem`, `MenuItemModifierGroup` | M | LLD §2.2 | Relations resolve; an item can carry two modifier groups |
-| ☐ | **M2-S4** | Order models: `Order` (with `businessDate`, `tipAmount`, `updatedAt`), `OrderItem`, `OrderEvent` | M | LLD §2.2 | `OrderEvent.fromStatus` is nullable; `Order.paymentStatus` defaults `UNPAID` |
-| ☐ | **M2-S5** | Payment models: `Payment` (`PaymentState`, `tipAmount`, no `stripeEventId` unique), `WebhookEvent` (event id as PK) | M | PAY-08 · LLD §2.2 | Exactly one dedupe mechanism exists in the schema |
-| ☐ | **M2-S6** | Operations models: `User`, `Table`, `Reservation`, `Delivery`, `Discount`, `Setting`, `AuditLog` | M | LLD §2.2 | `Setting.updatedBy` is nullable |
-| ☐ | **M2-S7** | New models: `OrderSequence(businessDate PK, lastValue)`, `IdempotencyKey` | S | LLD §2.2 | Both migrate; `OrderSequence.lastValue` is an integer column |
-| ☐ | **M2-S8** | Constraints: `UNIQUE(businessDate, orderNumber)`, `CHECK (type='DINE_IN' OR customerName IS NOT NULL)`, `CHECK (total >= 0)` | M | BR-15, DEL-01 · SRS §6.4 | Inserting `A-1001` on two different business dates both succeed |
-| ☐ | **M2-S9** | Indexes per SRS §6.2 | S | NFR-P1 | `Order(businessDate)` and `OrderEvent(orderId, createdAt)` exist |
-| ☐ | **M2-S10** | First migration, committed to VCS | S | HLD §6.2 | `prisma migrate deploy` on an empty DB reproduces the schema |
-| ☐ | **M2-S11** | `seed.ts` part 1 — admin, staff, demo customer, 4 categories, the 9 dishes, modifier groups, 14 tables, 2 discounts, settings **in basis points** | L | HLD §9.6 | `taxBps=875`, `serviceChargeBps=1000`, `timezone` set; login works with the seeded admin |
-| ☐ | **M2-S12** | `seed.ts` part 2 — 30 business days of synthetic orders, **and write the totals it generated to a fixture file** | L | HLD §9.6, AC-9 | `seed-fixture.json` holds net sales, order count and top items per business date |
+| ☑ | **M2-S1** | Prisma init, datasource, client generation wired to the build | S | HLD §5 | `prisma generate` runs in CI |
+| ☑ | **M2-S2** | Enums in `schema.prisma`, mirroring M1-S1 exactly | S | LLD §2.1 | Prisma enums and shared enums have identical members |
+| ☑ | **M2-S3** | Menu models: `MenuCategory`, `MenuItem`, `ModifierGroup`, `ModifierItem`, `MenuItemModifierGroup` | M | LLD §2.2 | Relations resolve; an item can carry two modifier groups |
+| ☑ | **M2-S4** | Order models: `Order` (with `businessDate`, `tipAmount`, `updatedAt`), `OrderItem`, `OrderEvent` | M | LLD §2.2 | `OrderEvent.fromStatus` is nullable; `Order.paymentStatus` defaults `UNPAID` |
+| ☑ | **M2-S5** | Payment models: `Payment` (`PaymentState`, `tipAmount`, no `stripeEventId` unique), `WebhookEvent` (event id as PK) | M | PAY-08 · LLD §2.2 | Exactly one dedupe mechanism exists in the schema |
+| ☑ | **M2-S6** | Operations models: `User`, `Table`, `Reservation`, `Delivery`, `Discount`, `Setting`, `AuditLog` | M | LLD §2.2 | `Setting.updatedBy` is nullable |
+| ☑ | **M2-S7** | New models: `OrderSequence(businessDate PK, lastValue)`, `IdempotencyKey` | S | LLD §2.2 | Both migrate; `OrderSequence.lastValue` is an integer column |
+| ☑ | **M2-S8** | Constraints: `UNIQUE(businessDate, orderNumber)`, `CHECK (type='DINE_IN' OR customerName IS NOT NULL)`, `CHECK (total >= 0)` | M | BR-15, DEL-01 · SRS §6.4 | Inserting `A-1001` on two different business dates both succeed |
+| ☑ | **M2-S9** | Indexes per SRS §6.2 | S | NFR-P1 | `Order(businessDate)` and `OrderEvent(orderId, createdAt)` exist |
+| ☑ | **M2-S10** | First migration, committed to VCS | S | HLD §6.2 | `prisma migrate deploy` on an empty DB reproduces the schema |
+| ☑ | **M2-S11** | `seed.ts` part 1 — admin, staff, demo customer, 4 categories, the 9 dishes, modifier groups, 14 tables, 2 discounts, settings **in basis points** | L | HLD §9.6 | `taxBps=875`, `serviceChargeBps=1000`, `timezone` set; login works with the seeded admin |
+| ☑ | **M2-S12** | `seed.ts` part 2 — 30 business days of synthetic orders, **and write the totals it generated to a fixture file** | L | HLD §9.6, AC-9 | `seed-fixture.json` holds net sales, order count and top items per business date |
 
 **Traps.** M2-S12's fixture is what makes AC-9 meaningful. Without it, the report tests in M11
 compare report SQL against a second hand-written query — which passes even when both are wrong.
