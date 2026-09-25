@@ -30,7 +30,7 @@ export function createApp(_options: AppOptions = {}): Express {
   });
 
   const api = Router();
-  api.use('/auth', authRouter({ credentialLimiter: passThrough }));
+  api.use('/auth', authRouter({ credentialLimiter: passThrough, refreshLimiter: passThrough }));
   api.use('/staff/users', usersRouter());
   app.use('/api/v1', api);
 
