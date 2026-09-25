@@ -172,3 +172,36 @@ export interface OrderEventDto {
   reason: string | null;
   at: string;
 }
+
+/** GET /orders/:id/receipt — built only from values stored on the order (PRINT-02, AC-19). */
+export interface ReceiptDto {
+  orderId: string;
+  orderNumber: string;
+  businessDate: string;
+  issuedAt: string;
+  placedAt: string;
+  restaurant: { name: string };
+  type: (typeof ORDER_TYPES)[number];
+  table: string | null;
+  customerName: string | null;
+  lines: {
+    name: string;
+    qty: number;
+    unitPrice: number;
+    modifiers: { name: string; priceDelta: number }[];
+    notes: string | null;
+    lineTotal: number;
+  }[];
+  totals: OrderDto['totals'];
+  discountCode: string | null;
+  payments: {
+    method: 'STRIPE' | 'CASH';
+    amount: number;
+    tipAmount: number;
+    state: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED';
+    at: string;
+  }[];
+  paymentStatus: OrderDto['paymentStatus'];
+  amountPaid: number;
+  balanceDue: number;
+}

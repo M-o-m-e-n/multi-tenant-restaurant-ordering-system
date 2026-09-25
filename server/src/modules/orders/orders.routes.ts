@@ -1,4 +1,5 @@
 import {
+  appendItemsSchema,
   cancelOrderSchema,
   createOrderSchema,
   idParamSchema,
@@ -78,6 +79,24 @@ export function ordersRouter(opts: { placeLimiter: RequestHandler }): Router {
     validate({ params: idParamSchema }),
     h(async (req, res) => {
       res.json({ data: await service.listEvents(idParamSchema.parse(req.params).id, actor(req)) });
+    }),
+  );
+
+  router.get(
+    '/:id/receipt',
+    validate({ params: idParamSchema }),
+    h(async (req, res) => {
+      res.json(await service.getReceipt(idParamSchema.parse(req.params).id, actor(req)));
+    }),
+  );
+
+  // Owner or staff; ownership is re-checked in the service (ORD-12).
+  router.post(
+    '/:id/items',
+    validate({ params: idParamSchema, body: appendItemsSchema }),
+    h(async (req, res) => {
+      const { id } = idParamSchema.parse(req.params);
+      res.json(await service.appendItems(id, appendItemsSchema.parse(req.body), actor(req)));
     }),
   );
 

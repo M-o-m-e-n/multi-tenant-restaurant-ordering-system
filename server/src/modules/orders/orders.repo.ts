@@ -127,3 +127,35 @@ export function paymentBasis(tx: Tx, orderId: string) {
 export function writePaymentStatus(tx: Tx, orderId: string, paymentStatus: PaymentStatus) {
   return tx.order.update({ where: { id: orderId }, data: { paymentStatus } });
 }
+
+/**
+ * Replace an order's totals only if nobody changed it since we read it: the
+ * conditional update on updatedAt stops an append racing a status move past
+ * PREPARING (CODING-STANDARDS §10).
+ */
+export async function updateTotalsIfUnchanged(
+  tx: Tx,
+  id: string,
+  seen: { status: OrderStatus; updatedAt: Date },
+  totals: Prisma.OrderUncheckedUpdateInput,
+): Promise<boolean> {
+  const { count } = await tx.order.updateMany({
+    where: { id, status: seen.status, updatedAt: seen.updatedAt },
+    data: totals,
+  });
+  return count === 1;
+}
+
+export async function nextLineNo(tx: Tx, orderId: string): Promise<number> {
+  const agg = await tx.orderItem.aggregate({ where: { orderId }, _max: { lineNo: true } });
+  return (agg._max.lineNo ?? 0) + 1;
+}
+
+/** Payment records as a receipt shows them. */
+export function receiptPayments(orderId: string) {
+  return prisma().payment.findMany({
+    where: { orderId, state: { in: ['SUCCEEDED', 'REFUNDED'] } },
+    orderBy: { createdAt: 'asc' },
+    select: { method: true, amount: true, tipAmount: true, state: true, createdAt: true },
+  });
+}
