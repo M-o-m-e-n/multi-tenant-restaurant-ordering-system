@@ -9,3 +9,4 @@ package-lock.json
 .shots.mjs
 .sheet.mjs
 .overflow.mjs
+docs/openapi.json
