@@ -9,10 +9,12 @@ import { Logo } from './Logo';
 const links = [
   { to: '/', label: 'Home', end: true, roles: null },
   { to: '/menu', label: 'Menu', end: false, roles: null },
+  { to: '/reserve', label: 'Book', end: false, roles: ['CUSTOMER'] },
   { to: '/orders', label: 'My orders', end: false, roles: ['CUSTOMER'] },
   { to: '/kitchen', label: 'Kitchen', end: false, roles: ['STAFF', 'ADMIN'] },
   { to: '/pos', label: 'POS', end: true, roles: ['STAFF', 'ADMIN'] },
   { to: '/pos/tables', label: 'Tables', end: false, roles: ['STAFF', 'ADMIN'] },
+  { to: '/pos/reservations', label: 'Bookings', end: false, roles: ['STAFF', 'ADMIN'] },
   { to: '/admin', label: 'Admin', end: false, roles: ['ADMIN'] },
 ] as const;
 

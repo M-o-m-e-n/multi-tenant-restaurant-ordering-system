@@ -54,11 +54,14 @@ describe('settings and order preview', () => {
         'serviceChargeBps',
         'serviceChargeTaxable',
         'taxBps',
+        'timezone',
         'tipPresetsBps',
       ].sort(),
     );
     expect(res.body.taxBps).toBe(875);
-    expect(res.body.timezone).toBeUndefined();
+    // Public so a guest books 7:30 pm restaurant time from any zone (ADR-024).
+    expect(res.body.timezone).toBe('America/New_York');
+    expect(res.body.kdsGreenSec).toBeUndefined();
   });
 
   it('prices a cart without auth and persists nothing (M6-S6)', async () => {

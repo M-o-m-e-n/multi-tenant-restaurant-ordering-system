@@ -26,6 +26,7 @@ export function RealtimeBridge() {
     const onOrder = (e: OrderEvent) =>
       invalidate(['kds'], ['orders'], ['tables'], ...(e.orderId ? [['order', e.orderId]] : []));
     const onTable = () => invalidate(['tables']);
+    const onReservation = () => invalidate(['reservations']);
     const onPayment = (e: OrderEvent) =>
       invalidate(['kds'], ...(e.orderId ? [['order', e.orderId]] : []));
 
@@ -36,6 +37,7 @@ export function RealtimeBridge() {
     socket.on('order:removed', onOrder);
     socket.on('table:changed', onTable);
     socket.on('payment:changed', onPayment);
+    socket.on('reservation:flag', onReservation);
     return () => {
       socket.off('connect', onConnect);
       socket.off('menu:changed', onMenu);
@@ -44,6 +46,7 @@ export function RealtimeBridge() {
       socket.off('order:removed', onOrder);
       socket.off('table:changed', onTable);
       socket.off('payment:changed', onPayment);
+      socket.off('reservation:flag', onReservation);
     };
   }, [qc]);
 

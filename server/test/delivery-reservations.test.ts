@@ -1,3 +1,4 @@
+import type { OrderDto } from '@ros/shared';
 import request from 'supertest';
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -53,7 +54,7 @@ describe('takeaway and delivery (M12-S1…S3)', () => {
       ...extra,
     });
     expect(res.status).toBe(201);
-    return res.body as { id: string; totals: Record<string, number> };
+    return res.body as OrderDto;
   }
 
   it('DEL-01: takeaway needs a name and phone and never binds a table', async () => {

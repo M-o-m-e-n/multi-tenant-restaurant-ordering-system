@@ -38,6 +38,7 @@ export function toPublicSettings(s: Settings): PublicSettings {
     deliveryFee: s.deliveryFee,
     currency: s.currency,
     tipPresetsBps: s.tipPresetsBps,
+    timezone: s.timezone,
   };
 }
 

@@ -36,15 +36,15 @@ export type PreviewOrderDto = z.infer<typeof previewOrderSchema>;
 
 const customer = z
   .object({
-    name: z.string().trim().min(1).max(120),
-    phone: z.string().trim().min(5).max(30),
+    name: z.string().trim().min(1, 'Enter your name.').max(120),
+    phone: z.string().trim().min(5, 'Enter a phone number we can reach you on.').max(30),
   })
   .strict();
 
 const delivery = z
   .object({
-    address: z.string().trim().min(5).max(300),
-    note: z.string().trim().max(120).optional(),
+    address: z.string().trim().min(5, 'Enter the full delivery address.').max(300),
+    note: z.string().trim().max(120, 'Keep the door note under 120 characters.').optional(),
   })
   .strict();
 

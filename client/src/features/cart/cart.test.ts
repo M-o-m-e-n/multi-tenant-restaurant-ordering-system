@@ -37,6 +37,7 @@ const settings: PublicSettings = {
   deliveryFee: 499,
   currency: 'usd',
   tipPresetsBps: [1000, 1500, 2000],
+  timezone: 'America/New_York',
 };
 
 describe('cart store', () => {

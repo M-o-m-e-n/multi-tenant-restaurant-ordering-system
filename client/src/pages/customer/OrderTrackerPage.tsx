@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { DeliveryProgress } from '../../features/delivery/DeliveryPanel';
 import { AddToOrderDialog } from '../../features/orders/AddToOrderDialog';
 import { useCancelOrder, useOrder, useOrderEvents } from '../../features/orders/ordersApi';
 import { paymentLabel, statusLabel, TRACKER_STEPS } from '../../features/orders/status';
@@ -66,6 +67,8 @@ export function OrderTrackerPage() {
         <p className="mt-2 text-lg" aria-live="polite">
           {statusLabel(order.status)}
         </p>
+
+        {order.delivery && !cancelled && <DeliveryProgress delivery={order.delivery} />}
 
         {cancelled ? (
           <p className="mt-6 rounded-icon border border-flame p-4 text-sm">

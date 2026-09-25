@@ -26,9 +26,9 @@ export function Hero() {
           <Link to="/menu" className={buttonClass('primary', 'lg')}>
             View Menu
           </Link>
-          <a href="#visit" className={buttonClass('secondary', 'lg')}>
+          <Link to="/reserve" className={buttonClass('secondary', 'lg')}>
             Book A Table
-          </a>
+          </Link>
         </div>
         <div className="mt-10 flex items-center justify-center gap-4 md:justify-start">
           <div className="flex -space-x-3">
