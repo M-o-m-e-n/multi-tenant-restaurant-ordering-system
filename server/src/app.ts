@@ -10,6 +10,7 @@ import { discountsRouter, staffDiscountsRouter } from './modules/discounts';
 import { publicMenuRouter, staffMenuRouter } from './modules/menu';
 import { ordersRouter } from './modules/orders';
 import { paymentsRouter, webhookHandler } from './modules/payments';
+import { dashboardRouter, reportsRouter } from './modules/reports';
 import { kdsSettingsRouter, publicSettingsRouter, staffSettingsRouter } from './modules/settings';
 import { tablesRouter } from './modules/tables';
 import { usersRouter } from './modules/users';
@@ -63,6 +64,8 @@ export function createApp(options: AppOptions = {}): Express {
   api.use('/staff/discounts', staffDiscountsRouter());
   api.use('/staff/settings', staffSettingsRouter());
   api.use('/tables', tablesRouter({ qrLimiter: limiter(LIMITS.qr, limits) }));
+  api.use('/reports', reportsRouter());
+  api.use('/dashboard', dashboardRouter());
   api.use('/staff/users', usersRouter());
   app.use('/api/v1', api);
 
