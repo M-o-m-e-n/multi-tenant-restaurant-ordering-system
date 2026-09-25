@@ -1,0 +1,71 @@
+# HLD §11.3: install → lint → typecheck → test → prisma validate → build.
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:15.8-alpine
+        env:
+          POSTGRES_USER: ros
+          POSTGRES_PASSWORD: ros
+          POSTGRES_DB: ros_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ros -d ros_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://ros:ros@localhost:5432/ros_test?schema=public
+      TEST_DATABASE_URL: postgresql://ros:ros@localhost:5432/ros_test?schema=public
+      JWT_ACCESS_SECRET: ci-only-secret-that-is-at-least-thirty-two-chars
+      CLIENT_ORIGINS: http://localhost:5173
+      BCRYPT_ROUNDS: '4'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Prisma validate
+        run: |
+          if [ -f server/prisma/schema.prisma ]; then
+            npm run prisma:validate -w server
+          fi
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
