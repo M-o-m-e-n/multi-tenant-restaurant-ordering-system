@@ -12,5 +12,6 @@ export * from './schemas/discounts';
 export * from './schemas/menu';
 export * from './schemas/orders';
 export * from './schemas/payments';
+export * from './schemas/reports';
 export * from './schemas/settings';
 export * from './schemas/tables';

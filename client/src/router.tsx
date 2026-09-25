@@ -1,7 +1,9 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { RequireRole } from './features/auth/RequireRole';
+import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 import { AdminMenuPage } from './pages/admin/AdminMenuPage';
+import { ReportsPage } from './pages/admin/ReportsPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { CartPage } from './pages/customer/CartPage';
@@ -18,7 +20,6 @@ import { KitchenTicketPrintPage } from './pages/kitchen/KitchenTicketPrintPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PosPage } from './pages/pos/PosPage';
 import { TableMapPage } from './pages/pos/TableMapPage';
-import { StaffPlaceholder } from './pages/StaffPlaceholder';
 import { AppShell } from './shared/ui/AppShell';
 
 export const router = createBrowserRouter([
@@ -100,10 +101,7 @@ export const router = createBrowserRouter([
         path: '/admin',
         element: (
           <RequireRole roles={['ADMIN']}>
-            <StaffPlaceholder
-              title="Admin"
-              note="Manage the menu from Admin → Menu. Reports arrive in M11."
-            />
+            <AdminDashboardPage />
           </RequireRole>
         ),
       },
@@ -112,6 +110,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole roles={['STAFF', 'ADMIN']}>
             <TableMapPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: '/admin/reports',
+        element: (
+          <RequireRole roles={['ADMIN']}>
+            <ReportsPage />
           </RequireRole>
         ),
       },

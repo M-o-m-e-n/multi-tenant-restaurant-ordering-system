@@ -441,20 +441,20 @@ not payment toward the order balance.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M11-S1** | The shared `<scope>` predicate — not cancelled, not refunded, within the business-date range | M | BR-16 · LLD §4.8 | Defined once and imported by every report query |
-| ☐ | **M11-S2** | `salesSummary` — net sales, orders, AOV, and tax/service/delivery/tips as separate lines | L | RPT-01, BR-16 | Net sales exclude tax, service charge, delivery and tips |
-| ☐ | **M11-S3** | `revenueByDay` grouped on `businessDate` | M | RPT-02 | Never `date_trunc('day', placedAt)` |
-| ☐ | **M11-S4** | `topItems` grouped by `menuItemId`, name carried for display only | M | RPT-03, B8 | Renaming a dish does not split its history |
-| ☐ | **M11-S5** | `peakHours` with `AT TIME ZONE` conversion | M | RPT-04, AC-16 | Bars align with local service hours |
-| ☐ | **M11-S6** | `salesByType` | S | RPT-05 | Grouped by `OrderType` |
-| ☐ | **M11-S7** | `collectedByMethod` from **payment records**, netting refunds | M | RPT-05, BR-16 | Card and cash totals reconcile against Stripe's test dashboard |
-| ☐ | **M11-S8** | `cancellations` — cancelled and refunded orders with reasons, deliberately outside `<scope>` | M | RPT-06 | Cancel reasons come from the final `OrderEvent` |
-| ☐ | **M11-S9** | Quote every identifier in raw SQL; bind every value | S | NFR-S6 · LLD §1 | `FROM "Order"`, never `from orders` |
-| ☐ | **M11-S10** | 60 s cache per `(from, to)` key | S | HLD §6.4 | Repeated loads do not re-query |
-| ☐ | **M11-S11** | `GET /dashboard/today` with `unavailableItems` | M | ADM-01 · LLD §5.8 | Scoped to the current business date |
-| ☐ | **M11-S12** | Client: admin dashboard and report screens in Recharts | L | RPT-01…06 · LLD §7.3 | Chart text colours come from theme tokens |
-| ☐ | **M11-S13** | Tests against the **seed fixture** from M2-S12 | M | AC-9, I13 | Report output equals the figures the seed guaranteed |
-| ☐ | **M11-S14** | CSV export | S | RPT-07 | `C` priority — cut this first if time runs short |
+| ☑ | **M11-S1** | The shared `<scope>` predicate — not cancelled, not refunded, within the business-date range | M | BR-16 · LLD §4.8 | Defined once and imported by every report query |
+| ☑ | **M11-S2** | `salesSummary` — net sales, orders, AOV, and tax/service/delivery/tips as separate lines | L | RPT-01, BR-16 | Net sales exclude tax, service charge, delivery and tips |
+| ☑ | **M11-S3** | `revenueByDay` grouped on `businessDate` | M | RPT-02 | Never `date_trunc('day', placedAt)` |
+| ☑ | **M11-S4** | `topItems` grouped by `menuItemId`, name carried for display only | M | RPT-03, B8 | Renaming a dish does not split its history |
+| ☑ | **M11-S5** | `peakHours` with `AT TIME ZONE` conversion | M | RPT-04, AC-16 | Bars align with local service hours |
+| ☑ | **M11-S6** | `salesByType` | S | RPT-05 | Grouped by `OrderType` |
+| ☑ | **M11-S7** | `collectedByMethod` from **payment records**, netting refunds | M | RPT-05, BR-16 | Card and cash totals reconcile against Stripe's test dashboard |
+| ☑ | **M11-S8** | `cancellations` — cancelled and refunded orders with reasons, deliberately outside `<scope>` | M | RPT-06 | Cancel reasons come from the final `OrderEvent` |
+| ☑ | **M11-S9** | Quote every identifier in raw SQL; bind every value | S | NFR-S6 · LLD §1 | `FROM "Order"`, never `from orders` |
+| ☑ | **M11-S10** | 60 s cache per `(from, to)` key | S | HLD §6.4 | Repeated loads do not re-query |
+| ☑ | **M11-S11** | `GET /dashboard/today` with `unavailableItems` | M | ADM-01 · LLD §5.8 | Scoped to the current business date |
+| ☑ | **M11-S12** | Client: admin dashboard and report screens in Recharts | L | RPT-01…06 · LLD §7.3 | Chart text colours come from theme tokens |
+| ☑ | **M11-S13** | Tests against the **seed fixture** from M2-S12 | M | AC-9, I13 | Report output equals the figures the seed guaranteed |
+| ☑ | **M11-S14** | CSV export | S | RPT-07 | `C` priority — cut this first if time runs short |
 
 **Traps.** The revenue definition is the single highest-risk thing in this milestone. Summing
 `Order.total` counts tax and tips as sales and credits orders nobody paid for. Write M11-S1 once,

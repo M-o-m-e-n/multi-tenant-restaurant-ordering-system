@@ -13,7 +13,7 @@ const links = [
   { to: '/kitchen', label: 'Kitchen', end: false, roles: ['STAFF', 'ADMIN'] },
   { to: '/pos', label: 'POS', end: true, roles: ['STAFF', 'ADMIN'] },
   { to: '/pos/tables', label: 'Tables', end: false, roles: ['STAFF', 'ADMIN'] },
-  { to: '/admin/menu', label: 'Admin', end: false, roles: ['ADMIN'] },
+  { to: '/admin', label: 'Admin', end: false, roles: ['ADMIN'] },
 ] as const;
 
 export function NavBar() {

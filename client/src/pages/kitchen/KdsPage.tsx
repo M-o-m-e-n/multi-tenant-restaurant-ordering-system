@@ -71,7 +71,7 @@ export function KdsPage() {
     };
   }, []);
 
-  const active = board.data?.active ?? [];
+  const active = useMemo(() => board.data?.active ?? [], [board.data]);
   const lingering = useMemo(
     () =>
       settings
