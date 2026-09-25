@@ -6,7 +6,9 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { HomePage } from './pages/customer/HomePage';
 import { MenuPage } from './pages/customer/MenuPage';
+import { TableLandingPage } from './pages/customer/TableLandingPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { TableMapPage } from './pages/pos/TableMapPage';
 import { StaffPlaceholder } from './pages/StaffPlaceholder';
 import { AppShell } from './shared/ui/AppShell';
 
@@ -16,6 +18,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/menu', element: <MenuPage /> },
+      { path: '/t/:token', element: <TableLandingPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
       {
@@ -45,6 +48,14 @@ export const router = createBrowserRouter([
               title="Admin"
               note="Manage the menu from Admin → Menu. Reports arrive in M11."
             />
+          </RequireRole>
+        ),
+      },
+      {
+        path: '/pos/tables',
+        element: (
+          <RequireRole roles={['STAFF', 'ADMIN']}>
+            <TableMapPage />
           </RequireRole>
         ),
       },

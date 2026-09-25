@@ -5,6 +5,7 @@ import { DishCard } from '../../features/menu/DishCard';
 import { ItemDetail } from '../../features/menu/ItemDetail';
 import { useMenu } from '../../features/menu/menuApi';
 import { MenuRow } from '../../features/menu/MenuRow';
+import { TableBanner } from '../../features/table/TableBanner';
 
 /**
  * Customer menu (MENU-01, BROWSE-01…03): signature carousel, category chips,
@@ -77,6 +78,7 @@ export function MenuPage() {
 
   return (
     <main className="mx-auto w-full max-w-content px-5 pb-24 md:px-10">
+      <TableBanner />
       <section aria-labelledby="signatures" className="relative">
         <div className="flex items-end justify-between">
           <h2 id="signatures" className="font-display text-2xl font-bold">
