@@ -26,6 +26,43 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M3 — Auth & RBAC
+
+**Slices:** M3-S1…S11 including S2b–S2g and S10b ☑ (18/18)
+**Done**
+- Typed `AppError` hierarchy and one error middleware (AppError, DomainError → 422, ZodError →
+  400, bad JSON → 400, unknown → 500 with no internals). Also request ids, `validate()` and the
+  `h()` async wrapper.
+- bcrypt (cost from env, ≥ 12 outside tests). 15-minute HS256 access tokens via `jose`.
+- `RefreshToken` model with SHA-256 hashes and CASCADE; rotation in one transaction with a
+  conditional revoke; reuse detection revokes the family.
+- Endpoints: register, login, refresh (requires `X-Refresh-Request: 1`), logout, logout-all,
+  sessions list and revoke, me. Also `/staff/users` for admins (list, create staff, change role,
+  disable), which the M3 demo needs.
+- `authenticate` re-reads role and `isActive` behind a 60 s cache that every change invalidates.
+  `requireRole` and `optionalAuthenticate`.
+- CORS allow-list with credentials; rate limits (auth 10/15 min, refresh 60/15 min, general
+  300/5 min); a job runner and the daily `purgeRefreshTokens` job.
+- Client: API client with an in-memory token and single-flight refresh; a non-persisted zustand
+  auth store that re-hydrates via refresh; login and register pages; the `RequireRole` guard with
+  `returnTo`.
+**Verified**
+- Integration tests on `ros_test`: I1, I2, I3, I24, I28, I29, I30, I31, I32 (192 refreshes over a
+  simulated 48 h), plus a forged role claim, demotion, logout, sessions and CORS. 63 server tests.
+- Client: ten concurrent 401s → exactly one refresh call.
+- Smoke through the Vite proxy: login sets `rt` (HttpOnly, SameSite=Strict, Path=/api/v1/auth),
+  `/me` works, refresh rotates, and a customer gets 403 on `/staff/users`.
+**Issues / surprises**
+- **The LLD's 60 s role cache conflicts with AC-18** ("very next request"). It's resolved by
+  invalidating the cache on every role or status write. This works within one instance; at N > 1 it
+  needs Redis pub/sub or no cache (M13-S9).
+- Disabling a user also revokes all their refresh tokens. The LLD doesn't say this, but otherwise a
+  disabled account could keep a live session.
+- A missing `X-Refresh-Request` header returns `403 FORBIDDEN`. The API contract doesn't give a
+  code for it.
+- M3-S11's tests were written alongside each slice rather than in one final slice.
+**Next:** M4-S1.
+
 ### 2026-09-25 — M2 — Database & seed
 
 **Slices:** M2-S1…S12 ☑
