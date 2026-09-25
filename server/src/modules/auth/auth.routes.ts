@@ -1,6 +1,7 @@
 import { loginSchema, registerSchema } from '@ros/shared';
 import { type RequestHandler, Router } from 'express';
 
+import { actor, authenticate } from '../../middleware/authenticate';
 import { h, validate } from '../../middleware/validate';
 import { clientMeta, setRefreshCookie } from './auth.cookies';
 import * as service from './auth.service';
@@ -39,6 +40,14 @@ export function authRouter(opts: AuthRouterOptions): Router {
       );
       setRefreshCookie(res, refreshToken);
       res.json(body);
+    }),
+  );
+
+  router.get(
+    '/me',
+    authenticate,
+    h(async (req, res) => {
+      res.json(await service.me(actor(req).id));
     }),
   );
 

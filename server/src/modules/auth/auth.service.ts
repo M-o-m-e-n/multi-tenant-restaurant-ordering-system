@@ -1,5 +1,5 @@
 import { Prisma, type User } from '@prisma/client';
-import type { AuthResponse, LoginDto, RegisterDto } from '@ros/shared';
+import type { AuthResponse, LoginDto, RegisterDto, UserDto } from '@ros/shared';
 
 import { AuthError, ConflictError } from '../../lib/errors';
 import { toUserDto } from './auth.dto';
@@ -68,4 +68,11 @@ export async function login(dto: LoginDto, meta: ClientMeta): Promise<SessionGra
     throw new AuthError('INVALID_CREDENTIALS', 'That email and password do not match.');
   }
   return startSession(user, meta);
+}
+
+/** GET /auth/me — the caller, re-read from the database. */
+export async function me(userId: string): Promise<UserDto> {
+  const user = await repo.findUserById(userId);
+  if (!user) throw new AuthError('UNAUTHENTICATED', 'Sign in to continue.');
+  return toUserDto(user, { includePhone: true });
 }

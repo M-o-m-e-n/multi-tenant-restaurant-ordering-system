@@ -3,7 +3,8 @@ import express, { type Express, type RequestHandler, Router } from 'express';
 
 import { errorHandler, notFoundHandler } from './middleware/errors';
 import { requestId } from './middleware/request-id';
-import { authRouter } from './modules/auth/auth.routes';
+import { authRouter } from './modules/auth';
+import { usersRouter } from './modules/users';
 
 export interface AppOptions {
   /** Rate limiting is on by default; integration tests turn it off per app instance. */
@@ -30,6 +31,7 @@ export function createApp(_options: AppOptions = {}): Express {
 
   const api = Router();
   api.use('/auth', authRouter({ credentialLimiter: passThrough }));
+  api.use('/staff/users', usersRouter());
   app.use('/api/v1', api);
 
   app.use(notFoundHandler);
