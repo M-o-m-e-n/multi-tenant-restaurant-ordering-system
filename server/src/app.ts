@@ -6,7 +6,10 @@ import { errorHandler, notFoundHandler } from './middleware/errors';
 import { limiter, LIMITS } from './middleware/rate-limit';
 import { requestId } from './middleware/request-id';
 import { authRouter } from './modules/auth';
+import { discountsRouter, staffDiscountsRouter } from './modules/discounts';
 import { publicMenuRouter, staffMenuRouter } from './modules/menu';
+import { ordersRouter } from './modules/orders';
+import { publicSettingsRouter, staffSettingsRouter } from './modules/settings';
 import { tablesRouter } from './modules/tables';
 import { usersRouter } from './modules/users';
 
@@ -44,6 +47,11 @@ export function createApp(options: AppOptions = {}): Express {
   );
   api.use('/menu', publicMenuRouter());
   api.use('/staff/menu', staffMenuRouter());
+  api.use('/settings', publicSettingsRouter());
+  api.use('/orders', ordersRouter());
+  api.use('/discounts', discountsRouter());
+  api.use('/staff/discounts', staffDiscountsRouter());
+  api.use('/staff/settings', staffSettingsRouter());
   api.use('/tables', tablesRouter({ qrLimiter: limiter(LIMITS.qr, limits) }));
   api.use('/staff/users', usersRouter());
   app.use('/api/v1', api);

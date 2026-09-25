@@ -1,8 +1,9 @@
 import type { MenuItemDto } from '@ros/shared';
 import { useMemo, useRef, useState } from 'react';
 
+import { CartBar } from '../../features/cart/CartBar';
+import { ModifierDialog } from '../../features/cart/ModifierDialog';
 import { DishCard } from '../../features/menu/DishCard';
-import { ItemDetail } from '../../features/menu/ItemDetail';
 import { useMenu } from '../../features/menu/menuApi';
 import { MenuRow } from '../../features/menu/MenuRow';
 import { TableBanner } from '../../features/table/TableBanner';
@@ -174,11 +175,12 @@ export function MenuPage() {
         )}
       </section>
 
-      <ItemDetail
+      <ModifierDialog
         item={open?.item ?? null}
         category={open?.category ?? ''}
         onClose={() => setOpen(null)}
       />
+      <CartBar />
     </main>
   );
 }

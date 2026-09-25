@@ -26,6 +26,36 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M6 — Cart & server pricing
+
+**Slices:** M6-S1…S9 ☑
+**Done**
+- Server: `priceCart` (re-reads items, refuses unavailable, out-of-window or inactive ones with
+  `409 ITEM_UNAVAILABLE`, re-resolves modifiers, applies the discount, runs `computeTotals`),
+  public `POST /orders/preview`, public `GET /settings` and admin `PUT /staff/settings`, and the
+  `discounts` module (apply, `POST /discounts/validate`, admin CRUD, conditional `redeem`).
+- Client: a cart persisted to localStorage; the modifier dialog with min/max enforcement; live
+  totals via `computeTotals`, confirmed against the server preview; tip presets and custom tip;
+  promo codes with per-code messages; takeaway/delivery choice; cart bar and nav badge.
+**Verified**
+- **Parity matrix:** the client algorithm vs `/orders/preview` over 3 order types × 3 discount
+  states × 2 tips × both service-charge settings = 36 cases, all equal to the cent (AC-4).
+- I14: each `DISCOUNT_*` code comes back as a 422 with its own code. Preview persists nothing and
+  doesn't redeem.
+- Browser: burger (Large, Medium rare, No bun, Extra cheese) plus a lemonade, SAVE10, 15% tip →
+  "✓ Prices confirmed" at $30.63 (2475 + 217 tax + 371 tip). A bad code shows its message; the
+  cart survives a reload.
+**Issues / surprises**
+- **The preview response gained `discount: {code, type, value} | null`** so the client can price
+  with the code. It's additive and non-breaking under API-CONTRACT §19.
+- **The promo field applies codes through `/orders/preview`** (public) rather than
+  `/discounts/validate` (auth required), so guests can use a code before signing in. Both return
+  the same codes; `/discounts/validate` exists and is tested.
+- Tip presets are a percentage of the discounted food total (subtotal − discount), rounded with
+  `bps`. The SRS doesn't define the base.
+- A discount that hasn't started yet reports `DISCOUNT_INACTIVE` (see M1).
+**Next:** M7-S1.
+
 ### 2026-09-25 — M5 — Tables & QR sessions
 
 **Slices:** M5-S1…S10 ☑
