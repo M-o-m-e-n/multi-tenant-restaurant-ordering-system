@@ -20,6 +20,15 @@
   }
 }
 
+/* Receipts and kitchen tickets print black on white (fork-flame-ui §6). */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

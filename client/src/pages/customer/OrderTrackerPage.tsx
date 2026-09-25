@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { AddToOrderDialog } from '../../features/orders/AddToOrderDialog';
 import { useCancelOrder, useOrder, useOrderEvents } from '../../features/orders/ordersApi';
 import { paymentLabel, statusLabel, TRACKER_STEPS } from '../../features/orders/status';
 import { usePaymentsConfig } from '../../features/payments/paymentsApi';
@@ -22,6 +24,7 @@ export function OrderTrackerPage() {
   const { data: events } = useOrderEvents(id, order?.status);
   const cancel = useCancelOrder(id);
   const { data: payConfig } = usePaymentsConfig();
+  const [adding, setAdding] = useState(false);
 
   if (isLoading)
     return (
@@ -110,6 +113,18 @@ export function OrderTrackerPage() {
             })}
           </ol>
         )}
+
+        <div className="mb-4 flex flex-wrap gap-2">
+          {order.isAmendable && (
+            <button type="button" className={buttonClass('ghost')} onClick={() => setAdding(true)}>
+              + Add to this order
+            </button>
+          )}
+          <Link to={`/orders/${order.id}/receipt`} className={buttonClass('ghost')}>
+            Receipt
+          </Link>
+        </div>
+        <AddToOrderDialog order={adding ? order : null} onClose={() => setAdding(false)} />
 
         {order.nextStatuses.includes('CANCELLED') && (
           <button
