@@ -207,24 +207,24 @@ month of trading history behind it.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M3-S1** | bcrypt hash and verify, cost 12 | S | AUTH-07, NFR-S2 | Hashes are never returned by any DTO |
-| ☐ | **M3-S2** | Access-token sign and verify with `jose`, HS256, **15 min**, secret from env | S | AUTH-02, NFR-S3 | A tampered or expired token is rejected |
-| ☐ | **M3-S2b** | `RefreshToken` model, migration, and issue/hash helpers (`crypto.randomBytes(32)` → base64url, SHA-256 at rest) | M | AUTH-12, NFR-S3 · LLD §2.2 | The raw token appears nowhere in the database |
-| ☐ | **M3-S2c** | `POST /auth/refresh` with rotation and reuse detection | L | AUTH-10, AUTH-11, AC-21 · LLD §4.2 | Replaying a rotated token revokes the whole family |
-| ☐ | **M3-S2d** | Cookie delivery: `HttpOnly; Secure; SameSite=Strict; Path=/api/v1/auth`, plus the `X-Refresh-Request` header check | M | AUTH-12 · LLD §9 | The cookie is unreadable from `document.cookie` (AC-22) |
-| ☐ | **M3-S2e** | `POST /auth/logout`, `POST /auth/logout-all`, `GET /auth/sessions`, `DELETE /auth/sessions/:familyId` | M | AUTH-06, AUTH-13 | Logout revokes server-side; a revoked cookie cannot refresh |
-| ☐ | **M3-S2f** | CORS `credentials: true` against the explicit origin allow-list | S | NFR-S8 | The cookie survives a cross-origin dev setup; a wildcard origin is refused |
-| ☐ | **M3-S2g** | `purgeRefreshTokens` daily job | S | AUTH-14 · LLD §4.10 | Expired and long-revoked rows are removed |
-| ☐ | **M3-S3** | Typed error hierarchy — `AppError` subclasses — and the single mapping middleware | M | SRS §5.5 · LLD §8 | Every error leaves as `{error:{code,message,details?}}`; no stack reaches a client |
-| ☐ | **M3-S4** | `POST /auth/register` | M | AUTH-01 | Duplicate email → `409 EMAIL_TAKEN` |
-| ☐ | **M3-S5** | `POST /auth/login` | S | AUTH-02 | Wrong email and wrong password return the **same** `401 INVALID_CREDENTIALS` |
-| ☐ | **M3-S6** | `authenticate` middleware — verify token, then **re-read `isActive` and `role` from the DB** with a 60 s cache | L | ADM-02, AUTH-08, AC-18 · LLD §4.2 | Disabling an account makes its next request `401 ACCOUNT_DISABLED` |
-| ☐ | **M3-S7** | `requireRole(...roles)` middleware | S | AUTH-05, NFR-S4 | A customer hitting an admin route gets `403` |
-| ☐ | **M3-S8** | `GET /auth/me` | S | AUTH-02 | Returns the DTO, never the hash |
-| ☐ | **M3-S9** | Rate limit `/auth` at 10 per 15 min per IP | S | AUTH-09 | The 11th attempt returns `429 RATE_LIMITED` |
-| ☐ | **M3-S10** | Client: auth store holding the access token **in memory only**, login and register pages, `<RequireRole>` guard with `returnTo` | L | AUTH-12 · LLD §7.1, §7.2 | Deep-linking to `/admin` while logged out returns you there after login; `localStorage` holds no token (AC-22) |
-| ☐ | **M3-S10b** | API client interceptor: on `401`, refresh once and replay — **single in-flight refresh**, queued retries, no loops | L | AUTH-10 · CODING-STANDARDS §12 | Ten concurrent 401s produce exactly one refresh call |
-| ☐ | **M3-S11** | Integration tests **I1, I2, I3, I24, I28–I32** | L | LLD §10.2 | Including reuse detection, refresh-after-disable, and a simulated 48 h session (AC-20, AC-21) |
+| ☑ | **M3-S1** | bcrypt hash and verify, cost 12 | S | AUTH-07, NFR-S2 | Hashes are never returned by any DTO |
+| ☑ | **M3-S2** | Access-token sign and verify with `jose`, HS256, **15 min**, secret from env | S | AUTH-02, NFR-S3 | A tampered or expired token is rejected |
+| ☑ | **M3-S2b** | `RefreshToken` model, migration, and issue/hash helpers (`crypto.randomBytes(32)` → base64url, SHA-256 at rest) | M | AUTH-12, NFR-S3 · LLD §2.2 | The raw token appears nowhere in the database |
+| ☑ | **M3-S2c** | `POST /auth/refresh` with rotation and reuse detection | L | AUTH-10, AUTH-11, AC-21 · LLD §4.2 | Replaying a rotated token revokes the whole family |
+| ☑ | **M3-S2d** | Cookie delivery: `HttpOnly; Secure; SameSite=Strict; Path=/api/v1/auth`, plus the `X-Refresh-Request` header check | M | AUTH-12 · LLD §9 | The cookie is unreadable from `document.cookie` (AC-22) |
+| ☑ | **M3-S2e** | `POST /auth/logout`, `POST /auth/logout-all`, `GET /auth/sessions`, `DELETE /auth/sessions/:familyId` | M | AUTH-06, AUTH-13 | Logout revokes server-side; a revoked cookie cannot refresh |
+| ☑ | **M3-S2f** | CORS `credentials: true` against the explicit origin allow-list | S | NFR-S8 | The cookie survives a cross-origin dev setup; a wildcard origin is refused |
+| ☑ | **M3-S2g** | `purgeRefreshTokens` daily job | S | AUTH-14 · LLD §4.10 | Expired and long-revoked rows are removed |
+| ☑ | **M3-S3** | Typed error hierarchy — `AppError` subclasses — and the single mapping middleware | M | SRS §5.5 · LLD §8 | Every error leaves as `{error:{code,message,details?}}`; no stack reaches a client |
+| ☑ | **M3-S4** | `POST /auth/register` | M | AUTH-01 | Duplicate email → `409 EMAIL_TAKEN` |
+| ☑ | **M3-S5** | `POST /auth/login` | S | AUTH-02 | Wrong email and wrong password return the **same** `401 INVALID_CREDENTIALS` |
+| ☑ | **M3-S6** | `authenticate` middleware — verify token, then **re-read `isActive` and `role` from the DB** with a 60 s cache | L | ADM-02, AUTH-08, AC-18 · LLD §4.2 | Disabling an account makes its next request `401 ACCOUNT_DISABLED` |
+| ☑ | **M3-S7** | `requireRole(...roles)` middleware | S | AUTH-05, NFR-S4 | A customer hitting an admin route gets `403` |
+| ☑ | **M3-S8** | `GET /auth/me` | S | AUTH-02 | Returns the DTO, never the hash |
+| ☑ | **M3-S9** | Rate limit `/auth` at 10 per 15 min per IP | S | AUTH-09 | The 11th attempt returns `429 RATE_LIMITED` |
+| ☑ | **M3-S10** | Client: auth store holding the access token **in memory only**, login and register pages, `<RequireRole>` guard with `returnTo` | L | AUTH-12 · LLD §7.1, §7.2 | Deep-linking to `/admin` while logged out returns you there after login; `localStorage` holds no token (AC-22) |
+| ☑ | **M3-S10b** | API client interceptor: on `401`, refresh once and replay — **single in-flight refresh**, queued retries, no loops | L | AUTH-10 · CODING-STANDARDS §12 | Ten concurrent 401s produce exactly one refresh call |
+| ☑ | **M3-S11** | Integration tests **I1, I2, I3, I24, I28–I32** | L | LLD §10.2 | Including reuse detection, refresh-after-disable, and a simulated 48 h session (AC-20, AC-21) |
 
 **Traps.** M3-S6 is the one that looks optional and is not: if the role in the access token is
 trusted outright, disabling a staff account does nothing until the token expires, and `ADM-02`

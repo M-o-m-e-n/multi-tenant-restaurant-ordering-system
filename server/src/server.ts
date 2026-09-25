@@ -4,9 +4,11 @@ import { createServer } from 'node:http';
 
 import { createApp } from './app';
 import { EnvError, getEnv } from './config/env';
+import { startJobs } from './jobs';
 import { logger } from './lib/logger';
+import { disconnectPrisma } from './lib/prisma';
 
-/** Bootstrap order: env → http (db, sockets and jobs join in later milestones). */
+/** Bootstrap order: env → http → jobs (sockets join in M8). */
 function main(): void {
   const env = getEnv();
   const app = createApp();
@@ -16,9 +18,14 @@ function main(): void {
     logger().info({ port: env.PORT }, 'api listening');
   });
 
+  const stopJobs = startJobs();
+
   const shutdown = (signal: string): void => {
     logger().info({ signal }, 'shutting down');
-    server.close(() => process.exit(0));
+    stopJobs();
+    server.close(() => {
+      void disconnectPrisma().finally(() => process.exit(0));
+    });
   };
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));

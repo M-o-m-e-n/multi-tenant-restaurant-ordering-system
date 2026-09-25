@@ -104,6 +104,7 @@ model User {
   auditLogs AuditLog[]
   settings  Setting[]
   idemKeys  IdempotencyKey[]
+  sessions  RefreshToken[]
 }
 
 // Called Table throughout the docs; raw SQL must quote it as "Table".
@@ -420,4 +421,33 @@ model IdempotencyKey {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Sessions (LLD section 4.2, AUTH-10 to AUTH-14)
+// ---------------------------------------------------------------------------
+
+// Opaque refresh tokens, stored only as SHA-256 hashes. Rotated on every use;
+// replaying a rotated token revokes its whole family (AUTH-11).
+model RefreshToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  // CASCADE, the one exception to SET NULL: a session must not outlive its user (ERD section 6).
+  userId       String    @db.Uuid
+  tokenHash    String    @unique @db.VarChar(64)
+  // Every token descending from one login shares this.
+  familyId     String    @db.Uuid
+  expiresAt    DateTime  @db.Timestamptz
+  // Set on rotation, logout, or family revocation.
+  revokedAt    DateTime? @db.Timestamptz
+  // The token issued in its place, for tracing a chain.
+  replacedById String?   @db.Uuid
+  userAgent    String?   @db.VarChar(200)
+  ip           String?   @db.VarChar(45)
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([familyId])
+  @@index([expiresAt])
 }

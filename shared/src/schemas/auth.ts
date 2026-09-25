@@ -58,3 +58,33 @@ export interface SessionDto {
   lastUsedAt: string;
   current: boolean;
 }
+
+/** POST /staff/users — an admin provisions a staff or admin account (AUTH-08, ADM-02). */
+export const createStaffUserSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120),
+    email,
+    password: z.string().min(8).max(128),
+    role: userRoleSchema,
+    phone: z.string().trim().min(5).max(30).optional(),
+  })
+  .strict();
+export type CreateStaffUserDto = z.infer<typeof createStaffUserSchema>;
+
+/** PATCH /staff/users/:id — change role or disable (ADM-02). */
+export const updateUserSchema = z
+  .object({
+    role: userRoleSchema.optional(),
+    isActive: z.boolean().optional(),
+  })
+  .strict()
+  .refine(
+    (v) => v.role !== undefined || v.isActive !== undefined,
+    'Change the role or the status.',
+  );
+export type UpdateUserDto = z.infer<typeof updateUserSchema>;
+
+export interface AdminUserDto extends UserDto {
+  isActive: boolean;
+  createdAt: string;
+}
