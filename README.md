@@ -84,3 +84,32 @@ charge, timezone, KDS thresholds) live in the database and are edited by an admi
 All amounts are integer cents and all rates are integer basis points (`875` = 8.75%). Integer cents
 is a fixed-point decimal, so there's no floating-point rounding. See
 [ADR-004](docs/DECISIONS.md#adr-004--money-column-type-int-vs-bigint).
+
+## Photography
+
+The food, venue and guest photos in `client/public/images/` come from
+[Unsplash](https://unsplash.com) under the [Unsplash License](https://unsplash.com/license)
+(free to use, no attribution required; credited here anyway). They are served by the client as
+static files, and the seed points each dish's `imageUrl` at `/images/dishes/<dish>.jpg`. Each file
+name is its Unsplash photo id:
+
+| File | Unsplash photo |
+|---|---|
+| `dishes/truffle-arancini.jpg` | `photo-1688458296759-91020b4ff2ba` |
+| `dishes/winter-caesar.jpg` | `photo-1550304943-4f24f54ddde9` |
+| `dishes/wagyu-burger.jpg` | `photo-1568901346375-23c9450c58cd` |
+| `dishes/margherita.jpg` | `photo-1574071318508-1cdbab80d002` |
+| `dishes/roast-halibut.jpg` | `photo-1519708227418-c8fd9a32b7a2` |
+| `dishes/lava-fondant.jpg` | `photo-1606313564200-e75d5e30476c` |
+| `dishes/tiramisu.jpg` | `photo-1571877227200-a0d98ea607e9` |
+| `dishes/iced-matcha.jpg` | `photo-1515823064-d6e0c04616a7` |
+| `dishes/yuzu-lemonade.jpg` | `photo-1523371054106-bbf80586c38c` |
+| `hero-plate.jpg` | `photo-1540189549336-e6e99c3679fe` |
+| `spread.jpg` | `photo-1504674900247-0877df9cc836` |
+| `dining.jpg` | `photo-1414235077428-338989a2e8c0` |
+| `chef.jpg` | `photo-1577219491135-ce391730fb2c` |
+| `interior.jpg` | `photo-1517248135467-4c7edcad34c4` |
+| `bar.jpg` | `photo-1514933651103-005eec06c04b` |
+| `tomatoes.jpg` | `photo-1592924357228-91a4daadcfea` |
+| `grill.jpg` | `photo-1555939594-58d7cb561ad1` |
+| `guests/1–4.jpg` | `photo-1494790108377-be9c29b29330`, `photo-1507003211169-0a1dd7228f2d`, `photo-1438761681033-6461ffad8d80`, `photo-1500648767791-00dcc994a43e` |

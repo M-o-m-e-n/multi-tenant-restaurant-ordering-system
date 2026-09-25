@@ -21,12 +21,22 @@ export type CreateCategoryDto = z.infer<typeof createCategorySchema>;
 export const updateCategorySchema = createCategorySchema.partial().strict();
 export type UpdateCategoryDto = z.infer<typeof updateCategorySchema>;
 
+/**
+ * An absolute http(s) URL, or a same-origin path such as `/images/dishes/x.jpg`
+ * (seeded photos ship with the client). Other schemes and `//host` are refused.
+ */
+const imageUrl = z
+  .string()
+  .trim()
+  .max(500)
+  .regex(/^(https?:\/\/\S+|\/(?!\/)[\w\-./]+)$/, 'Must be an http(s) URL or a /path');
+
 const itemShape = {
   categoryId: z.string().uuid(),
   name: name(120),
   description: z.string().trim().max(500).nullish(),
   price: nonNegativeCents.max(1_000_000),
-  imageUrl: z.string().trim().url().max(500).nullish(),
+  imageUrl: imageUrl.nullish(),
   allergens: z.array(z.string().trim().min(1).max(30)).max(14).optional(),
   station: z.string().trim().min(1).max(40).nullish(),
   availableFrom: clockTime.nullish(),

@@ -33,3 +33,5 @@ test-results/
 .claude/settings.json
 .shots.mjs
 .dev.log
+.sheet.mjs
+.overflow.mjs

@@ -16,6 +16,8 @@ export default tseslint.config(
       '**/coverage/**',
       'designs/**',
       '.shots.mjs',
+      '.sheet.mjs',
+      '.overflow.mjs',
       'server/prisma/migrations/**',
     ],
   },

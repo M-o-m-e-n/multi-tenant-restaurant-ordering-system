@@ -7,3 +7,5 @@ server/prisma/migrations
 package-lock.json
 *.md
 .shots.mjs
+.sheet.mjs
+.overflow.mjs

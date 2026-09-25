@@ -51,8 +51,26 @@ export default {
           '0%, 100%': { transform: 'translateY(0) rotate(-6deg)' },
           '50%': { transform: 'translateY(-14px) rotate(6deg)' },
         },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(-50%)' },
+        },
+        rise: {
+          from: { opacity: '0', transform: 'translateY(24px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
       },
-      animation: { bob: 'bob 3.4s ease-in-out infinite' },
+      animation: {
+        bob: 'bob 3.4s ease-in-out infinite',
+        float: 'float 4.5s ease-in-out infinite',
+        'spin-slow': 'spin 80s linear infinite',
+        marquee: 'marquee 36s linear infinite',
+        rise: 'rise .8s cubic-bezier(.2,.7,.2,1) both',
+      },
     },
   },
   plugins: [],

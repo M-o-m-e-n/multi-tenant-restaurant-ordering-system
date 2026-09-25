@@ -1,11 +1,21 @@
 import { describe, expect, it } from 'vitest';
 
 import { registerSchema } from './auth';
+import { updateItemSchema } from './menu';
 import { createOrderSchema, listOrdersQuerySchema, previewOrderSchema } from './orders';
 
 const itemId = '6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b';
 
 describe('schemas', () => {
+  it('accepts http(s) and same-origin image paths but no other scheme', () => {
+    const ok = (imageUrl: string) => updateItemSchema.safeParse({ imageUrl }).success;
+    expect(ok('https://cdn.example.com/a.jpg')).toBe(true);
+    expect(ok('/images/dishes/wagyu-burger.jpg')).toBe(true);
+    expect(ok('javascript:alert(1)')).toBe(false);
+    expect(ok('//evil.example.com/a.jpg')).toBe(false);
+    expect(ok('data:image/png;base64,AAAA')).toBe(false);
+  });
+
   it('rejects unknown fields rather than stripping them (NFR-S5)', () => {
     const result = previewOrderSchema.safeParse({ type: 'TAKEAWAY', items: [], total: 1 });
     expect(result.success).toBe(false);
