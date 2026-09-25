@@ -412,19 +412,19 @@ flip the order to `PAID` (AC-5).
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M10-S1** | `appendItems` transaction with the amendability guard | L | ORD-12, BR-14 · LLD §4.4 | Past `PREPARING` → `409 ORDER_NOT_AMENDABLE` |
-| ☐ | **M10-S2** | Re-apply the order's **snapshotted** rates when recomputing, not current settings | M | ORD-13, BR-14 | A tax-rate change between rounds does not reprice round one |
-| ☐ | **M10-S3** | Re-derive `paymentStatus` after append via `syncPaymentStatus` | S | ORD-13, AC-14 | A `PAID` order becomes `PARTIALLY_PAID` when its total rises |
-| ☐ | **M10-S4** | `AuditLog` row `ORDER_ITEMS_APPENDED` with lines added and totals before/after | S | ORD-14 | The diff is reconstructable from the log alone |
-| ☐ | **M10-S5** | `POST /orders/:id/items` — owner or staff | M | ORD-12 · LLD §5.3 | Emits `order:status` with the refreshed order |
-| ☐ | **M10-S6** | KDS: appended items badged as a later course with their own timestamp | M | ORD-12 · LLD §7.5 | The kitchen can tell round two from round one at a glance |
-| ☐ | **M10-S7** | Client: "Add to order" panel on the tracker and the POS | L | ORD-12 | Reuses the modifier dialog from M6-S3 |
-| ☐ | **M10-S8** | Tip carried through order creation, `markCash`, and the totals DTO | M | TIP-01, TIP-02, TIP-04 | Tips appear as their own line, never inside net sales |
-| ☐ | **M10-S9** | `getReceipt(id)` built **entirely from snapshots** | L | PRINT-01, PRINT-02, AC-19 | A price change after the order does not alter the receipt |
-| ☐ | **M10-S10** | `GET /orders/:id/receipt` — owner or staff | S | PRINT-04 | Role-scoped like every other order route |
-| ☐ | **M10-S11** | `Receipt` component with a print stylesheet | M | PRINT-01 · LLD §7.3 | `window.print()` produces a clean single page |
-| ☐ | **M10-S12** | Kitchen ticket print / re-print from the KDS | M | PRINT-03 | Re-printing does not change order state |
-| ☐ | **M10-S13** | Tests **I17, I18, I27** plus AC-14, AC-15, AC-19 | M | LLD §10.2 | All green |
+| ☑ | **M10-S1** | `appendItems` transaction with the amendability guard | L | ORD-12, BR-14 · LLD §4.4 | Past `PREPARING` → `409 ORDER_NOT_AMENDABLE` |
+| ☑ | **M10-S2** | Re-apply the order's **snapshotted** rates when recomputing, not current settings | M | ORD-13, BR-14 | A tax-rate change between rounds does not reprice round one |
+| ☑ | **M10-S3** | Re-derive `paymentStatus` after append via `syncPaymentStatus` | S | ORD-13, AC-14 | A `PAID` order becomes `PARTIALLY_PAID` when its total rises |
+| ☑ | **M10-S4** | `AuditLog` row `ORDER_ITEMS_APPENDED` with lines added and totals before/after | S | ORD-14 | The diff is reconstructable from the log alone |
+| ☑ | **M10-S5** | `POST /orders/:id/items` — owner or staff | M | ORD-12 · LLD §5.3 | Emits `order:status` with the refreshed order |
+| ☑ | **M10-S6** | KDS: appended items badged as a later course with their own timestamp | M | ORD-12 · LLD §7.5 | The kitchen can tell round two from round one at a glance |
+| ☑ | **M10-S7** | Client: "Add to order" panel on the tracker and the POS | L | ORD-12 | Reuses the modifier dialog from M6-S3 |
+| ☑ | **M10-S8** | Tip carried through order creation, `markCash`, and the totals DTO | M | TIP-01, TIP-02, TIP-04 | Tips appear as their own line, never inside net sales |
+| ☑ | **M10-S9** | `getReceipt(id)` built **entirely from snapshots** | L | PRINT-01, PRINT-02, AC-19 | A price change after the order does not alter the receipt |
+| ☑ | **M10-S10** | `GET /orders/:id/receipt` — owner or staff | S | PRINT-04 | Role-scoped like every other order route |
+| ☑ | **M10-S11** | `Receipt` component with a print stylesheet | M | PRINT-01 · LLD §7.3 | `window.print()` produces a clean single page |
+| ☑ | **M10-S12** | Kitchen ticket print / re-print from the KDS | M | PRINT-03 | Re-printing does not change order state |
+| ☑ | **M10-S13** | Tests **I17, I18, I27** plus AC-14, AC-15, AC-19 | M | LLD §10.2 | All green |
 
 **Traps.** M10-S2 is subtle: an amendment must reprice using the rates the order was placed under,
 or a mid-service settings change silently rewrites history. Keep tips out of `paidSum` — a tip is
