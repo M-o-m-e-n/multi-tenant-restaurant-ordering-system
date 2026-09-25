@@ -1,8 +1,9 @@
 import cookieParser from 'cookie-parser';
-import express, { type Express, type RequestHandler, Router } from 'express';
+import express, { type Express, Router } from 'express';
 
 import { corsMiddleware } from './middleware/cors';
 import { errorHandler, notFoundHandler } from './middleware/errors';
+import { limiter, LIMITS } from './middleware/rate-limit';
 import { requestId } from './middleware/request-id';
 import { authRouter } from './modules/auth';
 import { usersRouter } from './modules/users';
@@ -12,13 +13,12 @@ export interface AppOptions {
   rateLimits?: boolean;
 }
 
-const passThrough: RequestHandler = (_req, _res, next) => next();
-
 /**
  * Build the Express application without listening, so tests can import it
  * and drive it with supertest (HLD §4).
  */
-export function createApp(_options: AppOptions = {}): Express {
+export function createApp(options: AppOptions = {}): Express {
+  const limits = options.rateLimits ?? true;
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 'loopback');
@@ -32,7 +32,14 @@ export function createApp(_options: AppOptions = {}): Express {
   });
 
   const api = Router();
-  api.use('/auth', authRouter({ credentialLimiter: passThrough, refreshLimiter: passThrough }));
+  api.use(limiter(LIMITS.general, limits));
+  api.use(
+    '/auth',
+    authRouter({
+      credentialLimiter: limiter(LIMITS.credentials, limits),
+      refreshLimiter: limiter(LIMITS.refresh, limits),
+    }),
+  );
   api.use('/staff/users', usersRouter());
   app.use('/api/v1', api);
 
