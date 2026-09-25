@@ -6,7 +6,7 @@ import { api } from '../../shared/api/client';
 export const orderKeys = {
   mine: ['orders', 'mine'] as const,
   one: (id: string) => ['order', id] as const,
-  events: (id: string) => ['order', id, 'events'] as const,
+  events: (id: string, status?: string) => ['order', id, 'events', status ?? ''] as const,
 };
 
 /** One order. Polls until the socket arrives in M8; after that, events invalidate it. */
@@ -19,9 +19,10 @@ export function useOrder(id: string, pollMs = 5_000) {
   });
 }
 
-export function useOrderEvents(id: string) {
+/** The audit timeline; keyed on the status so every move refetches it. */
+export function useOrderEvents(id: string, status?: string) {
   return useQuery({
-    queryKey: orderKeys.events(id),
+    queryKey: orderKeys.events(id, status),
     queryFn: () => api<{ data: OrderEventDto[] }>(`/orders/${id}/events`).then((r) => r.data),
   });
 }
@@ -56,7 +57,7 @@ export function useCancelOrder(id: string) {
       api<OrderDto>(`/orders/${id}/cancel`, { method: 'POST', body: reason ? { reason } : {} }),
     onSuccess: async (order) => {
       qc.setQueryData(orderKeys.one(id), order);
-      await qc.invalidateQueries({ queryKey: orderKeys.events(id) });
+      await qc.invalidateQueries({ queryKey: ['order', id, 'events'] });
     },
   });
 }

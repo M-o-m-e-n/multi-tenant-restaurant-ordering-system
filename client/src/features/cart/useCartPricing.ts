@@ -19,9 +19,11 @@ export function useCartPricing() {
   const { data: settings } = useSettings();
   const [discount, setDiscount] = useState<PricingDiscount | null>(null);
 
-  const local = settings
-    ? cartTotals(cart.lines, { orderType, settings, discount, tip: cart.tip })
-    : null;
+  // An empty cart has no totals (computeTotals refuses it with EMPTY_CART).
+  const local =
+    settings && cart.lines.length > 0
+      ? cartTotals(cart.lines, { orderType, settings, discount, tip: cart.tip })
+      : null;
   const preview = useServerPreview({
     lines: cart.lines,
     orderType,

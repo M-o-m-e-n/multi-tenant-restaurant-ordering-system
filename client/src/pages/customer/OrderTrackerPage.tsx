@@ -16,7 +16,7 @@ const time = (iso: string) =>
 export function OrderTrackerPage() {
   const { id = '' } = useParams();
   const { data: order, isLoading, error } = useOrder(id);
-  const { data: events } = useOrderEvents(id);
+  const { data: events } = useOrderEvents(id, order?.status);
   const cancel = useCancelOrder(id);
 
   if (isLoading)
