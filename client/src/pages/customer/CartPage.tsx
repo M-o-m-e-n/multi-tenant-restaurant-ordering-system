@@ -1,14 +1,13 @@
-import { lineTotal, type PricingBreakdown, type PricingDiscount } from '@ros/shared';
+import { lineTotal } from '@ros/shared';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { useOrderType, useServerPreview, useSettings } from '../../features/cart/cartApi';
-import { cartTotals, tipCents } from '../../features/cart/cartPricing';
-import { type OffsiteType, useCart } from '../../features/cart/cartStore';
+import { tipCents } from '../../features/cart/cartPricing';
+import type { OffsiteType } from '../../features/cart/cartStore';
 import { TipSelector } from '../../features/cart/TipSelector';
+import { useCartPricing } from '../../features/cart/useCartPricing';
 import { DishImage } from '../../features/menu/DishImage';
 import { TableBanner } from '../../features/table/TableBanner';
-import { ApiError } from '../../shared/api/client';
 import { formatDelta, formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 
@@ -22,30 +21,19 @@ const DISCOUNT_MESSAGES: Record<string, string> = {
 
 /** Cart and pricing (CART-01…08, TIP-01): client totals live, confirmed by the server preview. */
 export function CartPage() {
-  const cart = useCart();
-  const orderType = useOrderType();
-  const { data: settings } = useSettings();
+  const {
+    cart,
+    orderType,
+    settings,
+    local,
+    preview,
+    server,
+    agrees,
+    error: previewError,
+    clearDiscount,
+  } = useCartPricing();
   const [codeInput, setCodeInput] = useState(cart.discountCode ?? '');
   const [codeError, setCodeError] = useState<string | null>(null);
-
-  // The discount comes from the server (it alone knows the code); the tip is a
-  // percentage of the discounted food, so it follows once the discount is known.
-  const [serverDiscount, setServerDiscount] = useState<PricingDiscount | null>(null);
-  const local = settings
-    ? cartTotals(cart.lines, { orderType, settings, discount: serverDiscount, tip: cart.tip })
-    : null;
-  const preview = useServerPreview({
-    lines: cart.lines,
-    orderType,
-    discountCode: cart.discountCode,
-    tipAmount: local?.tipAmount ?? 0,
-  });
-  const previewError = preview.error instanceof ApiError ? preview.error : null;
-
-  useEffect(() => {
-    const d = preview.data?.discount;
-    setServerDiscount(d ? { type: d.type, value: d.value } : null);
-  }, [preview.data?.discount]);
 
   // A rejected promo code is removed and explained inline (DISC-02).
   const { discountCode, setDiscountCode } = cart;
@@ -67,9 +55,6 @@ export function CartPage() {
       </main>
     );
   }
-
-  const server = preview.data?.totals;
-  const agrees = server && local && sameTotals(server, local);
 
   return (
     <main className="mx-auto grid w-full max-w-content gap-8 px-5 pb-16 md:grid-cols-[1.4fr_1fr] md:px-10">
@@ -231,7 +216,7 @@ export function CartPage() {
                 className="ml-1 font-semibold text-ink-muted underline"
                 onClick={() => {
                   cart.setDiscountCode(null);
-                  setServerDiscount(null);
+                  clearDiscount();
                   setCodeInput('');
                 }}
               >
@@ -293,17 +278,5 @@ function Row({ label, cents }: { label: string; cents: number }) {
       <dt className="text-ink-muted">{label}</dt>
       <dd>{cents < 0 ? `−${formatMoney(-cents)}` : formatMoney(cents)}</dd>
     </div>
-  );
-}
-
-function sameTotals(a: PricingBreakdown, b: PricingBreakdown): boolean {
-  return (
-    a.subtotal === b.subtotal &&
-    a.discountAmount === b.discountAmount &&
-    a.serviceCharge === b.serviceCharge &&
-    a.taxAmount === b.taxAmount &&
-    a.deliveryFee === b.deliveryFee &&
-    a.tipAmount === b.tipAmount &&
-    a.total === b.total
   );
 }
