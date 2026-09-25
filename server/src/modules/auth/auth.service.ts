@@ -1,9 +1,10 @@
 import { Prisma, type User } from '@prisma/client';
-import type { AuthResponse, LoginDto, RegisterDto, UserDto } from '@ros/shared';
+import type { AuthResponse, LoginDto, RegisterDto, SessionDto, UserDto } from '@ros/shared';
 
-import { AuthError, ConflictError } from '../../lib/errors';
+import { AuthError, ConflictError, NotFoundError } from '../../lib/errors';
 import { prisma } from '../../lib/prisma';
-import { toUserDto } from './auth.dto';
+import type { AuthUser } from '../../types/express';
+import { toSessionDto, toUserDto } from './auth.dto';
 import { hashPassword, verifyPassword } from './auth.password';
 import * as repo from './auth.repo';
 import { hashRefreshToken, signAccessToken } from './auth.tokens';
@@ -139,4 +140,44 @@ async function reuseDetected(familyId: string): Promise<never> {
     'SESSION_REVOKED',
     'For your safety this session was ended on every device. Sign in again.',
   );
+}
+
+/**
+ * End the session this refresh cookie belongs to (AUTH-06). Always succeeds:
+ * logging out should never fail, even with no or an unknown cookie.
+ */
+export async function logout(rawToken: string | undefined): Promise<void> {
+  if (!rawToken) return;
+  const row = await repo.findRefreshTokenByHash(hashRefreshToken(rawToken));
+  if (row) await repo.revokeFamily(row.familyId);
+}
+
+/** Revoke every session of the user on every device (AUTH-13). */
+export async function logoutAll(userId: string): Promise<void> {
+  await repo.revokeAllForUser(userId);
+}
+
+/** Active sessions, most recently used first (AUTH-13). */
+export async function listSessions(user: AuthUser): Promise<SessionDto[]> {
+  const tokens = await repo.listActiveSessionTokens(user.id);
+  const families = new Map<string, typeof tokens>();
+  for (const t of tokens) {
+    const list = families.get(t.familyId) ?? [];
+    list.push(t);
+    families.set(t.familyId, list);
+  }
+  return [...families.values()]
+    .map((family) => toSessionDto(family, user.sessionId))
+    .filter((s): s is SessionDto => s !== null)
+    .sort((a, b) => b.lastUsedAt.localeCompare(a.lastUsedAt));
+}
+
+/**
+ * Revoke one of the caller's sessions.
+ * @throws NotFoundError SESSION_NOT_FOUND when the family is not theirs or already ended
+ */
+export async function revokeSession(userId: string, familyId: string): Promise<void> {
+  if ((await repo.revokeFamilyForUser(familyId, userId)) === 0) {
+    throw new NotFoundError('SESSION_NOT_FOUND', 'No active session with that id.');
+  }
 }

@@ -1,4 +1,4 @@
-import { loginSchema, registerSchema } from '@ros/shared';
+import { familyIdParamSchema, loginSchema, registerSchema } from '@ros/shared';
 import { type RequestHandler, Router } from 'express';
 
 import { AuthError, ForbiddenError } from '../../lib/errors';
@@ -81,6 +81,44 @@ export function authRouter(opts: AuthRouterOptions): Router {
         if (err instanceof AuthError) clearRefreshCookie(res);
         throw err;
       }
+    }),
+  );
+
+  router.post(
+    '/logout',
+    h(async (req, res) => {
+      await service.logout(readRefreshCookie(req));
+      clearRefreshCookie(res);
+      res.status(204).end();
+    }),
+  );
+
+  router.post(
+    '/logout-all',
+    authenticate,
+    h(async (req, res) => {
+      await service.logoutAll(actor(req).id);
+      clearRefreshCookie(res);
+      res.status(204).end();
+    }),
+  );
+
+  router.get(
+    '/sessions',
+    authenticate,
+    h(async (req, res) => {
+      res.json({ data: await service.listSessions(actor(req)) });
+    }),
+  );
+
+  router.delete(
+    '/sessions/:familyId',
+    authenticate,
+    validate({ params: familyIdParamSchema }),
+    h(async (req, res) => {
+      const { familyId } = familyIdParamSchema.parse(req.params);
+      await service.revokeSession(actor(req).id, familyId);
+      res.status(204).end();
     }),
   );
 
