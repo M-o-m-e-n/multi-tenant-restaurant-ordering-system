@@ -4,6 +4,7 @@ export * from './domain/enums';
 export * from './domain/errors';
 export * from './domain/money';
 export * from './domain/order-status';
+export * from './domain/payment-status';
 export * from './domain/pricing';
 export * from './schemas/auth';
 export * from './schemas/common';

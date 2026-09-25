@@ -26,6 +26,13 @@ describe('parseEnv', () => {
     expect(() => parseEnv({ ...valid, DATABASE_URL: '' })).toThrow(/DATABASE_URL is required/);
   });
 
+  it('refuses a live Stripe key (test mode only, M9-S1)', () => {
+    expect(() => parseEnv({ ...valid, STRIPE_SECRET_KEY: 'sk_live_abc' })).toThrow(/TEST key/);
+    expect(parseEnv({ ...valid, STRIPE_SECRET_KEY: 'sk_test_abc' }).STRIPE_SECRET_KEY).toBe(
+      'sk_test_abc',
+    );
+  });
+
   it('rejects a short JWT secret', () => {
     expect(() => parseEnv({ ...valid, JWT_ACCESS_SECRET: 'short' })).toThrow(/JWT_ACCESS_SECRET/);
   });

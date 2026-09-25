@@ -43,3 +43,7 @@ export class BusinessRuleError extends AppError {
 export class RateLimitError extends AppError {
   readonly status = 429;
 }
+
+export class ServiceUnavailableError extends AppError {
+  readonly status = 503;
+}

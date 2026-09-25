@@ -1,11 +1,14 @@
 import {
   canTransition,
   type CreateOrderDto,
+  derivePaymentStatus,
   type ListOrdersQuery,
   type OrderDto,
   type OrderEventDto,
   type OrderStatus,
   type Paginated,
+  paidSum,
+  type PaymentStatus,
   type PreviewOrderDto,
   type PreviewResponse,
 } from '@ros/shared';
@@ -14,7 +17,7 @@ import { BusinessRuleError, ConflictError, NotFoundError } from '../../lib/error
 import { publish } from '../../lib/events';
 import { type IdempotencyContext, requestHash, withIdempotency } from '../../lib/idempotency';
 import { logger } from '../../lib/logger';
-import { prisma } from '../../lib/prisma';
+import { prisma, type Tx } from '../../lib/prisma';
 import { businessDateOf, dateOnly } from '../../lib/time';
 import type { AuthUser } from '../../types/express';
 import { redeem } from '../discounts';
@@ -317,4 +320,39 @@ export async function transitionStatus(
  */
 export function cancelOrder(id: string, actor: AuthUser, reason?: string): Promise<OrderDto> {
   return transitionStatus(id, 'CANCELLED', actor, reason ?? null);
+}
+
+export interface PaymentSnapshot {
+  orderId: string;
+  paymentStatus: PaymentStatus;
+  amountPaid: number;
+  balanceDue: number;
+}
+
+/**
+ * Re-derive Order.paymentStatus from the payment records against the current
+ * total and store it, inside the caller's transaction. **The only writer of
+ * paymentStatus** (PAY-04, LLD §4.5): payments, refunds and amendments all
+ * come through here, so they can never disagree.
+ */
+export async function syncPaymentStatus(orderId: string, tx: Tx): Promise<PaymentSnapshot> {
+  const basis = await repo.paymentBasis(tx, orderId);
+  if (!basis) throw notFound();
+  const paymentStatus = derivePaymentStatus(basis.payments, basis.total);
+  await repo.writePaymentStatus(tx, orderId, paymentStatus);
+  const amountPaid = paidSum(basis.payments);
+  const balanceDue = paymentStatus === 'REFUNDED' ? 0 : Math.max(0, basis.total - amountPaid);
+  return { orderId, paymentStatus, amountPaid, balanceDue };
+}
+
+/** Tell the tills, admin and the owner that money moved (LLD §6.2). Call after commit. */
+export function announcePayment(snapshot: PaymentSnapshot): void {
+  publish('payment:changed', snapshot, {
+    rooms: ['pos', 'admin', `customer:${snapshot.orderId}`],
+  });
+}
+
+/** The order with its relations, for the payments module (read inside its transaction). */
+export function loadOrder(id: string, db?: Tx) {
+  return repo.findOrder(id, db);
 }

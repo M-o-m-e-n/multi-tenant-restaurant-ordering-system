@@ -22,6 +22,21 @@ const envSchema = z
     BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
 
     // NFR-S8: explicit allow-list, never a wildcard.
+    // Stripe runs in test mode only (SRS §2.5). All three are optional: without them card
+    // payment is switched off and staff take cash (NFR-R6).
+    STRIPE_SECRET_KEY: z
+      .string()
+      .refine(
+        (k) => k.startsWith('sk_test_') || k.startsWith('rk_test_'),
+        'must be a TEST key (sk_test_…); live keys are refused',
+      )
+      .optional(),
+    STRIPE_PUBLISHABLE_KEY: z
+      .string()
+      .refine((k) => k.startsWith('pk_test_'), 'must be a TEST key (pk_test_…)')
+      .optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().startsWith('whsec_').optional(),
+
     // Where the SPA is served; QR codes encode ${PUBLIC_APP_URL}/t/<token>.
     PUBLIC_APP_URL: z.string().url().default('http://localhost:5173'),
 

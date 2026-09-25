@@ -9,6 +9,7 @@ import { authRouter } from './modules/auth';
 import { discountsRouter, staffDiscountsRouter } from './modules/discounts';
 import { publicMenuRouter, staffMenuRouter } from './modules/menu';
 import { ordersRouter } from './modules/orders';
+import { paymentsRouter, webhookHandler } from './modules/payments';
 import { kdsSettingsRouter, publicSettingsRouter, staffSettingsRouter } from './modules/settings';
 import { tablesRouter } from './modules/tables';
 import { usersRouter } from './modules/users';
@@ -29,6 +30,13 @@ export function createApp(options: AppOptions = {}): Express {
   app.set('trust proxy', 'loopback');
   app.use(requestId);
   app.use(corsMiddleware());
+  // Stripe signs the raw bytes, so the webhook is mounted before the JSON parser and
+  // outside the rate-limited API router (M9-S4, API-CONTRACT §8).
+  app.post(
+    '/api/v1/payments/webhook',
+    express.raw({ type: '*/*', limit: '256kb' }),
+    webhookHandler,
+  );
   app.use(express.json({ limit: '256kb' }));
   app.use(cookieParser());
 
@@ -50,6 +58,7 @@ export function createApp(options: AppOptions = {}): Express {
   api.use('/settings/kds', kdsSettingsRouter());
   api.use('/settings', publicSettingsRouter());
   api.use('/orders', ordersRouter({ placeLimiter: limiter(LIMITS.orders, limits) }));
+  api.use('/payments', paymentsRouter());
   api.use('/discounts', discountsRouter());
   api.use('/staff/discounts', staffDiscountsRouter());
   api.use('/staff/settings', staffSettingsRouter());

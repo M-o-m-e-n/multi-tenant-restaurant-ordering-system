@@ -26,6 +26,41 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M9 — Payments
+
+**Slices:** M9-S1…S13 ☑
+**Done**
+- `PaymentGateway` interface with a Stripe implementation (test mode only: live keys refused at
+  boot; without keys card payment is off and returns `503 PAYMENTS_UNAVAILABLE`, while cash still
+  works). Tests use an offline fake that checks real Stripe signatures.
+- Intents charge the server-computed balance or a smaller split amount, honour `Idempotency-Key`,
+  and pass the Stripe idempotency key as the options argument. The webhook is raw-bodied, mounted
+  before the JSON parser and outside the rate limiter, signature-checked, and deduped by the
+  `WebhookEvent` primary key in the same transaction.
+- Cash payments with the cashier and cash tip recorded; admin refunds on COMPLETED or CANCELLED
+  orders (Stripe refund plus records, audited, order status untouched); a reconciliation job.
+- `syncPaymentStatus` is the only writer of `paymentStatus`, built on the shared, unit-tested
+  `derivePaymentStatus`.
+- Client: Stripe Elements pay page, a "Pay by card" button when enabled, and the `/pos` till
+  (filters, order panel, cash/split/tip dialog, status moves, admin refund).
+**Verified**
+- 14 payment integration tests: I8, I9, I10, I19, I20, a failed card, intent replay, ownership,
+  reconciliation, degradation without keys, a cancelled order. 5 new shared tests. 137 server tests.
+- Browser: $10 cash → "Partly paid"; the remainder plus a $3 tip → "Paid"; the guest's tracker
+  shows Paid.
+**Issues / surprises**
+- **Found in the browser**: refunded orders appeared under "To pay" with their full total owed.
+  Fixed: a refunded order's `balanceDue` is 0 and further payment is `409 ORDER_REFUNDED`.
+- `syncPaymentStatus` lives in the orders module (which owns `Order`) rather than payments, so
+  payments → orders is the only dependency direction and M10's append can call it. Everything else
+  about it is as the LLD says.
+- **Card payment couldn't be demonstrated end to end without Stripe test keys.** Add
+  `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` / `STRIPE_WEBHOOK_SECRET` and run
+  `stripe listen --forward-to localhost:4000/api/v1/payments/webhook`.
+- New codes: `PAYMENTS_UNAVAILABLE` (503), `ORDER_CANCELLED`, `ORDER_REFUNDED` (409). New
+  endpoint: `GET /payments/config`.
+**Next:** M10-S1.
+
 ### 2026-09-25 — M8 — Realtime & KDS
 
 **Slices:** M8-S1…S13 ☑
