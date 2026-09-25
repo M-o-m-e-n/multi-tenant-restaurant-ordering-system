@@ -44,6 +44,9 @@ supersedes the old one.
 | [026](#adr-026--real-photography-served-with-the-client) | Real photography served with the client | Accepted | Build, UI |
 | [027](#adr-027--how-m13-was-verified-without-a-staging-host) | How M13 was verified without a staging host | Accepted | Build, M13 |
 | [028](#adr-028--motion-without-an-animation-library) | Motion without an animation library | Accepted | Build, UI |
+| [029](#adr-029--one-tenant-per-deployment-many-branches) | One tenant per deployment, many branches | Accepted | Phase 2 |
+| [030](#adr-030--arabic-first-i18n-without-a-library) | Arabic-first i18n without a library | Accepted | Phase 2, M14 |
+| [031](#adr-031--menu-prices-are-final-for-the-demo) | Menu prices are final for the demo | Accepted | Phase 2 |
 
 ---
 
@@ -369,6 +372,52 @@ platform APIs.
 **Consequences.** The guest bundle grew 25 kB across both motion passes. The effects are ours to
 maintain, each about 30–120 lines, and `e2e/a11y.spec.ts` guards the contrast and keyboard rules
 on every screen.
+
+### ADR-029 — One tenant per deployment, many branches
+**Status:** Accepted · 2026-09-25
+**Context.** The first customer, El Demeshki, has two branches with different dine-in, menu and
+kitchen needs. ROS has no branch concept. Selling to further restaurants is the business goal.
+**Decision.**
+- **One restaurant per deployment**, with its own database and brand. Inside it, a `Branch` model
+  scopes tables, orders, order sequences, bookings, staff, settings overrides, menu availability
+  and realtime rooms.
+- **Tenant packs.** Each restaurant's brand and seed data live in a tenant pack. Fork & Flame is
+  the default pack; El Demeshki is the second.
+- **No multi-tenancy.** No tenant id on rows, no cross-restaurant data, no shared database.
+**Consequences.**
+- Isolation between customers comes from infrastructure, not code. The schema change is limited
+  to `branchId`.
+- Onboarding a restaurant means a tenant pack plus a deployment.
+- A shared multi-restaurant SaaS would need another ADR.
+
+### ADR-030 — Arabic-first i18n without a library
+**Status:** Accepted · 2026-09-25
+**Context.** El Demeshki's customers and staff read Arabic, and the site must be RTL. The client
+has about 400 hard-coded English strings.
+**Decision.**
+- **Dictionaries.** Typed dictionaries (`client/src/i18n/ar.ts`, `en.ts`) behind a small
+  `useT()` hook, with no i18next. The English dictionary defines the key type, so a key missing
+  in Arabic fails typecheck.
+- **Language choice.** It persists per device. The tenant sets the default (Arabic for El
+  Demeshki, English for Fork & Flame). `<html lang dir>` follows it.
+- **Server errors** stay English for logs. The client translates them by `error.code`.
+- **Menu content** (names and descriptions) is data, not UI. Bilingual menu fields arrive with the
+  tenant pack (M17).
+- **Layout** uses logical CSS (`ms-`, `start-`, `border-s`), and motion reads the direction.
+**Consequences.** About 2 kB of runtime and no dependency. Plurals are handled per key with
+functions, which covers Arabic's forms for the few counted strings.
+
+### ADR-031 — Menu prices are final for the demo
+**Status:** Accepted · 2026-09-25
+**Context.** Egyptian fast-food menus show the price the guest pays. The pricing engine adds tax
+and service charge on top. How El Demeshki accounts for VAT (14%) is unknown until they are asked.
+**Decision.**
+- **Tenant settings.** The El Demeshki tenant uses `taxBps = 0`, `serviceChargeBps = 0` and
+  `tipPresetsBps = []`, so totals equal the menu prices plus any delivery fee.
+- **VAT later.** A VAT-inclusive mode (extracting 14% for receipts) is deferred to the pilot
+  (plan B2), after confirming their tax setup.
+- **Engine unchanged.** The shared pricing engine and its tests are not changed now.
+**Consequences.** The demo shows exactly their menu prices. Receipts carry no tax line until B2.
 
 ---
 
