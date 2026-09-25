@@ -80,3 +80,318 @@ enum ReservationStatus {
   CANCELLED
   COMPLETED
 }
+
+// ---------------------------------------------------------------------------
+// Operations: users, tables, reservations, discounts, settings, audit
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(120)
+  // Lower-cased on write.
+  email        String   @unique @db.VarChar(255)
+  // bcrypt, cost >= 12. Never leaves the server (NFR-S2).
+  passwordHash String   @db.VarChar(255)
+  phone        String?  @db.VarChar(30)
+  role         Role     @default(CUSTOMER)
+  // Re-read on every request so disabling takes effect immediately (AC-18).
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Timestamptz
+
+  orders    Order[]
+  events    OrderEvent[]
+  payments  Payment[]
+  auditLogs AuditLog[]
+  settings  Setting[]
+  idemKeys  IdempotencyKey[]
+}
+
+// Called Table throughout the docs; raw SQL must quote it as "Table".
+model Table {
+  id       String      @id @default(uuid()) @db.Uuid
+  number   String      @unique @db.VarChar(10)
+  seats    Int         @default(4)
+  status   TableStatus @default(FREE)
+  // 128-bit random hex; the only way a guest identifies a table (AC-12).
+  qrToken  String      @unique @db.VarChar(64)
+  isActive Boolean     @default(true)
+
+  orders       Order[]
+  reservations Reservation[]
+}
+
+model Reservation {
+  id         String            @id @default(uuid()) @db.Uuid
+  tableId    String?           @db.Uuid
+  guestName  String            @db.VarChar(120)
+  guestPhone String            @db.VarChar(30)
+  partySize  Int
+  slotAt     DateTime          @db.Timestamptz
+  status     ReservationStatus @default(PENDING)
+  notes      String?           @db.VarChar(300)
+
+  table Table? @relation(fields: [tableId], references: [id], onDelete: SetNull)
+
+  @@index([slotAt])
+}
+
+model Discount {
+  id         String       @id @default(uuid()) @db.Uuid
+  // Upper-cased on write.
+  code       String       @unique @db.VarChar(40)
+  type       DiscountType
+  // Basis points when PERCENT, cents when FIXED.
+  value      Int
+  minOrder   Int          @default(0)
+  startsAt   DateTime?    @db.Timestamptz
+  endsAt     DateTime?    @db.Timestamptz
+  usageLimit Int?
+  // Derived: changed only by the conditional UPDATE at placement (DISC-06).
+  usedCount  Int          @default(0)
+  isActive   Boolean      @default(true)
+}
+
+model Setting {
+  key       String   @id @db.VarChar(40)
+  value     String   @db.VarChar(200)
+  // Null for values written by the seed.
+  updatedBy String?  @db.Uuid
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  user User? @relation(fields: [updatedBy], references: [id], onDelete: SetNull)
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @db.Uuid
+  action    String   @db.VarChar(60)
+  entity    String   @db.VarChar(40)
+  entityId  String   @db.VarChar(64)
+  diff      Json
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+}
+
+// ---------------------------------------------------------------------------
+// Menu and modifiers
+// ---------------------------------------------------------------------------
+
+model MenuCategory {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String  @db.VarChar(80)
+  description String? @db.VarChar(255)
+  sortOrder   Int     @default(0)
+  // Soft delete: categories cascade to items, so they are never removed.
+  isActive    Boolean @default(true)
+
+  items MenuItem[]
+}
+
+model MenuItem {
+  id            String    @id @default(uuid()) @db.Uuid
+  categoryId    String    @db.Uuid
+  name          String    @db.VarChar(120)
+  description   String?   @db.VarChar(500)
+  price         Int
+  imageUrl      String?   @db.VarChar(500)
+  // The 86 flag: shown as sold out, not hidden (MENU-05).
+  isAvailable   Boolean   @default(true)
+  allergens     String[]  @default([])
+  availableFrom DateTime? @db.Time
+  availableTo   DateTime? @db.Time
+  station       String?   @db.VarChar(40)
+  // Soft delete (BR-11).
+  isActive      Boolean   @default(true)
+
+  category       MenuCategory            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  modifierGroups MenuItemModifierGroup[]
+  orderItems     OrderItem[]
+}
+
+model ModifierGroup {
+  id        String  @id @default(uuid()) @db.Uuid
+  name      String  @db.VarChar(80)
+  minSelect Int     @default(0)
+  maxSelect Int     @default(1)
+  isActive  Boolean @default(true)
+
+  items     ModifierItem[]
+  menuItems MenuItemModifierGroup[]
+}
+
+// Which groups an item offers; the basis of server-side modifier validation (AC-17).
+model MenuItemModifierGroup {
+  menuItemId      String @db.Uuid
+  modifierGroupId String @db.Uuid
+  sortOrder       Int    @default(0)
+
+  menuItem      MenuItem      @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  modifierGroup ModifierGroup @relation(fields: [modifierGroupId], references: [id], onDelete: Cascade)
+
+  @@id([menuItemId, modifierGroupId])
+}
+
+model ModifierItem {
+  id          String  @id @default(uuid()) @db.Uuid
+  groupId     String  @db.Uuid
+  name        String  @db.VarChar(80)
+  // Cents; may be negative.
+  priceDelta  Int     @default(0)
+  isAvailable Boolean @default(true)
+
+  group ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Ordering core
+// ---------------------------------------------------------------------------
+
+model Order {
+  id                   String        @id @default(uuid()) @db.Uuid
+  // e.g. A-1042. Recycles daily, so unique only within a business date (BR-15).
+  orderNumber          String        @db.VarChar(16)
+  // Operating day in the restaurant timezone, fixed at placement and never recomputed.
+  businessDate         DateTime      @db.Date
+  type                 OrderType
+  // Derived mirror of the last OrderEvent; written only by transitionStatus.
+  status               OrderStatus   @default(PLACED)
+  // Dine-in only; always resolved from the QR token (AC-12).
+  tableId              String?       @db.Uuid
+  // Null only for a staff-placed counter order (LLD section 1).
+  userId               String?       @db.Uuid
+  customerName         String?       @db.VarChar(120)
+  customerPhone        String?       @db.VarChar(30)
+  subtotal             Int
+  discountAmount       Int           @default(0)
+  // Snapshot of the code, deliberately not a foreign key.
+  discountCode         String?       @db.VarChar(40)
+  serviceCharge        Int           @default(0)
+  taxAmount            Int
+  deliveryFee          Int           @default(0)
+  // Never discounted, never taxed (BR-13).
+  tipAmount            Int           @default(0)
+  total                Int
+  currency             String        @default("usd") @db.VarChar(3)
+  // Pricing inputs the order was placed under, so an amendment reprices with them (ORD-13).
+  taxBps               Int           @default(0)
+  serviceChargeBps     Int           @default(0)
+  serviceChargeTaxable Boolean       @default(false)
+  discountType         DiscountType?
+  discountValue        Int?
+  // Derived from Payment rows; written only by syncPaymentStatus.
+  paymentStatus        PaymentStatus @default(UNPAID)
+  notes                String?       @db.VarChar(500)
+  placedAt             DateTime      @default(now()) @db.Timestamptz
+  updatedAt            DateTime      @updatedAt @db.Timestamptz
+  completedAt          DateTime?     @db.Timestamptz
+
+  table    Table?       @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  user     User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
+  events   OrderEvent[]
+  payments Payment[]
+  delivery Delivery?
+}
+
+model OrderItem {
+  id            String   @id @default(uuid()) @db.Uuid
+  orderId       String   @db.Uuid
+  // Reference only; the order is priced from the snapshots below (ORD-05).
+  menuItemId    String?  @db.Uuid
+  nameSnapshot  String   @db.VarChar(120)
+  unitPrice     Int
+  qty           Int
+  // [{ groupId, groupName, items: [{ id, name, priceDelta }] }]
+  modifiersJson Json     @default("[]")
+  modifierTotal Int      @default(0)
+  lineTotal     Int
+  notes         String?  @db.VarChar(300)
+  station       String?  @db.VarChar(40)
+  // When the line was added; later rounds are badged on the KDS (ORD-12).
+  addedAt       DateTime @default(now()) @db.Timestamptz
+
+  order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+}
+
+// Append-only audit of every status change (NFR-R3).
+model OrderEvent {
+  id         String       @id @default(uuid()) @db.Uuid
+  orderId    String       @db.Uuid
+  // Null only on the first event, which records (null to PLACED).
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+  // Null means the customer or the system.
+  actorId    String?      @db.Uuid
+  reason     String?      @db.VarChar(200)
+  createdAt  DateTime     @default(now()) @db.Timestamptz
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+}
+
+model Delivery {
+  id          String         @id @default(uuid()) @db.Uuid
+  orderId     String         @unique @db.Uuid
+  address     String         @db.VarChar(300)
+  addressNote String?        @db.VarChar(120)
+  driverName  String?        @db.VarChar(80)
+  status      DeliveryStatus @default(PENDING)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Payments
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id                    String        @id @default(uuid()) @db.Uuid
+  orderId               String        @db.Uuid
+  method                PaymentMethod
+  // The balance this record settles, not necessarily the order total (PAY-06).
+  amount                Int
+  // Cash tip recorded against this payment; not part of the order balance (TIP-02).
+  tipAmount             Int           @default(0)
+  state                 PaymentState  @default(PENDING)
+  stripePaymentIntentId String?       @db.VarChar(80)
+  stripeRefundId        String?       @db.VarChar(80)
+  // The cashier, for a cash payment.
+  actorId               String?       @db.Uuid
+  createdAt             DateTime      @default(now()) @db.Timestamptz
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+}
+
+// The one webhook dedupe mechanism: the Stripe event id is the primary key (PAY-08).
+// Payment deliberately carries no competing unique constraint.
+model WebhookEvent {
+  id          String   @id @db.VarChar(120)
+  type        String   @db.VarChar(80)
+  processedAt DateTime @default(now()) @db.Timestamptz
+}
+
+// ---------------------------------------------------------------------------
+// Concurrency primitives
+// ---------------------------------------------------------------------------
+
+// One row per business date; incremented atomically inside the placement transaction.
+model OrderSequence {
+  businessDate DateTime @id @db.Date
+  lastValue    Int      @default(1000)
+}
+
+// Stored responses for retried POSTs (NFR-R5). Rows older than 24 h are purged.
+model IdempotencyKey {
+  key            String   @id @db.VarChar(120)
+  userId         String?  @db.Uuid
+  endpoint       String   @db.VarChar(80)
+  requestHash    String   @db.VarChar(64)
+  responseStatus Int
+  responseJson   Json
+  createdAt      DateTime @default(now()) @db.Timestamptz
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
