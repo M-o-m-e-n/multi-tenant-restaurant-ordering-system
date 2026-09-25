@@ -341,7 +341,8 @@ export async function syncPaymentStatus(orderId: string, tx: Tx): Promise<Paymen
   const paymentStatus = derivePaymentStatus(basis.payments, basis.total);
   await repo.writePaymentStatus(tx, orderId, paymentStatus);
   const amountPaid = paidSum(basis.payments);
-  return { orderId, paymentStatus, amountPaid, balanceDue: Math.max(0, basis.total - amountPaid) };
+  const balanceDue = paymentStatus === 'REFUNDED' ? 0 : Math.max(0, basis.total - amountPaid);
+  return { orderId, paymentStatus, amountPaid, balanceDue };
 }
 
 /** Tell the tills, admin and the owner that money moved (LLD §6.2). Call after commit. */

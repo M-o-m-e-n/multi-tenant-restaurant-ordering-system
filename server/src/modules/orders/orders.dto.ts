@@ -41,7 +41,8 @@ export function toOrderDto(order: OrderWithRelations, viewer: AuthUser): OrderDt
     status: order.status,
     paymentStatus: order.paymentStatus,
     amountPaid,
-    balanceDue: Math.max(0, order.total - amountPaid),
+    // A refunded order is settled, not owed: nothing further may be charged on it.
+    balanceDue: order.paymentStatus === 'REFUNDED' ? 0 : Math.max(0, order.total - amountPaid),
     table: order.table,
     ...(contact ? { customer: { name: order.customerName, phone: order.customerPhone } } : {}),
     ...(order.type === 'DELIVERY'

@@ -225,6 +225,14 @@ describe('payments', () => {
     ]);
     expect(await prisma().auditLog.count({ where: { action: 'ORDER_REFUNDED' } })).toBe(1);
 
+    // Refunded is settled: nothing is owed and nothing more can be charged.
+    expect(res.body.order.balanceDue).toBe(0);
+    const pay = await request(app)
+      .post('/api/v1/payments/cash')
+      .set(bearer(staff))
+      .send({ orderId: order.id });
+    expect(pay.status).toBe(409);
+
     const again = await request(app)
       .post('/api/v1/payments/refund')
       .set(bearer(admin))

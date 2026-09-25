@@ -62,6 +62,12 @@ async function payableOrder(tx: Tx, orderId: string, actor: AuthUser) {
       'This order was cancelled; there is nothing to pay.',
     );
   }
+  if (order.paymentStatus === 'REFUNDED') {
+    throw new ConflictError(
+      'ORDER_REFUNDED',
+      'This order was refunded; it cannot take further payment.',
+    );
+  }
   if (order.paymentStatus === 'PAID') {
     throw new BusinessRuleError('PAYMENT_EXCEEDS_BALANCE', 'This order is already paid in full.');
   }
