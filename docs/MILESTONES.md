@@ -383,19 +383,19 @@ agreement even when the browser closes mid-flow.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M9-S1** | Stripe client, keys from env, test mode asserted at boot | S | PAY-01, SRS §2.5 | A live key in test config fails fast |
-| ☐ | **M9-S2** | `createIntent(orderId, amount?)` — charge `amount ?? (total − paidSum)`, validated `0 < amount ≤ balance`; precondition `paymentStatus != PAID` | L | PAY-01, PAY-06, PAY-07, BR-09 · LLD §4.5 | Over-paying → `422 PAYMENT_EXCEEDS_BALANCE`; a second split intent is possible |
-| ☐ | **M9-S3** | Stripe idempotency key passed as the SDK's **second options argument** | S | LLD §4.5 | Not a field inside the params object |
-| ☐ | **M9-S4** | Raw-body route for `/payments/webhook` (`express.raw`), mounted before the JSON parser | M | LLD §9 | Signature verification sees unparsed bytes |
-| ☐ | **M9-S5** | Signature verification + `WebhookEvent` dedupe by primary key | L | PAY-03, PAY-08, AC-6 | A replayed event returns 200 and writes nothing |
-| ☐ | **M9-S6** | **`syncPaymentStatus(orderId)`** — the only writer of `Order.paymentStatus` | L | PAY-04 · LLD §4.5 | Derives `UNPAID`/`PARTIALLY_PAID`/`PAID`/`REFUNDED` from payment rows |
-| ☐ | **M9-S7** | `payment_intent.succeeded` and `payment_intent.payment_failed` handling | M | PAY-03 | A failure leaves the order `UNPAID` and retryable |
-| ☐ | **M9-S8** | `markCash(orderId, amount?, tipAmount?)` — staff only, records the actor | M | PAY-05, TIP-02, AC-8 | A customer attempting it gets `403` |
-| ☐ | **M9-S9** | `refund` — admin only; valid on a `COMPLETED` **or** `CANCELLED` order; sets payment state only | L | PAY-09, BR-07, AC-13 | A paid-then-cancelled order refunds and stays `CANCELLED` |
-| ☐ | **M9-S10** | `reconcilePayments` job, every 5 min | M | NFR-R4, R2 | An order stuck `UNPAID` against a succeeded intent self-heals |
-| ☐ | **M9-S11** | Client: Stripe Elements checkout | L | PAY-02 · LLD §7.4 | `4242 4242 4242 4242` completes end to end |
-| ☐ | **M9-S12** | Client: POS payment modal — cash, split, and a cash tip field | L | PAY-05, PAY-06 | Split payment reaches `PAID` through two records |
-| ☐ | **M9-S13** | Tests **I8, I9, I10, I19, I20** | L | LLD §10.2 | Including replay, split, and refund-after-cancel |
+| ☑ | **M9-S1** | Stripe client, keys from env, test mode asserted at boot | S | PAY-01, SRS §2.5 | A live key in test config fails fast |
+| ☑ | **M9-S2** | `createIntent(orderId, amount?)` — charge `amount ?? (total − paidSum)`, validated `0 < amount ≤ balance`; precondition `paymentStatus != PAID` | L | PAY-01, PAY-06, PAY-07, BR-09 · LLD §4.5 | Over-paying → `422 PAYMENT_EXCEEDS_BALANCE`; a second split intent is possible |
+| ☑ | **M9-S3** | Stripe idempotency key passed as the SDK's **second options argument** | S | LLD §4.5 | Not a field inside the params object |
+| ☑ | **M9-S4** | Raw-body route for `/payments/webhook` (`express.raw`), mounted before the JSON parser | M | LLD §9 | Signature verification sees unparsed bytes |
+| ☑ | **M9-S5** | Signature verification + `WebhookEvent` dedupe by primary key | L | PAY-03, PAY-08, AC-6 | A replayed event returns 200 and writes nothing |
+| ☑ | **M9-S6** | **`syncPaymentStatus(orderId)`** — the only writer of `Order.paymentStatus` | L | PAY-04 · LLD §4.5 | Derives `UNPAID`/`PARTIALLY_PAID`/`PAID`/`REFUNDED` from payment rows |
+| ☑ | **M9-S7** | `payment_intent.succeeded` and `payment_intent.payment_failed` handling | M | PAY-03 | A failure leaves the order `UNPAID` and retryable |
+| ☑ | **M9-S8** | `markCash(orderId, amount?, tipAmount?)` — staff only, records the actor | M | PAY-05, TIP-02, AC-8 | A customer attempting it gets `403` |
+| ☑ | **M9-S9** | `refund` — admin only; valid on a `COMPLETED` **or** `CANCELLED` order; sets payment state only | L | PAY-09, BR-07, AC-13 | A paid-then-cancelled order refunds and stays `CANCELLED` |
+| ☑ | **M9-S10** | `reconcilePayments` job, every 5 min | M | NFR-R4, R2 | An order stuck `UNPAID` against a succeeded intent self-heals |
+| ☑ | **M9-S11** | Client: Stripe Elements checkout | L | PAY-02 · LLD §7.4 | `4242 4242 4242 4242` completes end to end |
+| ☑ | **M9-S12** | Client: POS payment modal — cash, split, and a cash tip field | L | PAY-05, PAY-06 | Split payment reaches `PAID` through two records |
+| ☑ | **M9-S13** | Tests **I8, I9, I10, I19, I20** | L | LLD §10.2 | Including replay, split, and refund-after-cancel |
 
 **Traps.** Nothing except `syncPaymentStatus` may write `paymentStatus` — the moment two places
 write it, split payments and amendments start disagreeing. Test M9-S5 by *actually* replaying the
