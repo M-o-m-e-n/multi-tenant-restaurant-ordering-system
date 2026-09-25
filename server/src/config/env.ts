@@ -22,6 +22,9 @@ const envSchema = z
     BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
 
     // NFR-S8: explicit allow-list, never a wildcard.
+    // Where the SPA is served; QR codes encode ${PUBLIC_APP_URL}/t/<token>.
+    PUBLIC_APP_URL: z.string().url().default('http://localhost:5173'),
+
     CLIENT_ORIGINS: z
       .string()
       .min(1)
