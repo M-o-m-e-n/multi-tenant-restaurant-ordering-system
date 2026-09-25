@@ -1,0 +1,11 @@
+// Source of truth for columns: docs/LLD.md section 2.2. Relational view: docs/ERD.md.
+// Money columns are Int cents (ADR-004); rates are Int basis points.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}

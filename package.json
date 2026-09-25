@@ -23,7 +23,11 @@
     "build": "npm run build -w server -w client",
     "dev": "concurrently -k -n api,web -c red,yellow \"npm run dev:api\" \"npm run dev:web\"",
     "dev:api": "npm run dev -w server",
-    "dev:web": "npm run dev -w client"
+    "dev:web": "npm run dev -w client",
+    "db:migrate": "npm run db:migrate -w server",
+    "db:seed": "npm run db:seed -w server",
+    "db:reset": "npm run db:reset -w server",
+    "db:studio": "npm run db:studio -w server"
   },
   "devDependencies": {
     "@eslint/js": "~9.39",
