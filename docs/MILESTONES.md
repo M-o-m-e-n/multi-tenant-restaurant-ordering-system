@@ -245,18 +245,18 @@ that everything downstream trusts.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M4-S1** | Menu repo: category and item queries with modifier groups joined | M | LLD §4.3 | One query, no N+1 |
-| ☐ | **M4-S2** | `getPublicMenu()` — filter `isActive`, `isAvailable`, and the schedule window | M | MENU-01, MENU-05, MENU-06 | A breakfast item is absent at 15:00 and present at 09:00 |
-| ☐ | **M4-S3** | 30 s in-memory cache with invalidation on write | S | HLD §6.4 | An admin edit is visible immediately, not 30 s later |
-| ☐ | **M4-S4** | `GET /menu` and `GET /menu/items/:id` | S | MENU-01, BROWSE-03 | Both public; no auth required |
-| ☐ | **M4-S5** | Admin category CRUD with soft delete and reorder | M | MENU-02 | Deleting sets `isActive=false`; the row survives |
-| ☐ | **M4-S6** | Admin item CRUD with soft delete | M | MENU-03, BR-11 | An item referenced by an order cannot be hard-deleted |
-| ☐ | **M4-S7** | Modifier group and item CRUD, plus attaching groups to items | M | MENU-04 | An item can carry *Size* (min 1, max 1) and *Extras* (min 0, max 3) |
-| ☐ | **M4-S8** | **`resolveSelections(itemId, modifierItemIds)`** — assert every id belongs to a group attached to that item, is available, and satisfies `minSelect`/`maxSelect`; return authoritative deltas | L | CART-03, NFR-S4, AC-17 · LLD §4.3 | A modifier borrowed from another item → `422 INVALID_MODIFIER_SELECTION` |
-| ☐ | **M4-S9** | 86 toggle endpoint | S | MENU-03, AC-7 | Flips `isAvailable` and invalidates the cache |
-| ☐ | **M4-S10** | `AuditLog` row on every menu write | S | ADM-04 | The diff records before and after |
-| ☐ | **M4-S11** | Client: customer menu screen in the chosen design, with search and category filter | L | BROWSE-01…03 · LLD §7.3 | Sold-out items render as sold out, not hidden |
-| ☐ | **M4-S12** | Client: admin menu manager with the 86 toggle | L | MENU-02…03, ADM-01 | An admin can 86 an item in two taps |
+| ☑ | **M4-S1** | Menu repo: category and item queries with modifier groups joined | M | LLD §4.3 | One query, no N+1 |
+| ☑ | **M4-S2** | `getPublicMenu()` — filter `isActive`, `isAvailable`, and the schedule window | M | MENU-01, MENU-05, MENU-06 | A breakfast item is absent at 15:00 and present at 09:00 |
+| ☑ | **M4-S3** | 30 s in-memory cache with invalidation on write | S | HLD §6.4 | An admin edit is visible immediately, not 30 s later |
+| ☑ | **M4-S4** | `GET /menu` and `GET /menu/items/:id` | S | MENU-01, BROWSE-03 | Both public; no auth required |
+| ☑ | **M4-S5** | Admin category CRUD with soft delete and reorder | M | MENU-02 | Deleting sets `isActive=false`; the row survives |
+| ☑ | **M4-S6** | Admin item CRUD with soft delete | M | MENU-03, BR-11 | An item referenced by an order cannot be hard-deleted |
+| ☑ | **M4-S7** | Modifier group and item CRUD, plus attaching groups to items | M | MENU-04 | An item can carry *Size* (min 1, max 1) and *Extras* (min 0, max 3) |
+| ☑ | **M4-S8** | **`resolveSelections(itemId, modifierItemIds)`** — assert every id belongs to a group attached to that item, is available, and satisfies `minSelect`/`maxSelect`; return authoritative deltas | L | CART-03, NFR-S4, AC-17 · LLD §4.3 | A modifier borrowed from another item → `422 INVALID_MODIFIER_SELECTION` |
+| ☑ | **M4-S9** | 86 toggle endpoint | S | MENU-03, AC-7 | Flips `isAvailable` and invalidates the cache |
+| ☑ | **M4-S10** | `AuditLog` row on every menu write | S | ADM-04 | The diff records before and after |
+| ☑ | **M4-S11** | Client: customer menu screen in the chosen design, with search and category filter | L | BROWSE-01…03 · LLD §7.3 | Sold-out items render as sold out, not hidden |
+| ☑ | **M4-S12** | Client: admin menu manager with the 86 toggle | L | MENU-02…03, ADM-01 | An admin can 86 an item in two taps |
 
 **Traps.** M4-S8 is a security slice wearing a feature's clothes. Without it a client can submit a
 cheaper modifier, skip a required choice, or order an unavailable option — and the server will

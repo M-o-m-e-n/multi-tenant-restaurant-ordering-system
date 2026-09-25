@@ -31,3 +31,5 @@ server/prisma/seed-fixture.json
 playwright-report/
 test-results/
 .claude/settings.json
+.shots.mjs
+.dev.log

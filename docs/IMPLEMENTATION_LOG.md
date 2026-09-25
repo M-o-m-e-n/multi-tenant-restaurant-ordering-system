@@ -26,6 +26,37 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M4 — Menu
+
+**Slices:** M4-S1…S12 ☑
+**Done**
+- Server `menu` module: the public `GET /menu` (schedule-window filtered in restaurant time, 86'd
+  items kept as `isAvailable: false`) and `GET /menu/items/:id` with modifier groups; a 30 s tree
+  cache dropped after every committed write; admin CRUD under `/staff/menu` for categories,
+  items, modifier groups and options, plus attach/detach (all soft delete, no hard-delete path);
+  the 86 toggle (staff and admin); an `AuditLog` row with before/after on every write.
+- `resolveSelections(item, ids)`: rejects borrowed, unavailable and duplicate options and
+  min/max violations with `422 INVALID_MODIFIER_SELECTION` and returns the authoritative deltas
+  and the snapshot.
+- `settings` service (typed, cached, audited update) and the `audit` helper.
+- Client: `/menu` in the design-31 look (carousel, chips, search, list, sold-out state, item detail
+  dialog); `/admin/menu` with the optimistic 86 switch and dish/category forms; `formatMoney` and
+  `parseMoneyInput`.
+**Verified**
+- 18 menu integration tests: breakfast shows at 09:00 and not at 15:00 local; an admin edit is
+  visible immediately despite the cache; soft deletes keep their rows; an item carries two groups;
+  audit before/after; staff can 86 and a customer gets 403; five `resolveSelections` rejections.
+- Playwright screenshots of `/menu` and `/admin/menu` (admin logged in; the session survived a
+  full reload through the refresh cookie).
+**Issues / surprises**
+- `GET /menu` items carry `modifierGroupCount` (not in API-CONTRACT) so the client knows when it
+  must open the detail dialog before adding to the cart.
+- Modifier options are hard-deleted (orders keep their JSON snapshot); items and categories are
+  soft-deleted.
+- The admin UI doesn't yet manage modifier groups (the API does). Worth a follow-up slice.
+- Menu items have no photos yet: plates show a category glyph placeholder.
+**Next:** M5-S1.
+
 ### 2026-09-25 — M3 — Auth & RBAC
 
 **Slices:** M3-S1…S11 including S2b–S2g and S10b ☑ (18/18)

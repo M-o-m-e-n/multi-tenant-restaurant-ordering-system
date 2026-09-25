@@ -6,6 +6,7 @@ import { errorHandler, notFoundHandler } from './middleware/errors';
 import { limiter, LIMITS } from './middleware/rate-limit';
 import { requestId } from './middleware/request-id';
 import { authRouter } from './modules/auth';
+import { publicMenuRouter, staffMenuRouter } from './modules/menu';
 import { usersRouter } from './modules/users';
 
 export interface AppOptions {
@@ -40,6 +41,8 @@ export function createApp(options: AppOptions = {}): Express {
       refreshLimiter: limiter(LIMITS.refresh, limits),
     }),
   );
+  api.use('/menu', publicMenuRouter());
+  api.use('/staff/menu', staffMenuRouter());
   api.use('/staff/users', usersRouter());
   app.use('/api/v1', api);
 

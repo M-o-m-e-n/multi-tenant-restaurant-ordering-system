@@ -1,9 +1,11 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { RequireRole } from './features/auth/RequireRole';
+import { AdminMenuPage } from './pages/admin/AdminMenuPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { HomePage } from './pages/customer/HomePage';
+import { MenuPage } from './pages/customer/MenuPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { StaffPlaceholder } from './pages/StaffPlaceholder';
 import { AppShell } from './shared/ui/AppShell';
@@ -13,6 +15,7 @@ export const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { path: '/', element: <HomePage /> },
+      { path: '/menu', element: <MenuPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
       {
@@ -38,7 +41,18 @@ export const router = createBrowserRouter([
         path: '/admin',
         element: (
           <RequireRole roles={['ADMIN']}>
-            <StaffPlaceholder title="Admin" note="The menu manager arrives in M4." />
+            <StaffPlaceholder
+              title="Admin"
+              note="Manage the menu from Admin → Menu. Reports arrive in M11."
+            />
+          </RequireRole>
+        ),
+      },
+      {
+        path: '/admin/menu',
+        element: (
+          <RequireRole roles={['ADMIN']}>
+            <AdminMenuPage />
           </RequireRole>
         ),
       },
