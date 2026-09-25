@@ -9,8 +9,8 @@ export const orderKeys = {
   events: (id: string, status?: string) => ['order', id, 'events', status ?? ''] as const,
 };
 
-/** One order. Polls until the socket arrives in M8; after that, events invalidate it. */
-export function useOrder(id: string, pollMs = 5_000) {
+/** One order. Socket events invalidate it; a slow poll is the safety net (HLD §8.4). */
+export function useOrder(id: string, pollMs = 30_000) {
   return useQuery({
     queryKey: orderKeys.one(id),
     queryFn: () => api<OrderDto>(`/orders/${id}`),

@@ -2,6 +2,7 @@ import type { AuthResponse, LoginDto, RegisterDto, Role, UserDto } from '@ros/sh
 import { create } from 'zustand';
 
 import { api, onSessionEnd, refreshAccessToken, setAccessToken } from '../../shared/api/client';
+import { reconnectSocket } from '../../shared/realtime/socket';
 
 type Status = 'unknown' | 'authenticated' | 'anonymous';
 
@@ -22,11 +23,16 @@ interface AuthState {
  * /auth/refresh with the httpOnly cookie (AUTH-12, AC-22).
  */
 export const useAuth = create<AuthState>()((set) => {
-  onSessionEnd((code) => set({ status: 'anonymous', user: null, endedBecause: code }));
+  onSessionEnd((code) => {
+    set({ status: 'anonymous', user: null, endedBecause: code });
+    reconnectSocket();
+  });
 
   const signedIn = (res: AuthResponse): UserDto => {
     setAccessToken(res.accessToken);
     set({ status: 'authenticated', user: res.user, endedBecause: null });
+    // The socket re-handshakes as this user, joining the rooms their role allows.
+    reconnectSocket();
     return res.user;
   };
 
@@ -40,6 +46,7 @@ export const useAuth = create<AuthState>()((set) => {
         await refreshAccessToken();
         const user = await api<UserDto>('/auth/me');
         set({ status: 'authenticated', user });
+        reconnectSocket();
       } catch {
         setAccessToken(null);
         set({ status: 'anonymous', user: null });
@@ -62,6 +69,7 @@ export const useAuth = create<AuthState>()((set) => {
       } finally {
         setAccessToken(null);
         set({ status: 'anonymous', user: null, endedBecause: null });
+        reconnectSocket();
       }
     },
   };

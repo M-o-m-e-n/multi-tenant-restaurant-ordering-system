@@ -7,12 +7,12 @@ export const tableKeys = { all: ['tables'] as const };
 
 export type MapTable = StaffTableDto & Partial<Pick<AdminTableDto, 'qrToken' | 'qrUrl'>>;
 
-/** The table map. Polls until M8 pushes table:changed over the socket. */
+/** The table map; table:changed invalidates it, with a slow poll as a safety net. */
 export function useTables() {
   return useQuery({
     queryKey: tableKeys.all,
     queryFn: () => api<{ data: MapTable[] }>('/tables').then((r) => r.data),
-    refetchInterval: 15_000,
+    refetchInterval: 30_000,
   });
 }
 
