@@ -26,6 +26,89 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — client motion pass 2 — an interactive, scroll- and pointer-driven layer
+
+**Slices:** none (user request: "more animation, more reactive, something out of the box")
+**Done**
+- Built on the first motion pass (uncommitted at the time; kept intact).
+- New engine pieces:
+  - `shared/ui/scrollFx.ts`: one shared rAF loop for scroll position, smoothed velocity and
+    progress.
+  - `pointerFx.ts`: pointer parallax variables, magnetic pull and a delegated spotlight
+    listener.
+  - `interactive.tsx`: `Magnetic`, `Parallax`, `ScrollProgress`, `KineticText`.
+  - `Toaster` with `toastStore`.
+- Landing:
+  - `EmberField` canvas (pauses off-screen and on hidden tabs; the device pixel ratio is capped
+    at 2).
+  - The hero rebuilt with depth layers, a plate tilt and highlight, a kinetic headline, magnetic
+    CTAs and a live `openStatus` chip (5 tests).
+  - `FireToTable` pinned scroll story, replacing the "how it works" cards.
+  - A velocity-reactive marquee, a lit quote and photo parallax.
+- App-wide:
+  - scroll progress bar, glass/compact sticky nav with underlines, mobile menu sheet, route
+    transitions
+  - `CategoryChips` sliding pill
+  - undoable add-to-cart toast
+- Everything is transform, opacity or canvas only; hover effects need a fine pointer, and
+  everything stands still under reduced motion.
+**Verified**
+- `npm run check`: shared 58, server 268, client 37 (5 new), all green.
+- Full E2E, 15 of 15, on its own production stack (:4100/:5273) beside the running dev servers.
+- axe: 0 violations on 17 screens.
+- Playwright screenshots of every effect at 1280 px; phone header at 360/390 px with no overflow.
+- Guest bundle: 444 → 469 kB for both motion passes together.
+**Issues / surprises**
+- axe flagged the phone mock's dimmed (25%) dish rows even though the mock is `aria-hidden`.
+  They became shimmer placeholders. Dimmed story steps change colour, not opacity, and the lit
+  quote never drops below 40% on large text (3:1).
+- The E2E login failures were the dev server's own rate limiter (429), not the UI. The suite now
+  starts its own stack on other ports instead of reusing the dev servers.
+- The E2E exposed a one-frame flash of the "choose size and doneness" hint in the modifier dialog.
+  The selection is now derived during render.
+- On phones the nav had no menu at all (the links were `hidden md:flex`). Added a sheet.
+**Decisions raised:** ADR-028
+**Next:** commit when asked; M13-S11 staging deploy remains.
+
+---
+
+### 2026-09-25 — client motion pass — whole-frontend animation polish
+
+**Slices:** none (unplanned polish at the user's request; no milestone slice covers UI motion)
+**Done**
+- New shared motion layer, no new dependencies: `client/src/shared/ui/motion.tsx`
+  (`Reveal` scroll entrance, `CountUp` stat counter) and `motionUtils.ts`
+  (`prefersReducedMotion` guard, `flyToCart` WAAPI flight to the nav cart).
+- `motionUtils.test.ts`: 7 unit tests for the guards and the flight lifecycle.
+- `MenuSkeleton.tsx`: layout-stable loading placeholder for the menu page.
+- Landing: hero orbit ring + staggered entrance; scroll reveals on HowItWorks,
+  Story (with animated stats), QuoteBand, Reviews, Visit; marquee pauses on hover.
+- Menu: skeleton loading state; staggered row entrances; dish-card lift/tilt on
+  hover; mouse drag-to-scroll on the signature rail (touch keeps native scroll).
+- Cart: fly-to-cart from the modifier dialog (amend flow excluded — nothing goes
+  to the cart there); popping nav badge; CartBar entrance; staggered cart lines.
+- Tracker: pulsing current step with colour transitions (text labels unchanged).
+- KDS: new tickets drop in on mount only. POS table map: staggered tiles.
+- Global: button press states via `buttonClass`; native-dialog entrances in CSS.
+- Everything honours `prefers-reduced-motion`; tokens only, no new colours.
+**Verified**
+- `npx eslint client`: clean. `npm run typecheck -w @ros/client`: clean.
+- `npm test -w @ros/client`: 32 passed (25 existing + 7 new).
+- `npm run build -w @ros/client`: green; guest bundle 444 → ~450 kB.
+- Server untouched, so server suites and e2e were not re-run.
+**Issues / surprises**
+- `simple-import-sort` wants type specifiers before value specifiers in one
+  import (`SignatureRail.tsx` already showed the pattern); fixed via autofix.
+- `react-refresh/only-export-components` forced the split of `motion.tsx`
+  (components) and `motionUtils.ts` (helpers).
+- The `flyToCart` flight needed its own `dot.animate` guard: the fake DOM in
+  tests has no WAAPI, which is exactly the environment the guard is for.
+**Decisions raised:** none (polish only; no behaviour or contract changed)
+**Next:** M13-S11 staging deploy (needs a host), or rename the folder (M0-S1)
+**Time:** single session
+
+---
+
 ### 2026-09-25 — M13 — Hardening, accessibility, verification
 
 **Slices:** M13-S1…S8, S10, S13, S14 ☑ · S9 skipped (single instance) · S11, S12 ◐ (no host)

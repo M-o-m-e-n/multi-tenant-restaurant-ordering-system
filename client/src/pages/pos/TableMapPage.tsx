@@ -89,12 +89,13 @@ export function TableMapPage() {
       <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {data
           .filter((t) => t.isActive)
-          .map((t: MapTable) => {
+          .map((t: MapTable, i: number) => {
             const s = STATUS[t.status];
             return (
               <li
                 key={t.id}
-                className={`flex flex-col gap-3 rounded-card border-2 bg-card p-4 ${s.tile}`}
+                style={{ animationDelay: `${Math.min(i, 7) * 45}ms` }}
+                className={`flex flex-col gap-3 rounded-card border-2 bg-card p-4 motion-safe:animate-rise ${s.tile}`}
               >
                 <div className="flex items-start justify-between">
                   <p className="font-display text-3xl font-bold">{t.number}</p>

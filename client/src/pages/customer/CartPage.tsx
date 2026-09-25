@@ -85,14 +85,18 @@ export function CartPage() {
           </p>
         )}
         <ul className="mt-4 divide-y divide-line">
-          {cart.lines.map((l) => {
+          {cart.lines.map((l, i) => {
             const unavailable =
               previewError?.code === 'ITEM_UNAVAILABLE' &&
               ((previewError.details?.menuItemIds as string[] | undefined) ?? []).includes(
                 l.menuItemId,
               );
             return (
-              <li key={l.key} className={`flex gap-3 py-4 ${unavailable ? 'opacity-60' : ''}`}>
+              <li
+                key={l.key}
+                style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}
+                className={`flex gap-3 py-4 motion-safe:animate-rise ${unavailable ? 'opacity-60' : ''}`}
+              >
                 <DishImage
                   name={l.name}
                   imageUrl={l.imageUrl}

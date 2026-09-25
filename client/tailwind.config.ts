@@ -63,6 +63,17 @@ export default {
           from: { opacity: '0', transform: 'translateY(24px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
+        // Cart badge pop when the count changes (keyed remount in NavBar).
+        pop: {
+          '0%': { transform: 'scale(.4)' },
+          '55%': { transform: 'scale(1.25)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        // New kitchen tickets slide in once, on mount only (KDS).
+        'drop-in': {
+          from: { opacity: '0', transform: 'translateY(-12px) scale(.98)' },
+          to: { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
       },
       animation: {
         bob: 'bob 3.4s ease-in-out infinite',
@@ -70,6 +81,8 @@ export default {
         'spin-slow': 'spin 80s linear infinite',
         marquee: 'marquee 36s linear infinite',
         rise: 'rise .8s cubic-bezier(.2,.7,.2,1) both',
+        pop: 'pop .45s cubic-bezier(.2,.7,.2,1) both',
+        'drop-in': 'drop-in .45s cubic-bezier(.2,.7,.2,1) both',
       },
     },
   },

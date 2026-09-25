@@ -43,6 +43,7 @@ supersedes the old one.
 | [025](#adr-025--delivery-and-reservation-rules-the-spec-left-open) | Delivery and reservation rules the spec left open | Accepted | Build, M12 |
 | [026](#adr-026--real-photography-served-with-the-client) | Real photography served with the client | Accepted | Build, UI |
 | [027](#adr-027--how-m13-was-verified-without-a-staging-host) | How M13 was verified without a staging host | Accepted | Build, M13 |
+| [028](#adr-028--motion-without-an-animation-library) | Motion without an animation library | Accepted | Build, UI |
 
 ---
 
@@ -345,6 +346,29 @@ staging. The build environment has no public host, no Stripe keys, and little fr
 **Consequences.** M13-S11 and S12 stay open until a host exists. OPERATIONS.md has the checklist.
 The E2E suite (`npm run e2e`) is not part of `npm run check`, because it needs Docker, a build and
 about 1 GB of memory.
+
+### ADR-028 — Motion without an animation library
+**Status:** Accepted · 2026-09-25
+**Context.** The customer asked for a far more animated and reactive frontend. Options were
+framer-motion or GSAP (about 30–60 kB gzipped, plus a new idiom), or hand-built effects on
+platform APIs.
+**Decision.**
+- **No animation dependency.** Effects use CSS transitions and keyframes, the Web Animations API,
+  one canvas, and a single shared rAF loop for scroll (`scrollFx`).
+- **What may move.** Only `transform`, `opacity` and canvas pixels animate. Nothing animates
+  layout.
+- **Who sees it.**
+  - Pointer effects (parallax, magnetic pull, spotlight) run only on fine pointers.
+  - Everything decorative checks `prefersReducedMotion()` and stands still.
+  - Canvas and rAF loops stop when off-screen or on a hidden tab.
+- **Accessibility first.**
+  - Animated text keeps a single accessible copy (`sr-only` sentence plus `aria-hidden` visual
+    words).
+  - Dimmed text changes colour instead of opacity, so it keeps AA contrast.
+  - The pinned scroll story is a plain ordered list on phones and under reduced motion.
+**Consequences.** The guest bundle grew 25 kB across both motion passes. The effects are ours to
+maintain, each about 30–120 lines, and `e2e/a11y.spec.ts` guards the contrast and keyboard rules
+on every screen.
 
 ---
 

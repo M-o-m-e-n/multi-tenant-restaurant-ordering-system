@@ -18,7 +18,7 @@ export function CartBar() {
 
   return (
     <div className="fixed inset-x-0 bottom-4 z-10 px-4">
-      <div className="mx-auto flex max-w-content items-center justify-between gap-4 rounded-2xl bg-flame px-5 py-3.5 text-white shadow-glow">
+      <div className="mx-auto flex max-w-content items-center justify-between gap-4 rounded-2xl bg-flame px-5 py-3.5 text-white shadow-glow motion-safe:animate-rise">
         <div>
           <p className="tabular text-lg font-bold">{formatMoney(totals.subtotal)}</p>
           <p className="text-xs opacity-90">

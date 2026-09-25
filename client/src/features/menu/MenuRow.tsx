@@ -7,13 +7,18 @@ interface Props {
   item: MenuItemDto;
   category: string;
   onOpen: (item: MenuItemDto) => void;
+  /** Position in the visible list, for a capped entrance stagger. */
+  index: number;
 }
 
 /** A menu list row: thumbnail, name and description, price, red + tile. */
-export function MenuRow({ item, category, onOpen }: Props) {
+export function MenuRow({ item, category, onOpen, index }: Props) {
   const soldOut = !item.isAvailable;
   return (
-    <li className="flex items-center gap-3.5 border-b border-line py-3.5">
+    <li
+      className="flex items-center gap-3.5 border-b border-line py-3.5 motion-safe:animate-rise"
+      style={{ animationDelay: `${Math.min(index, 7) * 45}ms` }}
+    >
       <DishImage
         name={item.name}
         imageUrl={item.imageUrl}

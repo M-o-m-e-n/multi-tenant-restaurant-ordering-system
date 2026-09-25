@@ -16,3 +16,11 @@ export const chartTheme = {
   surface: colors.surface.DEFAULT,
   surfaceRaised: colors.surface.raised,
 } as const;
+
+/** Ember colours for the hero canvas, hottest last (flame → amber). */
+export const emberPalette = [
+  colors.flame.dark,
+  colors.flame.DEFAULT,
+  colors.flame.light,
+  colors.star,
+] as const;

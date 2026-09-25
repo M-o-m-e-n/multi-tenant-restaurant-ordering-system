@@ -16,5 +16,5 @@ const sizes: Record<ButtonSize, string> = {
 
 /** Class string for anything that should look like a button, links included. */
 export function buttonClass(variant: ButtonVariant = 'primary', size: ButtonSize = 'md'): string {
-  return `inline-flex items-center justify-center gap-2 rounded-btn font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]}`;
+  return `inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-btn font-semibold transition active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${sizes[size]}`;
 }

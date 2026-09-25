@@ -35,3 +35,6 @@ test-results/
 .dev.log
 .sheet.mjs
 .overflow.mjs
+
+.shots-motion.mjs
+.shots-phone.mjs

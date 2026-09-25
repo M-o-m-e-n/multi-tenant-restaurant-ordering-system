@@ -1,6 +1,6 @@
 import { type APIRequestContext, expect, type Page } from '@playwright/test';
 
-export const API = 'http://localhost:4000/api/v1';
+export const API = `http://localhost:${process.env.E2E_API_PORT ?? '4000'}/api/v1`;
 export const PASSWORD = 'password123';
 export const USERS = {
   admin: 'admin@forkandflame.test',

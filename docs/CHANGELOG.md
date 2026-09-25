@@ -12,7 +12,41 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+- **Interactive motion layer (no new dependencies, ADR-028):**
+  - Hero:
+    - canvas embers that scatter from the pointer
+    - pointer parallax, with the plate tilting and a highlight following the pointer
+    - a word-by-word kinetic headline with a flame shimmer
+    - magnetic CTAs
+    - a live "open now" chip on the restaurant's clock
+  - A pinned scroll story ("From your table to our fire, and back") that walks a phone mock of the
+    tracker through four stages.
+  - A scroll-velocity marquee that speeds up, reverses and leans.
+  - A quote that lights up word by word, and photo parallax.
+  - A pointer spotlight on cards.
+  - A flame scroll-progress bar and a glass nav that shrinks on scroll.
+  - Nav underlines, a mobile menu sheet (the nav had no phone menu before), and route
+    transitions.
+  - A sliding category pill.
+  - An "added to cart" toast with Undo.
+- E2E can run beside a dev session: `E2E_API_PORT`/`E2E_WEB_PORT` start the suite's own stack,
+  `E2E_SKIP_SEED=1` leaves the dev data alone, and Vite's proxy target comes from `API_TARGET`.
+
+### Fixed
+- The modifier dialog flashed "Choose size and doneness" for one frame before applying the
+  defaults.
+- The phone header wrapped the logo and "Sign In" onto two lines; on phones the account action
+  now lives in the menu sheet.
+
+- **Client motion pass (no new dependencies):** a shared motion layer
+  (`shared/ui/motion.tsx`: scroll `Reveal`, animated `CountUp`; `motionUtils.ts`:
+  reduced-motion guard, `flyToCart` flight to the nav cart) with unit tests;
+  menu skeletons; scroll reveals and animated stats on the landing; drag-to-scroll
+  signature rail; staggered menu, cart and table-map entrances; fly-to-cart from
+  the modifier dialog; popping cart badge; pulsing live tracker step; KDS ticket
+  drop-in; dialog entrances; global button press states. Everything respects
+  `prefers-reduced-motion` and adds ~6 kB to the guest bundle.
 
 ---
 
