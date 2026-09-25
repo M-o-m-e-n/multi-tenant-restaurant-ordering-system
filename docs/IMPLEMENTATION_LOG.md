@@ -26,6 +26,31 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M1 — Shared domain core
+
+**Slices:** M1-S1…S9 ☑
+**Done**
+- `shared/src/domain`: `enums.ts` (const arrays + literal unions), `money.ts` (`bps`,
+  `assertInteger`), `pricing.ts` (`computeTotals`, `lineTotal`), `order-status.ts`
+  (`ORDER_TRANSITIONS`, `FORWARD_TRANSITION`, `canTransition`, `nextStatuses`), `discounts.ts`
+  (`evaluateDiscount`, `normalizeDiscountCode`), `errors.ts` (`DomainError` + codes).
+- `shared/src/schemas`: strict Zod schemas for auth, cart, preview, create order, append,
+  transition, cancel, list query, payment intent/cash/refund, plus response DTO types.
+**Verified**
+- `npm test -w shared`: 47 tests, with no DB, no network and no mocks.
+- The worked example (DINE_IN, 10% off, 12.5% service, 8.75% tax, 500 tip) totals **4592**.
+- P1–P12 and S1–S8 pass. `bps(-5, 1000) === -1`, and a test shows `Math.round` fails it.
+**Issues / surprises**
+- LLD §10.1 P8 says an empty cart is `ZERO_TOTAL`. The API contract gives `EMPTY_CART` for an
+  empty cart and keeps `ZERO_TOTAL` for a zero total, so `computeTotals` throws `EMPTY_CART`.
+  Doc debt: fix P8's wording in the LLD.
+- `PricingInput.discount` is `{ type, value }`, not the LLD's `{ type, valueBps, value, minOrder }`.
+  `value` is bps for PERCENT and cents for FIXED (as API-CONTRACT §15 says), and `minOrder` is
+  checked by `evaluateDiscount` before pricing.
+- A discount that hasn't started yet reports `DISCOUNT_INACTIVE`. The LLD lists only the five
+  codes and doesn't say which one applies before the window opens.
+**Next:** M2-S1.
+
 ### 2026-09-25 — M0 — Foundation
 
 **Slices:** M0-S2…S12 ☑. M0-S1 ◐: git initialised, but the folder is not renamed yet (see below).
