@@ -12,5 +12,11 @@
   "engines": {
     "node": ">=20.17"
   },
-  "scripts": {}
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "~5.9.3"
+  }
 }
