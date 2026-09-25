@@ -1,6 +1,7 @@
 import type { MenuDto, MenuItemDto, ModifierSnapshot } from '@ros/shared';
 
 import { BusinessRuleError, NotFoundError } from '../../lib/errors';
+import { publish } from '../../lib/events';
 import { localClock, timeToClock, withinWindow } from '../../lib/time';
 import { getSettings } from '../settings';
 import { activeGroups, toItemDto } from './menu.dto';
@@ -9,22 +10,16 @@ import * as repo from './menu.repo';
 const CACHE_TTL_MS = 30_000;
 let cache: { tree: repo.CategoryTree[]; at: number } | undefined;
 
-/** Listeners told after every menu write, after commit (realtime joins in M8). */
 type MenuChange = { itemId?: string; categoryId?: string };
-const listeners = new Set<(change: MenuChange) => void>();
-
-export function onMenuChanged(listener: (change: MenuChange) => void): () => void {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
 
 /**
  * Called after every committed menu write: drops the cache so the edit is
- * visible immediately, not 30 s later (M4-S3), then notifies listeners.
+ * visible immediately, not 30 s later (M4-S3), and broadcasts menu:changed to
+ * every socket, anonymous ones included, so an 86 reaches guests (AC-7).
  */
 export function menuChanged(change: MenuChange = {}): void {
   cache = undefined;
-  for (const listener of listeners) listener(change);
+  publish('menu:changed', change, { rooms: ['menu'] });
 }
 
 async function tree(): Promise<repo.CategoryTree[]> {

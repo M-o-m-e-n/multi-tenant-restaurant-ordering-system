@@ -4,7 +4,6 @@ export { publicMenuRouter, staffMenuRouter } from './menu.routes';
 export {
   getPublicMenu,
   menuChanged,
-  onMenuChanged,
   type ResolvedSelection,
   resolveSelections,
   unavailableItems,

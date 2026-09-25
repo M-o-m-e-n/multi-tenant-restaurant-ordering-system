@@ -26,6 +26,34 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M5 — Tables & QR sessions
+
+**Slices:** M5-S1…S10 ☑
+**Done**
+- `lib/events.ts`: the single `publish` façade (typed event names and rooms). Menu writes now publish
+  `menu:changed` through it. The Socket.IO transport attaches in M8.
+- `tables` module: admin CRUD with 128-bit tokens and `TABLE_NUMBER_TAKEN`; read-only
+  `GET /tables/qr/:token` and `POST /tables/sessions` (both limited to 20/min/IP); close
+  (SEATED→DIRTY, refused with `TABLE_HAS_OPEN_ORDERS` listing the orders) and clean (DIRTY→FREE),
+  both conditional updates; regenerate QR; SVG/PNG export pointing at `PUBLIC_APP_URL/t/<token>`;
+  `table:changed` after commit; `seatByToken` exported for dine-in placement in M7.
+- Client: `/t/:token` resolves (GET), opens the session (POST), stores the token in sessionStorage
+  and shows the menu with a "Ordering for Table N" banner; `/pos/tables` staff map with status as
+  colour plus icon plus word, Seat/Close/Mark clean, and admin QR download and add-table.
+**Verified**
+- 10 table integration tests, including I12 (close refused with an open order), I26 (the GET
+  mutates nothing) and old tokens dying on regeneration. 91 server tests in total.
+- Playwright at 420 px: scanning `/t/<token>` lands on `/menu` bound to Table 7, and the DB shows
+  it SEATED. The staff map shows it seated.
+**Issues / surprises**
+- New error codes not in the API contract: `TABLE_NOT_SEATED` (close on a table that isn't seated)
+  and `TABLE_NOT_DIRTY` (clean on a clean table). Doc debt.
+- New env var `PUBLIC_APP_URL` (QR target). Documented in `.env.example`.
+- I11 (an order placed with table A's token lands on A) needs orders and moves to M7-S4, as the
+  milestone plan's AC map already says (AC-12 → M7).
+- Until M8's sockets, the map polls every 15 s.
+**Next:** M6-S1.
+
 ### 2026-09-25 — M4 — Menu
 
 **Slices:** M4-S1…S12 ☑
