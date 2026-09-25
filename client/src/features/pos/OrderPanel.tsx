@@ -1,10 +1,12 @@
 import type { OrderDto, OrderStatus } from '@ros/shared';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { ApiError } from '../../shared/api/client';
 import { formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { useAuth } from '../auth/authStore';
+import { AddToOrderDialog } from '../orders/AddToOrderDialog';
 import { paymentLabel, statusLabel } from '../orders/status';
 import { useOrderPayments, useRefund } from '../payments/paymentsApi';
 import { useTransition } from './posApi';
@@ -31,6 +33,7 @@ export function OrderPanel({
   const transition = useTransition();
   const refund = useRefund();
   const [message, setMessage] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const report = (err: unknown) =>
     setMessage(err instanceof ApiError ? err.message : 'That did not work.');
@@ -136,6 +139,14 @@ export function OrderPanel({
             {ACTION[to] ?? to}
           </button>
         ))}
+        {order.isAmendable && (
+          <button type="button" className={buttonClass('ghost')} onClick={() => setAdding(true)}>
+            Add items
+          </button>
+        )}
+        <Link to={`/orders/${order.id}/receipt`} className={buttonClass('ghost')}>
+          Receipt
+        </Link>
         {refundable && (
           <button
             type="button"
@@ -150,6 +161,7 @@ export function OrderPanel({
           </button>
         )}
       </div>
+      <AddToOrderDialog order={adding ? order : null} onClose={() => setAdding(false)} />
     </section>
   );
 }

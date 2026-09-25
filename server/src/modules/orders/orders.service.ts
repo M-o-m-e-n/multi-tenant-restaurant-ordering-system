@@ -1,5 +1,8 @@
 import {
+  AMENDABLE_ORDER_STATUSES,
+  type AppendItemsDto,
   canTransition,
+  computeTotals,
   type CreateOrderDto,
   derivePaymentStatus,
   type ListOrdersQuery,
@@ -11,8 +14,10 @@ import {
   type PaymentStatus,
   type PreviewOrderDto,
   type PreviewResponse,
+  type ReceiptDto,
 } from '@ros/shared';
 
+import { writeAudit } from '../../lib/audit';
 import { BusinessRuleError, ConflictError, NotFoundError } from '../../lib/errors';
 import { publish } from '../../lib/events';
 import { type IdempotencyContext, requestHash, withIdempotency } from '../../lib/idempotency';
@@ -24,7 +29,7 @@ import { redeem } from '../discounts';
 import { getSettings } from '../settings';
 import { seatByToken, tableSeated } from '../tables';
 import { toOrderDto } from './orders.dto';
-import { priceCart } from './orders.pricing';
+import { priceCart, resolveLines, toCartLine } from './orders.pricing';
 import type { OrderWithRelations } from './orders.repo';
 import * as repo from './orders.repo';
 
@@ -355,4 +360,164 @@ export function announcePayment(snapshot: PaymentSnapshot): void {
 /** The order with its relations, for the payments module (read inside its transaction). */
 export function loadOrder(id: string, db?: Tx) {
   return repo.findOrder(id, db);
+}
+
+/**
+ * Append a later round to an open order (ORD-12…14): **one transaction**.
+ *
+ * Only while PLACED, CONFIRMED or PREPARING (BR-14). New lines are priced from
+ * the menu now; the whole order is then repriced with the rates and discount
+ * it was *placed* under, so a settings change mid-service never rewrites the
+ * first round (ORD-13). Payment status is re-derived, so a PAID order whose
+ * total rises becomes PARTIALLY_PAID (AC-14). The audit row records the lines
+ * and the totals before and after.
+ *
+ * @throws ConflictError ORDER_NOT_AMENDABLE | ITEM_UNAVAILABLE | CONCURRENT_UPDATE
+ * @throws BusinessRuleError INVALID_MODIFIER_SELECTION
+ */
+export async function appendItems(
+  id: string,
+  dto: AppendItemsDto,
+  actor: AuthUser,
+): Promise<OrderDto> {
+  const settings = await getSettings();
+  const now = new Date();
+  const { after, snapshot } = await prisma().$transaction(async (tx) => {
+    const order = await repo.findOrder(id, tx);
+    if (!order) throw notFound();
+    if (actor.role === 'CUSTOMER' && order.userId !== actor.id) throw notFound();
+    if (!(AMENDABLE_ORDER_STATUSES as readonly OrderStatus[]).includes(order.status)) {
+      throw new ConflictError(
+        'ORDER_NOT_AMENDABLE',
+        `Order ${order.orderNumber} is ${order.status.toLowerCase()}; start a new order instead.`,
+      );
+    }
+
+    const added = await resolveLines(dto.items, settings, { db: tx, now });
+    const discount =
+      order.discountType && order.discountValue !== null
+        ? { type: order.discountType, value: order.discountValue }
+        : null;
+    const { totals } = computeTotals({
+      orderType: order.type,
+      lines: [
+        ...order.items.map((i) => toCartLine({ ...i, menuItemId: i.menuItemId ?? i.id })),
+        ...added.map(toCartLine),
+      ],
+      discount,
+      tipAmount: order.tipAmount,
+      ctx: {
+        taxBps: order.taxBps,
+        serviceChargeBps: order.serviceChargeBps,
+        serviceChargeTaxable: order.serviceChargeTaxable,
+        deliveryFee: order.deliveryFee,
+      },
+    });
+
+    if (!(await repo.updateTotalsIfUnchanged(tx, id, order, totals))) {
+      throw new ConflictError(
+        'CONCURRENT_UPDATE',
+        'The order changed while you were adding to it. Try again.',
+      );
+    }
+    const firstLine = await repo.nextLineNo(tx, id);
+    await repo.insertItems(
+      tx,
+      added.map((l, i) => ({
+        orderId: id,
+        lineNo: firstLine + i,
+        menuItemId: l.menuItemId,
+        nameSnapshot: l.nameSnapshot,
+        unitPrice: l.unitPrice,
+        qty: l.qty,
+        modifiersJson: l.modifiers.map((g) => ({
+          groupId: g.groupId,
+          groupName: g.groupName,
+          items: g.items.map((m) => ({ id: m.id, name: m.name, priceDelta: m.priceDelta })),
+        })),
+        modifierTotal: l.modifierTotal,
+        lineTotal: l.lineTotal,
+        notes: l.notes,
+        station: l.station,
+        addedAt: now,
+      })),
+    );
+    const before = {
+      subtotal: order.subtotal,
+      discountAmount: order.discountAmount,
+      serviceCharge: order.serviceCharge,
+      taxAmount: order.taxAmount,
+      deliveryFee: order.deliveryFee,
+      tipAmount: order.tipAmount,
+      total: order.total,
+    };
+    await writeAudit(tx, {
+      actorId: actor.role === 'CUSTOMER' ? null : actor.id,
+      action: 'ORDER_ITEMS_APPENDED',
+      entity: 'Order',
+      entityId: id,
+      before: { totals: before },
+      after: {
+        totals,
+        lines: added.map((l) => ({
+          menuItemId: l.menuItemId,
+          name: l.nameSnapshot,
+          qty: l.qty,
+          lineTotal: l.lineTotal,
+        })),
+        by: actor.id,
+      },
+    });
+    const paymentSnapshot = await syncPaymentStatus(id, tx);
+    const updated = await repo.findOrder(id, tx);
+    if (!updated) throw notFound();
+    return { after: updated, snapshot: paymentSnapshot };
+  });
+
+  // An amendment is announced as a status event with from === to (LLD §6.2).
+  announceStatus(after, after.status, false);
+  announcePayment(snapshot);
+  return toOrderDto(after, actor);
+}
+
+/**
+ * A receipt built **entirely from the order's own snapshots** — names, prices,
+ * modifier deltas, every total component and the payment records — so a later
+ * menu or settings change cannot alter it (PRINT-01, PRINT-02, AC-19).
+ */
+export async function getReceipt(id: string, viewer: AuthUser): Promise<ReceiptDto> {
+  const order = await visibleOrder(id, viewer);
+  const [payments, settings] = await Promise.all([repo.receiptPayments(id), getSettings()]);
+  const dto = toOrderDto(order, viewer);
+  return {
+    orderId: order.id,
+    orderNumber: order.orderNumber,
+    businessDate: dto.businessDate,
+    issuedAt: new Date().toISOString(),
+    placedAt: dto.placedAt,
+    restaurant: { name: settings.restaurantName },
+    type: order.type,
+    table: order.table?.number ?? null,
+    customerName: dto.customer?.name ?? null,
+    lines: dto.items.map((i) => ({
+      name: i.nameSnapshot,
+      qty: i.qty,
+      unitPrice: i.unitPrice,
+      modifiers: i.modifiers.flatMap((g) => g.items),
+      notes: i.notes,
+      lineTotal: i.lineTotal,
+    })),
+    totals: dto.totals,
+    discountCode: order.discountCode,
+    payments: payments.map((p) => ({
+      method: p.method,
+      amount: p.amount,
+      tipAmount: p.tipAmount,
+      state: p.state,
+      at: p.createdAt.toISOString(),
+    })),
+    paymentStatus: dto.paymentStatus,
+    amountPaid: dto.amountPaid,
+    balanceDue: dto.balanceDue,
+  };
 }

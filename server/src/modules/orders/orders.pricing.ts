@@ -2,6 +2,7 @@ import {
   type CartLineDto,
   computeTotals,
   DomainError,
+  lineTotal,
   type ModifierSnapshot,
   type OrderType,
   type PricingBreakdown,
@@ -55,26 +56,27 @@ export function pricingContext(settings: Settings): PricingContext {
 }
 
 /**
- * Price a cart from the database, never from the client (CART-06, PAY-07):
- * re-read every item, refuse unavailable ones, re-resolve every modifier,
- * resolve the discount, then call the same computeTotals the client runs.
+ * Resolve requested lines against the database (CART-07, AC-17): re-read each
+ * item, refuse anything 86'd, inactive or outside its schedule window, and
+ * re-resolve every modifier to its authoritative delta. Shared by pricing a
+ * new cart and by appending to an existing order.
  *
- * @throws DomainError EMPTY_CART | DISCOUNT_*
- * @throws ConflictError ITEM_UNAVAILABLE (409) listing the offending items (CART-07)
- * @throws BusinessRuleError INVALID_MODIFIER_SELECTION (AC-17)
+ * @throws DomainError EMPTY_CART
+ * @throws ConflictError ITEM_UNAVAILABLE (409) listing the offending items
+ * @throws BusinessRuleError INVALID_MODIFIER_SELECTION
  */
-export async function priceCart(
-  input: PriceCartInput,
+export async function resolveLines(
+  items: readonly CartLineDto[],
   settings: Settings,
   opts: { db?: Db; now?: Date } = {},
-): Promise<PricedCart> {
+): Promise<PricedLine[]> {
   const db = opts.db ?? prisma();
   const now = opts.now ?? new Date();
-  if (input.items.length === 0) {
+  if (items.length === 0) {
     throw new DomainError('EMPTY_CART', 'Add at least one item before checking out.');
   }
 
-  const ids = [...new Set(input.items.map((i) => i.menuItemId))];
+  const ids = [...new Set(items.map((i) => i.menuItemId))];
   const rows = new Map((await findItemsForPricing(ids, db)).map((r) => [r.id, r]));
   const clock = localClock(now, settings.timezone);
   const unavailable = ids.filter((id) => {
@@ -96,20 +98,59 @@ export async function priceCart(
     );
   }
 
-  const resolved = input.items.map((line) => {
+  return items.map((line) => {
     const item = rows.get(line.menuItemId);
     if (!item) throw new Error('unreachable: availability checked above');
     const sel = resolveSelections(item, line.modifierItemIds);
-    return { line, item, sel };
+    return {
+      menuItemId: item.id,
+      nameSnapshot: item.name,
+      unitPrice: item.price,
+      qty: line.qty,
+      modifiers: sel.modifiers,
+      modifierTotal: sel.modifierTotal,
+      lineTotal: lineTotal({
+        unitPrice: item.price,
+        qty: line.qty,
+        modifierDeltas: sel.modifierDeltas,
+      }),
+      notes: line.notes ?? null,
+      station: item.station,
+    };
   });
+}
 
+/** A resolved line as the pricing engine sees it. */
+export function toCartLine(
+  l: Pick<PricedLine, 'menuItemId' | 'unitPrice' | 'qty' | 'modifierTotal'>,
+) {
+  return {
+    menuItemId: l.menuItemId,
+    unitPrice: l.unitPrice,
+    qty: l.qty,
+    modifierDeltas: [l.modifierTotal],
+  };
+}
+
+/**
+ * Price a cart from the database, never from the client (CART-06, PAY-07):
+ * resolve the lines, resolve the discount against the engine's own subtotal,
+ * then call the same computeTotals the client runs.
+ *
+ * @throws DomainError EMPTY_CART | DISCOUNT_*
+ * @throws ConflictError ITEM_UNAVAILABLE
+ * @throws BusinessRuleError INVALID_MODIFIER_SELECTION
+ */
+export async function priceCart(
+  input: PriceCartInput,
+  settings: Settings,
+  opts: { db?: Db; now?: Date } = {},
+): Promise<PricedCart> {
+  const db = opts.db ?? prisma();
+  const now = opts.now ?? new Date();
+  const lines = await resolveLines(input.items, settings, { db, now });
   const ctx = pricingContext(settings);
-  const cartLines = resolved.map(({ line, item, sel }) => ({
-    menuItemId: item.id,
-    unitPrice: item.price,
-    qty: line.qty,
-    modifierDeltas: sel.modifierDeltas,
-  }));
+  const cartLines = lines.map(toCartLine);
 
   // The subtotal the discount is judged against comes from the same engine.
   const undiscounted = computeTotals({ orderType: input.type, lines: cartLines, ctx });
@@ -117,28 +158,12 @@ export async function priceCart(
     ? await applyCode(input.discountCode, undiscounted.totals.subtotal, now, db)
     : null;
 
-  const { totals, lines } = computeTotals({
+  const { totals } = computeTotals({
     orderType: input.type,
     lines: cartLines,
     discount: discount?.pricing ?? null,
     tipAmount: input.tipAmount ?? 0,
     ctx,
   });
-
-  return {
-    lines: resolved.map(({ line, item, sel }, i) => ({
-      menuItemId: item.id,
-      nameSnapshot: item.name,
-      unitPrice: item.price,
-      qty: line.qty,
-      modifiers: sel.modifiers,
-      modifierTotal: sel.modifierTotal,
-      lineTotal: lines[i]?.lineTotal ?? 0,
-      notes: line.notes ?? null,
-      station: item.station,
-    })),
-    totals,
-    discount,
-    ctx,
-  };
+  return { lines, totals, discount, ctx };
 }

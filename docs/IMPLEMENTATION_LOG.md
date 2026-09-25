@@ -26,6 +26,32 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M10 — Amendments, tips & receipts
+
+**Slices:** M10-S1…S13 ☑
+**Done**
+- `appendItems`: one transaction, allowed only while PLACED/CONFIRMED/PREPARING, new lines resolved
+  like a new cart (`resolveLines`, extracted from `priceCart`), the whole order repriced with its
+  *snapshotted* rates and discount, a totals update conditional on `updatedAt` (no race with a
+  status move), `syncPaymentStatus` in the same transaction, an `ORDER_ITEMS_APPENDED` audit row,
+  and `order:status` with from === to.
+- `GET /orders/:id/receipt` built from snapshots and payment records.
+- Client: an add-to-order dialog (tracker and POS), the receipt page with print styles, a kitchen
+  ticket print page opened from the KDS.
+**Verified**
+- 9 integration tests: I17, I18, I27, AC-14, AC-15, AC-19, repricing at snapshotted rates after a
+  tax change, staff appends while PREPARING, modifier checks on appends, receipt ownership.
+  146 server tests.
+- Browser: a paid order took a dessert from the tracker → Partly paid → cash settled with a tip →
+  the printed receipt's payments sum exactly to the $33.84 total.
+**Issues / surprises**
+- **A real bug in the shared Modal**, found in the browser run: native `<dialog>` fires `close`
+  when the app closes it, so hiding one dialog to show another looked like the user dismissing it
+  and wiped state. Modal now reports only Escape, the backdrop and ✕.
+- Appended lines are priced at *today's* menu price while the order keeps its original rates. A
+  later round is a new purchase; the rates are the order's.
+**Next:** M11-S1.
+
 ### 2026-09-25 — M9 — Payments
 
 **Slices:** M9-S1…S13 ☑

@@ -42,7 +42,17 @@ export function TicketCard({ order, nowMs, settings, station, fresh, onBump }: P
       <header className="flex items-start justify-between gap-2">
         <div>
           <p className="font-display text-3xl font-bold leading-none">{order.orderNumber}</p>
-          <p className="mt-1 text-sm font-semibold text-ink-muted">{badge(order)}</p>
+          <p className="mt-1 text-sm font-semibold text-ink-muted">
+            {badge(order)}
+            <a
+              href={`/kitchen/tickets/${order.id}/print`}
+              target="_blank"
+              rel="noreferrer"
+              className="ml-3 text-xs underline hover:text-ink"
+            >
+              Print
+            </a>
+          </p>
         </div>
         {!done && (
           <div className="text-right">

@@ -6,7 +6,7 @@ import { buttonClass } from '../../shared/ui/buttonClass';
 import { Modal } from '../../shared/ui/Modal';
 import { DishImage } from '../menu/DishImage';
 import { useMenuItem } from '../menu/menuApi';
-import { useCart } from './cartStore';
+import { type CartLine, useCart } from './cartStore';
 import {
   defaultSelection,
   type Selection,
@@ -20,6 +20,8 @@ interface Props {
   category: string;
   onClose: () => void;
   onAdded?: (name: string) => void;
+  /** Hand the chosen line back instead of adding it to the cart (used when amending an order). */
+  onPick?: (line: Omit<CartLine, 'key'>) => void;
 }
 
 /**
@@ -27,7 +29,7 @@ interface Props {
  * disabled until every required group is satisfied; the server re-checks
  * the same rules regardless (AC-17).
  */
-export function ModifierDialog({ item, category, onClose, onAdded }: Props) {
+export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Props) {
   const detail = useMenuItem(item?.id ?? null);
   const full = detail.data;
   const groups = useMemo(() => full?.modifierGroups ?? [], [full]);
@@ -55,7 +57,7 @@ export function ModifierDialog({ item, category, onClose, onAdded }: Props) {
 
   function addToCart() {
     if (!full || unmet.length > 0 || soldOut) return;
-    add({
+    (onPick ?? add)({
       menuItemId: full.id,
       name: full.name,
       category,
