@@ -4,7 +4,7 @@
 | | |
 |---|---|
 | **Document ID** | ROS-LLD-001 |
-| **Version** | 1.2.1 |
+| **Version** | 1.3 |
 | **Status** | Draft |
 | **Date** | 2026-09-25 |
 | **Preceded by** | ROS-SRS-001 · ROS-HLD-001 |
@@ -765,6 +765,7 @@ Legend: 🔓 public · 🔒 auth any · 👤 customer · 🛎 staff · 🛠 admi
 | POST | `/api/v1/orders/:id/items` | 👤 own / 🛎🛠 | append items (ORD-12); `{ items: [...] }` → `200 OrderDTO`; `409 ORDER_NOT_AMENDABLE` past `PREPARING` |
 | PATCH | `/api/v1/orders/:id/status` | 🛎🛠 | `{ to, reason? }` → `200 OrderDTO` / `409` |
 | POST | `/api/v1/orders/:id/cancel` | 👤 own / 🛎 | only PLACED/CONFIRMED |
+| PATCH | `/api/v1/orders/:id/delivery` | 🛎🛠 | `{ driverName?, status? }` → `200 OrderDTO`; one step at a time `PENDING → ASSIGNED → PICKED_UP → DELIVERED`, independent of order status; naming a driver on PENDING assigns it; driver changeable until pick-up (DEL-03/04, ADR-025) |
 
 **CreateOrderDTO**
 ```jsonc
@@ -790,8 +791,8 @@ paymentStatus, amountPaid, balanceDue, table?, placedAt, nextStatuses[] (role-fi
 client's action buttons), isAmendable.
 
 **Error codes:** `400 VALIDATION_ERROR` · `401 UNAUTHENTICATED|ACCOUNT_DISABLED` · `403 FORBIDDEN` ·
-`404 ORDER_NOT_FOUND` · `409 ILLEGAL_TRANSITION|CONCURRENT_UPDATE|ITEM_UNAVAILABLE|TABLE_DIRTY|ORDER_NOT_AMENDABLE|TABLE_HAS_OPEN_ORDERS|TABLE_NUMBER_TAKEN` ·
-`422 DISCOUNT_*|EMPTY_CART|ZERO_TOTAL|INVALID_MODIFIER_SELECTION|PAYMENT_EXCEEDS_BALANCE|IDEMPOTENCY_KEY_REUSED|REFUND_NOT_AVAILABLE` ·
+`404 ORDER_NOT_FOUND` · `409 ILLEGAL_TRANSITION|CONCURRENT_UPDATE|ITEM_UNAVAILABLE|TABLE_DIRTY|ORDER_NOT_AMENDABLE|TABLE_HAS_OPEN_ORDERS|TABLE_NUMBER_TAKEN|NOT_A_DELIVERY|TABLE_OCCUPIED` ·
+`422 DISCOUNT_*|EMPTY_CART|ZERO_TOTAL|INVALID_MODIFIER_SELECTION|PAYMENT_EXCEEDS_BALANCE|IDEMPOTENCY_KEY_REUSED|REFUND_NOT_AVAILABLE|DRIVER_REQUIRED|RESERVATION_IN_PAST|RESERVATION_TOO_FAR|TABLE_REQUIRED` ·
 `429 RATE_LIMITED`.
 
 ### 5.4 Payments
@@ -814,16 +815,16 @@ client's action buttons), isAmendable.
 | POST | `/api/v1/tables/sessions` | 🔓 | `{token}` → opens the dine-in session (rate-limited). A POST because it seats the table |
 | POST | `/api/v1/tables/:id/close` | 🛎🛠 | SEATED → DIRTY; asserts no open orders (BR-08) |
 | POST | `/api/v1/tables/:id/clean` | 🛎🛠 | DIRTY → FREE |
-| POST | `/api/v1/reservations` | 🔒 | create |
-| GET | `/api/v1/reservations?date=` | 🛎🛠 | list |
-| PATCH | `/api/v1/reservations/:id` | 🛎🛠 | seat/cancel |
+| POST | `/api/v1/reservations` | 🔒 | `{guestName, guestPhone, partySize 1–20, slotAt, notes?, tableId?}`; `tableId` staff only; slot in the future and ≤ 90 days ahead |
+| GET | `/api/v1/reservations?date=` | 🛎🛠 | one business date in the restaurant timezone (today by default); each row carries `overdue` |
+| PATCH | `/api/v1/reservations/:id` | 🛎🛠 | `{action:'seat', tableId?}` → table `FREE → SEATED` + booking `SEATED` in one transaction (never joins an occupied table) · `{action:'cancel'}`; PENDING only (ADR-025) |
 
 ### 5.6 Discounts & Settings
 | Method | Path | Access |
 |---|---|---|
 | CRUD | `/api/v1/staff/discounts` | 🛠 |
 | POST | `/api/v1/discounts/validate` | 🔒 `{code, subtotal}` → `{valid, discount}` |
-| GET | `/api/v1/settings` | 🔓 public subset: `taxBps`, `serviceChargeBps`, `serviceChargeTaxable`, `deliveryFee`, `currency`, `tipPresetsBps` — everything `computeTotals` needs for the client preview to match the server |
+| GET | `/api/v1/settings` | 🔓 public subset: `taxBps`, `serviceChargeBps`, `serviceChargeTaxable`, `deliveryFee`, `currency`, `tipPresetsBps` — everything `computeTotals` needs for the client preview to match the server — plus `timezone`, so bookings are made in restaurant time (ADR-024) |
 | PUT | `/api/v1/staff/settings` | 🛠 full set |
 
 ### 5.7 Reports
@@ -1106,4 +1107,5 @@ Middleware maps `AppError` → JSON; unknown errors → logged with stack + `500
 | 1.1 | 2026-09-25 | Dev Team | Design review. `REFUNDED` removed from `OrderStatus`; `PaymentStatus` gains `PARTIALLY_PAID`; `PaymentState` declared for payment records (§2.1). State machine re-expressed as per-edge role gates plus `FORWARD_TRANSITION` (§3.1). Pricing moved to basis points with a symmetric `bps()` helper, an explicit tax base and a tip step (§3.2). Discount redemption counted atomically (§3.3). `OrderSequence` and `businessDate` replace the `Setting`-based daily counter; `UNIQUE(businessDate, orderNumber)` fixes the day-two collision (§2.2, §3.4). `IdempotencyKey` model and contract added (§2.2, §5.3). Server-side modifier validation added (§4.3, §4.4). `appendItems` and `getReceipt` added (§4.4). `createIntent` takes a partial amount; `syncPaymentStatus` becomes the sole writer of `paymentStatus`; `refund` works on cancelled orders and no longer moves order status (§4.5). Table session split into read/open/close/clean (§3.5, §4.6). Reports rewritten around one revenue definition, business-date bucketing, `menuItemId` grouping and quoted identifiers (§4.8). Anonymous sockets admitted to `menu`; `payment:changed` added (§4.9, §6). Per-request `isActive` re-check (§4.2, §9). Tests P2 corrected and P9–P12, S1–S8, I15–I27 added (§10). |
 | 1.2 | 2026-09-25 | Dev Team | Added the access/refresh token model. New `RefreshToken` model (§2.2) with rotation and reuse detection; auth module rewritten with the refresh algorithm (§4.2); new endpoints `/auth/refresh`, `/auth/logout`, `/auth/logout-all`, `/auth/sessions` (§5.1); session error codes (§8); token, CORS-credentials and CSRF rules (§9); purge job (§4.10); tests I28–I32. Supersedes the v1.1 note that no refresh tokens were needed — that reasoning did not account for always-on KDS devices (SRS §8.1). |
 | 1.1.1 | 2026-09-25 | Dev Team | Admitted two error codes the API contract required and this document lacked: `REFUND_NOT_AVAILABLE` (422) and `TABLE_NUMBER_TAKEN` (409), added to §5.3 and §8. No behavioural change. |
+| 1.3 | 2026-09-25 | Dev Team | Built M12. Added `PATCH /orders/:id/delivery` (§5.3); specified the reservation request/response and rules (§5.5); `GET /settings` now includes `timezone` (§5.6); new error codes `NOT_A_DELIVERY`, `TABLE_OCCUPIED`, `DRIVER_REQUIRED`, `RESERVATION_IN_PAST`, `RESERVATION_TOO_FAR`, `TABLE_REQUIRED` (§5.3). See ADR-024, ADR-025. |
 | 1.2.1 | 2026-09-25 | Dev Team | Money columns `bigint` → `integer` (§2.2) per ADR-004: integer cents as a Prisma `Int` / TS `number`, which agrees with §1. `SUM()` promotes to `bigint`, so aggregates are unaffected. No behavioural change. |

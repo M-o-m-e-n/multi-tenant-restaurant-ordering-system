@@ -39,6 +39,9 @@ supersedes the old one.
 | [021](#adr-021--schema-additions-made-during-the-build) | Schema additions made during the build | Accepted | Build, M2/M7 |
 | [022](#adr-022--api-additions-made-during-the-build) | API additions made during the build | Accepted | Build, M3–M8 |
 | [023](#adr-023--git-workflow-one-branch-per-milestone) | Git workflow: one branch per milestone | Accepted | Build, M0 |
+| [024](#adr-024--restaurant-timezone-is-public-time-helpers-live-in-shared) | Restaurant timezone is public; time helpers live in `shared` | Accepted | Build, M12 |
+| [025](#adr-025--delivery-and-reservation-rules-the-spec-left-open) | Delivery and reservation rules the spec left open | Accepted | Build, M12 |
+| [026](#adr-026--real-photography-served-with-the-client) | Real photography served with the client | Accepted | Build, UI |
 
 ---
 
@@ -277,6 +280,51 @@ milestone's gates pass and its tracking docs are updated. Every commit on a bran
 `npm run check`.
 **Consequences.** `git log --first-parent main` reads as the milestone list; the slice history
 stays in each branch. CODING-STANDARDS §18 should be relaxed to match.
+
+### ADR-024 — Restaurant timezone is public; time helpers live in `shared`
+**Status:** Accepted · 2026-09-25
+**Context.** A guest booking "7:30 pm" must mean 7:30 pm at the restaurant, even when their browser
+runs in another zone. The client needs the restaurant's IANA zone and the same wall-clock → UTC
+conversion the server uses. LLD §5.6 left `timezone` out of `GET /settings`, and a test asserted it.
+**Decision.** Add `timezone` to `PublicSettings`. Move `businessDateOf`, `zonedTimeToUtc` and
+`addDays` from `server/src/lib/time.ts` to `shared/src/domain/time.ts` (pure, no clock); the
+server module re-exports them, so no server import changed.
+**Consequences.** The zone is not sensitive (the address is on the landing page). Client and server
+convert slots identically, including across DST. LLD §5.6 is amended.
+
+### ADR-025 — Delivery and reservation rules the spec left open
+**Status:** Accepted · 2026-09-25
+**Context.** SRS DEL-03/04 and TABLE-06/07 name the behaviour but LLD §5 lists no delivery endpoint,
+and says nothing about a booking's time window, seating onto an occupied table, or how often an
+overdue booking is flagged.
+**Decision.**
+- `PATCH /orders/:id/delivery` (staff) takes `{ driverName?, status? }`. Delivery moves one step
+  at a time, `PENDING → ASSIGNED → PICKED_UP → DELIVERED`, through a shared status map and a
+  conditional update. Naming a driver on a PENDING delivery assigns it; the driver may change until
+  pick-up. It is independent of order status but refused on a cancelled order. Announced as an
+  `order:status` refresh with `from === to`, like an amendment. New codes: `409 NOT_A_DELIVERY`,
+  `422 DRIVER_REQUIRED`.
+- Reservations: any signed-in user may book; only staff may pin a table. A slot must be in the
+  future and at most 90 days ahead (`422 RESERVATION_IN_PAST | RESERVATION_TOO_FAR`). Seating
+  reuses the tables module's conditional `FREE → SEATED` move (`seatById`), but unlike a QR scan
+  it never joins an occupied table (`409 TABLE_OCCUPIED`); with no table given or booked,
+  `422 TABLE_REQUIRED`. Only PENDING bookings can be seated or cancelled.
+- `reservationAlerts` flags each booking once per process (an in-memory set), scanning the last
+  12 hours. `GET /reservations` computes `overdue` itself, so a restart that re-flags is harmless.
+**Consequences.** `COMPLETED` is not yet written: closing a table does not complete its booking,
+because the tables module would have to import reservations (a cycle). A booking has no owner
+column, so a guest sees the confirmation once but cannot list their bookings later.
+
+### ADR-026 — Real photography served with the client
+**Status:** Accepted · 2026-09-25
+**Context.** The fork-flame-ui skill asks for plated food photos; the emoji placeholders made the
+customer screens look unfinished. `imageUrl` accepted only absolute URLs.
+**Decision.** Ship Unsplash photos (Unsplash License, credited in the README) as static files in
+`client/public/images`, and seed each dish's `imageUrl` with a same-origin `/images/dishes/…`
+path. The item schema accepts an http(s) URL or a `/path`; other schemes and `//host` are refused.
+**Consequences.** Photos load from the app's own origin with no third-party requests. The landing
+page (hero, marquee, live signatures rail, how-it-works, story, quote band, reviews, visit) is
+built from these assets.
 
 ---
 

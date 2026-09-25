@@ -470,13 +470,13 @@ import it everywhere, and never inline a variant.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M12-S1** | Takeaway: require name and phone, no table binding | S | DEL-01 | Enforced by the `CHECK` from M2-S8 |
-| ☐ | **M12-S2** | Delivery: `Delivery` record, address, note, configurable fee | M | DEL-02 | The fee is added and never discounted (BR-10) |
-| ☐ | **M12-S3** | Driver assignment and `ASSIGNED → PICKED_UP → DELIVERED` | M | DEL-03, DEL-04 | Staff can advance delivery status independently of order status |
-| ☐ | **M12-S4** | Reservations CRUD | M | TABLE-06 | Create, list by date, cancel |
-| ☐ | **M12-S5** | Seat a reservation — table `SEATED`, reservation `SEATED` | M | TABLE-06 | Reuses the session logic from M5-S3 |
-| ☐ | **M12-S6** | `reservationAlerts` job flagging overdue bookings to the `pos` room | M | TABLE-07 · LLD §4.10 | Slot + 15 min raises `reservation:flag` |
-| ☐ | **M12-S7** | Client: delivery checkout fields and the staff reservation list | L | DEL-02, TABLE-06 | Address validation before the intent is created |
+| ☑ | **M12-S1** | Takeaway: require name and phone, no table binding | S | DEL-01 | Enforced by the `CHECK` from M2-S8 |
+| ☑ | **M12-S2** | Delivery: `Delivery` record, address, note, configurable fee | M | DEL-02 | The fee is added and never discounted (BR-10) |
+| ☑ | **M12-S3** | Driver assignment and `ASSIGNED → PICKED_UP → DELIVERED` | M | DEL-03, DEL-04 | Staff can advance delivery status independently of order status |
+| ☑ | **M12-S4** | Reservations CRUD | M | TABLE-06 | Create, list by date, cancel |
+| ☑ | **M12-S5** | Seat a reservation — table `SEATED`, reservation `SEATED` | M | TABLE-06 | Reuses the session logic from M5-S3 |
+| ☑ | **M12-S6** | `reservationAlerts` job flagging overdue bookings to the `pos` room | M | TABLE-07 · LLD §4.10 | Slot + 15 min raises `reservation:flag` |
+| ☑ | **M12-S7** | Client: delivery checkout fields and the staff reservation list | L | DEL-02, TABLE-06 | Address validation before the intent is created |
 
 **Demo.** Book a table for 19:30, seat it on arrival; separately, place a delivery order and walk
 it to `DELIVERED`.
