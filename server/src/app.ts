@@ -5,6 +5,8 @@ import { corsMiddleware } from './middleware/cors';
 import { errorHandler, notFoundHandler } from './middleware/errors';
 import { limiter, LIMITS } from './middleware/rate-limit';
 import { requestId } from './middleware/request-id';
+import { requestLog } from './middleware/request-log';
+import { securityHeaders } from './middleware/security-headers';
 import { authRouter } from './modules/auth';
 import { discountsRouter, staffDiscountsRouter } from './modules/discounts';
 import { publicMenuRouter, staffMenuRouter } from './modules/menu';
@@ -31,6 +33,8 @@ export function createApp(options: AppOptions = {}): Express {
   app.disable('x-powered-by');
   app.set('trust proxy', 'loopback');
   app.use(requestId);
+  app.use(requestLog);
+  app.use(securityHeaders());
   app.use(corsMiddleware());
   // Stripe signs the raw bytes, so the webhook is mounted before the JSON parser and
   // outside the rate-limited API router (M9-S4, API-CONTRACT §8).

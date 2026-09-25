@@ -26,6 +26,38 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M13 — Hardening, accessibility, verification
+
+**Slices:** M13-S1…S8, S10, S13, S14 ☑ · S9 skipped (single instance) · S11, S12 ◐ (no host)
+**Done**
+- S1/S3: helmet JSON-API profile; a per-request pino line; redaction includes refresh tokens.
+- S2 was already in place from M3/M7; it is now tested for `POST /orders` as well.
+- S4: `security.test.ts` (a 39-endpoint role sweep, the order rate limit, PII on public
+  endpoints). Findings: the `returnTo` backslash open redirect (fixed), `bcrypt@5` → `tar`
+  (upgraded). docs/SECURITY.md.
+- S5: `e2e/a11y.spec.ts` (axe on 17 screens, keyboard, touch targets). Two scroll regions made
+  focusable.
+- S6: `scripts/perf-menu.mjs`: p95 ≈ 69 ms at ~2,450 req/s.
+- S7: `e2e/smoke.spec.ts` scenarios 1–6 and `e2e/acceptance.spec.ts` (AC-1, AC-2, AC-22).
+- S8: `server/src/openapi` + `docs/openapi.json`, with a test that it matches the Express routes.
+- S10: `scripts/backup.sh` and `restore.sh`; the drill matched 781 orders and 759 payments.
+- S13: docs/ACCEPTANCE.md. S14: LLD 1.3.2 (schema doc debt, P8, §9), API contract 1.2 (§18a).
+- Performance: lazy routes (880 → 444 kB) and re-encoded photos.
+**Verified**
+- `npm run check`: shared 58, server 268, client 25, all green.
+- `npm run e2e`: 15 of 15 on the production builds. The KDS showed a new order 63 ms after commit.
+**Issues / surprises**
+- Free memory stayed around 1 GB. The dev servers had been stopped by Claude Code, so browser runs
+  used the lighter production builds in short foreground runs. An orphaned Vite process from the
+  stopped dev run was found holding :5173 and was stopped.
+- Shell heredocs strip backslashes in this environment. Files containing regexes are written with
+  the editor tool instead.
+- The E2E found a real bug: the KDS never badged a quick second round (ADR-027).
+**Decisions raised:** ADR-027
+**Next:** deploy to a host with TLS, add Stripe test keys, run M13-S11/S12 and re-walk AC-5 live.
+
+---
+
 ### 2026-09-25 — M12 — Delivery, takeaway & reservations (and the photo/landing UI pass)
 
 **Slices:** M12-S1…S7 ☑

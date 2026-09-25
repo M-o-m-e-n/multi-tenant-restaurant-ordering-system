@@ -18,6 +18,7 @@ export default tseslint.config(
       '.shots.mjs',
       '.sheet.mjs',
       '.overflow.mjs',
+      'scripts/*.mjs',
       'server/prisma/migrations/**',
     ],
   },
@@ -27,7 +28,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['*.js', '*.config.js'],
+          allowDefaultProject: ['*.js', '*.config.js', 'playwright.config.ts'],
         },
         tsconfigRootDir: import.meta.dirname,
       },

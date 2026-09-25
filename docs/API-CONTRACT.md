@@ -4,7 +4,7 @@
 | | |
 |---|---|
 | **Document ID** | ROS-API-001 |
-| **Version** | 1.1 (API `v1`) |
+| **Version** | 1.2 (API `v1`) |
 | **Status** | Draft |
 | **Date** | 2026-09-25 |
 | **Authority** | **ROS-LLD-001 v1.1 §5 and §6 define the endpoint set.** This document is the wire contract: exact payloads, status codes, headers and error bodies. Where the two disagree, the LLD wins and this file is the bug. |
@@ -869,6 +869,21 @@ retry. There is no order-level `FAILED` payment status.
 
 ---
 
+## 18a. Build amendments (v1.2)
+
+The build added the following to API v1. All are additive; nothing a v1.1 client relies on changed.
+Exact request shapes for every endpoint are generated from the shared Zod schemas into
+[`openapi.json`](openapi.json) (`npm run openapi -w server`), which a test keeps in step with the
+routes the server actually mounts.
+
+| Kind | Addition |
+|---|---|
+| Endpoints | `GET /settings/kds` (staff: KDS ageing thresholds) · `GET/POST /staff/users`, `PATCH /staff/users/:id` (admin) · `GET /payments/config` (card on/off and publishable key) · `PATCH /orders/:id/delivery` (staff; ADR-025) · reservations with `{action:'seat'|'cancel'}` bodies (ADR-025) |
+| Fields | `MenuItemDto.modifierGroupCount` · preview response `discount` · `GET /settings` `timezone` (ADR-024) · `ReservationDto.overdue` · `OrderDto.delivery.status` is a `DeliveryStatus` |
+| Headers | `Idempotent-Replayed: true` on a replayed idempotent response |
+| Error codes | 404 `ROUTE_NOT_FOUND`, `USER_NOT_FOUND`, `SESSION_NOT_FOUND`, `RESERVATION_NOT_FOUND` · 409 `TABLE_NOT_SEATED`, `TABLE_NOT_DIRTY`, `DISCOUNT_CODE_TAKEN`, `ORDER_REFUNDED`, `NOT_A_DELIVERY`, `TABLE_OCCUPIED` · 413 `PAYLOAD_TOO_LARGE` · 422 `DRIVER_REQUIRED`, `RESERVATION_IN_PAST`, `RESERVATION_TOO_FAR`, `TABLE_REQUIRED` · 503 `PAYMENTS_UNAVAILABLE` |
+| Realtime | `reservation:flag` is emitted by the `reservationAlerts` job; an `order:status` with `from === to` also announces a delivery update |
+
 ## 19. Versioning policy
 
 The version lives in the path (`/api/v1`). Within a major version:
@@ -890,5 +905,6 @@ misspelled field is how a tip or a discount goes missing without anyone noticing
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
+| 1.2 | 2026-09-25 | Dev Team | Recorded the build's additive changes in §18a and pointed to the generated `openapi.json` for request shapes. |
 | 1.1 | 2026-09-25 | Dev Team | Replaced the single 24 h bearer token with the access/refresh model (§2): 15-minute access tokens held in memory, a 30-day `httpOnly` refresh cookie with rotation and reuse detection, new `/auth/refresh`, `/auth/logout`, `/auth/logout-all` and `/auth/sessions` endpoints (§10), three session error codes (§5), a refresh rate limit (§8), CORS credentials, and the socket-token note (§17). **Breaking for clients**: `login` and `register` now return `accessToken` rather than `token`, and requests must be sent with `credentials: 'include'`. |
 | 1.0 | 2026-09-25 | Dev Team | Initial wire contract for API v1, derived from LLD v1.1 §5, §6 and §8. |

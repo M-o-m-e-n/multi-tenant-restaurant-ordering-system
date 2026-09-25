@@ -139,7 +139,13 @@ export function KdsPage() {
         </p>
       )}
 
-      <div className="grid flex-1 grid-flow-col auto-cols-[minmax(260px,1fr)] gap-4 overflow-x-auto">
+      {/* Focusable so the board can be scrolled from the keyboard (WCAG 2.1.1). */}
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Ticket board"
+        className="grid flex-1 grid-flow-col auto-cols-[minmax(260px,1fr)] gap-4 overflow-x-auto"
+      >
         {KDS_COLUMNS.map((col) => {
           const tickets = visible.filter((o) => o.status === col.status);
           return (

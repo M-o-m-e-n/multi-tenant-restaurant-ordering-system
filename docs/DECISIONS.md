@@ -42,6 +42,7 @@ supersedes the old one.
 | [024](#adr-024--restaurant-timezone-is-public-time-helpers-live-in-shared) | Restaurant timezone is public; time helpers live in `shared` | Accepted | Build, M12 |
 | [025](#adr-025--delivery-and-reservation-rules-the-spec-left-open) | Delivery and reservation rules the spec left open | Accepted | Build, M12 |
 | [026](#adr-026--real-photography-served-with-the-client) | Real photography served with the client | Accepted | Build, UI |
+| [027](#adr-027--how-m13-was-verified-without-a-staging-host) | How M13 was verified without a staging host | Accepted | Build, M13 |
 
 ---
 
@@ -325,6 +326,25 @@ path. The item schema accepts an http(s) URL or a `/path`; other schemes and `//
 **Consequences.** Photos load from the app's own origin with no third-party requests. The landing
 page (hero, marquee, live signatures rail, how-it-works, story, quote band, reviews, visit) is
 built from these assets.
+
+### ADR-027 — How M13 was verified without a staging host
+**Status:** Accepted · 2026-09-25
+**Context.** M13 asks for a staging deploy, a live Stripe webhook, and an acceptance walk on
+staging. The build environment has no public host, no Stripe keys, and little free memory.
+**Decision.**
+- E2E and axe run against the **production builds**: the tsup API plus `vite preview` on the dev
+  origin, so cookies and sockets behave as they do in development. Every run reseeds.
+- Browser runs log in many times from one IP, so `RATE_LIMITS_DISABLED=true` switches the
+  limiters off for them. The env schema refuses it in production, and a test proves that.
+- The acceptance walk (ACCEPTANCE.md) is done on those local builds. AC-5 is recorded as a pass with
+  a named exception.
+- Staff, admin and card-payment routes are lazy-loaded, halving the guest bundle (880 → 444 kB).
+- The KDS "later round" badge now marks any line added after placement, not only lines added more
+  than 60 s later. The E2E showed a quick second round going unbadged, and placement stamps the
+  first round with `placedAt` exactly, so no heuristic window is needed.
+**Consequences.** M13-S11 and S12 stay open until a host exists. OPERATIONS.md has the checklist.
+The E2E suite (`npm run e2e`) is not part of `npm run check`, because it needs Docker, a build and
+about 1 GB of memory.
 
 ---
 

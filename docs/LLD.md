@@ -4,7 +4,7 @@
 | | |
 |---|---|
 | **Document ID** | ROS-LLD-001 |
-| **Version** | 1.3 |
+| **Version** | 1.3.2 |
 | **Status** | Draft |
 | **Date** | 2026-09-25 |
 | **Preceded by** | ROS-SRS-001 · ROS-HLD-001 |
@@ -164,6 +164,11 @@ Indexes: `(categoryId)`, partial `(isAvailable)`.
 | tipAmount | integer | DEFAULT 0 | never discounted, never taxed (BR-13) |
 | total | integer | NOT NULL | |
 | currency | varchar(3) | DEFAULT 'usd' | |
+| taxBps | int | DEFAULT 0 | pricing snapshot: the rates the order was placed under, so an amendment reprices with them (ORD-13, ADR-021) |
+| serviceChargeBps | int | DEFAULT 0 | snapshot, as above |
+| serviceChargeTaxable | boolean | DEFAULT false | snapshot, as above |
+| discountType | DiscountType | NULL | snapshot of the applied discount's type |
+| discountValue | int | NULL | snapshot of its value (bps or cents) |
 | paymentStatus | PaymentStatus | DEFAULT `UNPAID` | derived from `Payment` rows; never written directly |
 | notes | varchar(500) | NULL | order-level |
 | placedAt | timestamptz | DEFAULT now | |
@@ -193,6 +198,8 @@ Indexes: `(status)`, `(businessDate)`, `(placedAt DESC)`, `(tableId, status)`, `
 | lineTotal | integer | NOT NULL | (unitPrice + modifierTotal) × qty |
 | notes | varchar(300) | NULL | "no onions" |
 | station | varchar(40) | NULL | copied for KDS filter |
+| addedAt | timestamptz | DEFAULT now | equals `Order.placedAt` for the first round; later rounds are badged on the KDS (ORD-12, ADR-021) |
+| lineNo | int | DEFAULT 0 | position on the order, so tickets and receipts keep the guest's order |
 
 Indexes: `(orderId)`.
 
@@ -986,12 +993,13 @@ Middleware maps `AppError` → JSON; unknown errors → logged with stack + `500
 | Unsafe-method discipline | No GET mutates. Opening a table session is a POST, so prefetchers and link previews cannot seat tables |
 | Rate limit | `express-rate-limit`: `/auth/login` and `/auth/register` 10/15 min/IP; `/auth/refresh` 60/15 min/IP (an always-on device refreshes ~4×/hour, so this is generous but still caps a brute-force); `POST /orders` 30/5 min/user; general 300/5 min |
 | CORS | explicit allow-list from env `CLIENT_ORIGINS`, **`credentials: true`** so the refresh cookie is sent. A wildcard origin is impossible alongside credentials and browsers reject it — the allow-list is mandatory, not advisory |
-| Helmet | all defaults + CSP for SPA |
+| Helmet | JSON-API profile: `default-src 'none'; frame-ancestors 'none'`, HSTS 1 year with subdomains, `nosniff`, `Referrer-Policy: no-referrer`, same-site CORP. The API serves no HTML, so it needs no SPA CSP; the client's host sets its own |
 | Body parsing | JSON with size cap 256 KB; **raw body kept** for `/payments/webhook` (`express.raw`) |
 | Stripe verify | `stripe.webhooks.constructEvent(body, sig, endpointSecret)` |
 | Webhook dedupe | unique PK on event id; duplicate → 200 early return |
 | QR tokens | 16 random bytes hex; lookup rate-limited; no user data in token |
-| Logging redaction | logger redacts `authorization`, `password`, `token` fields |
+| Logging redaction | logger redacts `authorization`, `cookie`, `password`, `token`, `accessToken`, `refreshToken` fields; one line per request with the request id, the path **without its query string**, status, duration and user id |
+| E2E switch | `RATE_LIMITS_DISABLED=true` turns the limiters off for browser test runs only; the env schema refuses it when `NODE_ENV=production` |
 | PII | DTO mappers expose phone/address only to owner + staff |
 
 ---
@@ -1010,7 +1018,7 @@ Middleware maps `AppError` → JSON; unknown errors → logged with stack + `500
 | P5 | TAKEAWAY → serviceCharge = 0 | |
 | P6 | DELIVERY → deliveryFee added, not discounted (BR-10) | |
 | P7 | discount reduces tax base (BR-03) | |
-| P8 | empty cart → ZERO_TOTAL error | |
+| P8 | empty cart → EMPTY_CART error | `ZERO_TOTAL` is kept for a non-empty cart that prices to 0 |
 | P9 | `serviceChargeTaxable = true` vs `false` on the same cart | tax differs by exactly `bps(serviceCharge, taxBps)` (BR-03) |
 | P10 | tip present | raises `total` by the tip and changes neither `discountAmount` nor `taxAmount` (BR-13) |
 | P11 | negative modifier delta forcing a negative intermediate | `bps()` rounds half-away-from-zero, so client and server agree to the cent |
@@ -1107,5 +1115,7 @@ Middleware maps `AppError` → JSON; unknown errors → logged with stack + `500
 | 1.1 | 2026-09-25 | Dev Team | Design review. `REFUNDED` removed from `OrderStatus`; `PaymentStatus` gains `PARTIALLY_PAID`; `PaymentState` declared for payment records (§2.1). State machine re-expressed as per-edge role gates plus `FORWARD_TRANSITION` (§3.1). Pricing moved to basis points with a symmetric `bps()` helper, an explicit tax base and a tip step (§3.2). Discount redemption counted atomically (§3.3). `OrderSequence` and `businessDate` replace the `Setting`-based daily counter; `UNIQUE(businessDate, orderNumber)` fixes the day-two collision (§2.2, §3.4). `IdempotencyKey` model and contract added (§2.2, §5.3). Server-side modifier validation added (§4.3, §4.4). `appendItems` and `getReceipt` added (§4.4). `createIntent` takes a partial amount; `syncPaymentStatus` becomes the sole writer of `paymentStatus`; `refund` works on cancelled orders and no longer moves order status (§4.5). Table session split into read/open/close/clean (§3.5, §4.6). Reports rewritten around one revenue definition, business-date bucketing, `menuItemId` grouping and quoted identifiers (§4.8). Anonymous sockets admitted to `menu`; `payment:changed` added (§4.9, §6). Per-request `isActive` re-check (§4.2, §9). Tests P2 corrected and P9–P12, S1–S8, I15–I27 added (§10). |
 | 1.2 | 2026-09-25 | Dev Team | Added the access/refresh token model. New `RefreshToken` model (§2.2) with rotation and reuse detection; auth module rewritten with the refresh algorithm (§4.2); new endpoints `/auth/refresh`, `/auth/logout`, `/auth/logout-all`, `/auth/sessions` (§5.1); session error codes (§8); token, CORS-credentials and CSRF rules (§9); purge job (§4.10); tests I28–I32. Supersedes the v1.1 note that no refresh tokens were needed — that reasoning did not account for always-on KDS devices (SRS §8.1). |
 | 1.1.1 | 2026-09-25 | Dev Team | Admitted two error codes the API contract required and this document lacked: `REFUND_NOT_AVAILABLE` (422) and `TABLE_NUMBER_TAKEN` (409), added to §5.3 and §8. No behavioural change. |
+| 1.3.2 | 2026-09-25 | Dev Team | Doc debt from the build: `Order` pricing-snapshot columns and `OrderItem.addedAt` / `lineNo` added to §2.2 (ADR-021); test P8 corrected to `EMPTY_CART`. |
+| 1.3.1 | 2026-09-25 | Dev Team | Built M13. §9 records what was implemented: the JSON-API helmet profile (not an SPA CSP), wider log redaction with per-request logs, and the E2E-only rate-limit switch. Behaviour elsewhere unchanged; see SECURITY.md and ACCEPTANCE.md. |
 | 1.3 | 2026-09-25 | Dev Team | Built M12. Added `PATCH /orders/:id/delivery` (§5.3); specified the reservation request/response and rules (§5.5); `GET /settings` now includes `timezone` (§5.6); new error codes `NOT_A_DELIVERY`, `TABLE_OCCUPIED`, `DRIVER_REQUIRED`, `RESERVATION_IN_PAST`, `RESERVATION_TOO_FAR`, `TABLE_REQUIRED` (§5.3). See ADR-024, ADR-025. |
 | 1.2.1 | 2026-09-25 | Dev Team | Money columns `bigint` → `integer` (§2.2) per ADR-004: integer cents as a Prisma `Int` / TS `number`, which agrees with §1. `SUM()` promotes to `bigint`, so aggregates are unaffected. No behavioural change. |
