@@ -1,38 +1,69 @@
+import type { MenuItemDto } from '@ros/shared';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { buttonClass } from '../../shared/ui/buttonClass';
+import { CartBar } from '../../features/cart/CartBar';
+import { ModifierDialog } from '../../features/cart/ModifierDialog';
+import { Hero } from '../../features/landing/Hero';
+import {
+  Footer,
+  HowItWorks,
+  Marquee,
+  QuoteBand,
+  Reviews,
+  Story,
+  Visit,
+} from '../../features/landing/Sections';
+import { useMenu } from '../../features/menu/menuApi';
+import { SignatureRail } from '../../features/menu/SignatureRail';
+import { pickSignatures } from '../../features/menu/signatures';
 
+/** The customer landing page (design 31): hero, live signatures, story, reviews, visit. */
 export function HomePage() {
+  const { data } = useMenu();
+  const [open, setOpen] = useState<MenuItemDto | null>(null);
+  const signatures = useMemo(() => pickSignatures(data), [data]);
+  const categoryName = (item: MenuItemDto) =>
+    data?.categories.find((c) => c.id === item.categoryId)?.name ?? '';
+
   return (
-    <main className="mx-auto grid w-full max-w-content items-center gap-10 px-5 pb-16 pt-6 md:grid-cols-[1.05fr_1fr] md:px-10">
-      <section className="text-center md:text-left">
-        <h1 className="font-display text-hero-sm font-bold md:text-hero">
-          it&rsquo;s not just Food, It&rsquo;s an Experience.
-        </h1>
-        <div className="mt-7 flex flex-wrap justify-center gap-3 md:justify-start">
-          <Link to="/menu" className={buttonClass('primary', 'lg')}>
-            View Menu
-          </Link>
-          <Link to="/menu" className={buttonClass('secondary', 'lg')}>
-            Order Now
-          </Link>
-        </div>
-        <div className="mt-8">
-          <p className="text-xs font-medium text-ink-muted">Reviews</p>
-          <p className="mt-2 text-lg tracking-widest text-star" aria-label="Rated 5 out of 5">
-            ★★★★★
-          </p>
-        </div>
-      </section>
-      <div className="relative flex justify-center" aria-hidden="true">
-        <div className="grid aspect-square w-[min(360px,80%)] place-items-center rounded-full bg-slate text-plate shadow-plate">
-          🥗
-        </div>
-        <span className="absolute right-[6%] top-[6%] animate-bob text-5xl">🍅</span>
-        <span className="absolute left-[2%] top-[34%] animate-bob text-4xl [animation-delay:.8s]">
-          🌿
-        </span>
-      </div>
-    </main>
+    <>
+      <main>
+        <Hero />
+        <Marquee />
+        {signatures.length > 0 && (
+          <div className="mx-auto w-full max-w-content px-5 pt-20 md:px-10">
+            <SignatureRail
+              id="signatures"
+              title={
+                <>
+                  Chef&rsquo;s <span className="text-flame">signatures</span>
+                </>
+              }
+              items={signatures}
+              categoryName={categoryName}
+              onOpen={setOpen}
+            />
+            <div className="mt-4 text-center">
+              <Link to="/menu" className="text-sm font-semibold text-flame-text hover:underline">
+                See the full menu →
+              </Link>
+            </div>
+          </div>
+        )}
+        <HowItWorks />
+        <Story />
+        <QuoteBand />
+        <Reviews />
+        <Visit />
+        <ModifierDialog
+          item={open}
+          category={open ? categoryName(open) : ''}
+          onClose={() => setOpen(null)}
+        />
+        <CartBar />
+      </main>
+      <Footer />
+    </>
   );
 }

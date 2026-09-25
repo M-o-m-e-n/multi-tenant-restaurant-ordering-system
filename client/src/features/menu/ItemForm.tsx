@@ -123,9 +123,9 @@ export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
         defaultValue={initial?.availableTo ?? ''}
       />
       <Field
-        label="Image URL"
+        label="Image URL or /images/… path"
         name="imageUrl"
-        type="url"
+        type="text"
         defaultValue={initial?.imageUrl ?? ''}
         className="sm:col-span-2"
       />

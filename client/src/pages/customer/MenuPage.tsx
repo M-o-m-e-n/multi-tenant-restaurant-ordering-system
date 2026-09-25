@@ -1,11 +1,12 @@
 import type { MenuItemDto } from '@ros/shared';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { CartBar } from '../../features/cart/CartBar';
 import { ModifierDialog } from '../../features/cart/ModifierDialog';
-import { DishCard } from '../../features/menu/DishCard';
 import { useMenu } from '../../features/menu/menuApi';
 import { MenuRow } from '../../features/menu/MenuRow';
+import { SignatureRail } from '../../features/menu/SignatureRail';
+import { pickSignatures } from '../../features/menu/signatures';
 import { TableBanner } from '../../features/table/TableBanner';
 
 /**
@@ -17,7 +18,6 @@ export function MenuPage() {
   const [category, setCategory] = useState<string>('all');
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<{ item: MenuItemDto; category: string } | null>(null);
-  const rail = useRef<HTMLDivElement>(null);
 
   const categoryName = useMemo(() => {
     const map = new Map<string, string>();
@@ -25,14 +25,7 @@ export function MenuPage() {
     return map;
   }, [data]);
 
-  const signatures = useMemo(
-    () =>
-      data?.categories
-        .flatMap((c) => c.items)
-        .filter((i) => i.modifierGroupCount > 0 || i.price >= 1400)
-        .slice(0, 8) ?? [],
-    [data],
-  );
+  const signatures = useMemo(() => pickSignatures(data), [data]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -80,44 +73,32 @@ export function MenuPage() {
   return (
     <main className="mx-auto w-full max-w-content px-5 pb-24 md:px-10">
       <TableBanner />
-      <section aria-labelledby="signatures" className="relative">
-        <div className="flex items-end justify-between">
-          <h2 id="signatures" className="font-display text-2xl font-bold">
-            Chef&rsquo;s signatures
-          </h2>
-          <div className="hidden gap-2 md:flex">
-            <button
-              type="button"
-              aria-label="Scroll back"
-              onClick={() => rail.current?.scrollBy({ left: -240, behavior: 'smooth' })}
-              className="grid size-11 place-items-center rounded-full bg-line-strong text-white"
-            >
-              ←
-            </button>
-            <button
-              type="button"
-              aria-label="Scroll forward"
-              onClick={() => rail.current?.scrollBy({ left: 240, behavior: 'smooth' })}
-              className="grid size-11 place-items-center rounded-full bg-flame text-white shadow-glow"
-            >
-              →
-            </button>
-          </div>
+      <header className="relative mb-6 overflow-hidden rounded-frame border border-line">
+        <img
+          src="/images/spread.jpg"
+          alt=""
+          className="absolute inset-0 size-full object-cover opacity-60"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-bg-deep via-bg-deep/80 to-transparent" />
+        <div className="relative px-6 py-10 md:px-10 md:py-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-flame-text">
+            Tonight&rsquo;s menu
+          </p>
+          <h1 className="mt-2 max-w-md font-display text-4xl font-bold md:text-5xl">
+            Cooked over open flame.
+          </h1>
+          <p className="mt-3 max-w-sm text-sm text-ink-muted">
+            Pick a plate, tweak it your way, and we&rsquo;ll fire it the moment you order.
+          </p>
         </div>
-        <div
-          ref={rail}
-          className="-mx-1 flex snap-x gap-5 overflow-x-auto px-1 pb-4 pt-14 [scrollbar-width:none]"
-        >
-          {signatures.map((item) => (
-            <DishCard
-              key={item.id}
-              item={item}
-              category={categoryName.get(item.categoryId) ?? ''}
-              onOpen={openItem}
-            />
-          ))}
-        </div>
-      </section>
+      </header>
+      <SignatureRail
+        id="signatures"
+        title="Chef&rsquo;s signatures"
+        items={signatures}
+        categoryName={(i) => categoryName.get(i.categoryId) ?? ''}
+        onOpen={openItem}
+      />
 
       <section aria-labelledby="full-menu" className="mt-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

@@ -33,10 +33,25 @@ export interface SeedDish {
   price: number;
   station: string;
   allergens: string[];
+  /** Photo served by the client from `client/public/images/dishes` (README credits). */
+  imageUrl: string | null;
   groups: SeedGroup[];
   /** Relative popularity used by the history generator. */
   weight: number;
 }
+
+/** Dish name → photo path (Unsplash, credited in the README). */
+const DISH_PHOTOS: Record<string, string> = {
+  'Truffle Arancini': '/images/dishes/truffle-arancini.jpg',
+  'Winter Caesar': '/images/dishes/winter-caesar.jpg',
+  'Wagyu Burger': '/images/dishes/wagyu-burger.jpg',
+  'Margherita D.O.C.': '/images/dishes/margherita.jpg',
+  'Roast Halibut': '/images/dishes/roast-halibut.jpg',
+  'Lava Fondant': '/images/dishes/lava-fondant.jpg',
+  Tiramisu: '/images/dishes/tiramisu.jpg',
+  'Iced Matcha': '/images/dishes/iced-matcha.jpg',
+  'Yuzu Lemonade': '/images/dishes/yuzu-lemonade.jpg',
+};
 
 const mod = (name: string, priceDelta = 0): SeedModifier => ({
   id: randomUUID(),
@@ -101,6 +116,7 @@ export function buildMenu() {
     price,
     station,
     allergens,
+    imageUrl: DISH_PHOTOS[name] ?? null,
     groups,
     weight,
   });
