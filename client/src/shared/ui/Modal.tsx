@@ -27,7 +27,13 @@ export function Modal({ open, onClose, title, children, wide = false }: Props) {
     <dialog
       ref={ref}
       aria-label={title}
-      onClose={onClose}
+      // Only a user's Escape counts as closing. The native `close` event also fires
+      // when the app closes the dialog itself, and treating that as the user
+      // dismissing it would wipe state the app meant to keep.
+      onCancel={(e) => {
+        e.preventDefault();
+        onClose();
+      }}
       onClick={(e) => {
         // A click on the backdrop lands on the dialog element itself.
         if (e.target === e.currentTarget) onClose();
