@@ -273,16 +273,16 @@ live *instantly* in M8, once the broadcast exists.)
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M5-S1** | Table CRUD with `qrToken = crypto.randomBytes(16).toString('hex')` | M | TABLE-01 | Tokens are 32 hex chars and unique |
-| ☐ | **M5-S2** | `GET /tables/qr/:token` — **read-only** resolve, rate-limited | S | TABLE-03, AC-12 · LLD §3.5 | Calling it repeatedly never changes table status |
-| ☐ | **M5-S3** | `POST /tables/sessions {token}` — opens the session, `FREE → SEATED` | M | TABLE-03 | A `DIRTY` table returns `409 TABLE_DIRTY` |
-| ☐ | **M5-S4** | `POST /tables/:id/close` — `SEATED → DIRTY`, asserting no open orders | M | TABLE-02, BR-08, AC-11 | With an open order → `409 TABLE_HAS_OPEN_ORDERS` |
-| ☐ | **M5-S5** | `POST /tables/:id/clean` — `DIRTY → FREE` | S | TABLE-02 | The lifecycle closes; no state is unreachable |
-| ☐ | **M5-S6** | `regenerateQr` (admin) | S | TABLE-01 | The old token stops resolving immediately |
-| ☐ | **M5-S7** | QR export as PNG/SVG, one per table | M | SRS §5.2 | A printed code scans to `https://host/t/{token}` |
-| ☐ | **M5-S8** | Client: `/t/:token` landing → resolve, then open the session, then the menu with table context | L | TABLE-03, BROWSE-04 | The table number is visible on the menu screen |
-| ☐ | **M5-S9** | Client: staff table map with status colours and close/clean actions | L | TABLE-04 | Statuses are distinguishable without relying on colour alone |
-| ☐ | **M5-S10** | Tests **I11, I12, I26** | M | LLD §10.2 | Including: a GET on the QR route mutates nothing |
+| ☑ | **M5-S1** | Table CRUD with `qrToken = crypto.randomBytes(16).toString('hex')` | M | TABLE-01 | Tokens are 32 hex chars and unique |
+| ☑ | **M5-S2** | `GET /tables/qr/:token` — **read-only** resolve, rate-limited | S | TABLE-03, AC-12 · LLD §3.5 | Calling it repeatedly never changes table status |
+| ☑ | **M5-S3** | `POST /tables/sessions {token}` — opens the session, `FREE → SEATED` | M | TABLE-03 | A `DIRTY` table returns `409 TABLE_DIRTY` |
+| ☑ | **M5-S4** | `POST /tables/:id/close` — `SEATED → DIRTY`, asserting no open orders | M | TABLE-02, BR-08, AC-11 | With an open order → `409 TABLE_HAS_OPEN_ORDERS` |
+| ☑ | **M5-S5** | `POST /tables/:id/clean` — `DIRTY → FREE` | S | TABLE-02 | The lifecycle closes; no state is unreachable |
+| ☑ | **M5-S6** | `regenerateQr` (admin) | S | TABLE-01 | The old token stops resolving immediately |
+| ☑ | **M5-S7** | QR export as PNG/SVG, one per table | M | SRS §5.2 | A printed code scans to `https://host/t/{token}` |
+| ☑ | **M5-S8** | Client: `/t/:token` landing → resolve, then open the session, then the menu with table context | L | TABLE-03, BROWSE-04 | The table number is visible on the menu screen |
+| ☑ | **M5-S9** | Client: staff table map with status colours and close/clean actions | L | TABLE-04 | Statuses are distinguishable without relying on colour alone |
+| ☑ | **M5-S10** | Tests **I11, I12, I26** | M | LLD §10.2 | Including: a GET on the QR route mutates nothing |
 
 **Traps.** Keep the read and the write separate (M5-S2 vs M5-S3). A `GET` that seats a table will
 be fired by link previews, prefetchers and crawlers — you will see tables seat themselves.
