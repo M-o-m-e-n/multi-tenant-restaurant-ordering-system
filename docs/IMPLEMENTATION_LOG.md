@@ -26,6 +26,42 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M0 — Foundation
+
+**Slices:** M0-S2…S12 ☑. M0-S1 ◐: git initialised, but the folder is not renamed yet (see below).
+**Done**
+- Git repository on `main`, one feature branch per milestone (`feat/m0-foundation`), one commit
+  per slice, merged with `--no-ff`. `.gitattributes` forces LF.
+- npm workspaces `shared` / `server` / `client`; `tsconfig.base.json` with `strict`,
+  `noUncheckedIndexedAccess`, `verbatimModuleSyntax`, `moduleResolution: Bundler`.
+- One ESLint 9 flat config (type-aware typescript-eslint, simple-import-sort, react-hooks) and
+  Prettier; Vitest in every workspace; root `npm run check` = format, lint, typecheck, test.
+- `docker-compose.yml`: `postgres:15.8-alpine`, named volume, init script creating `ros_test`.
+- Zod env parsing that fails fast with named problems; `server/.env.example`.
+- Express app factory (`app.ts`, no listen), `server.ts` bootstrap, `GET /health`, pino logger
+  with redaction.
+- Vite 5 + React 18 + React Router 6 + Tailwind 3 shell with the design-31 tokens.
+- GitHub Actions CI; tsup server build that bundles `@ros/shared` source; README.
+**Verified**
+- A deliberate type error fails `npm run typecheck`; a floating promise fails `npm run lint`.
+- `DATABASE_URL=` → `Invalid environment configuration: DATABASE_URL is required`, exit 1.
+- `curl /health` → `{"status":"ok"}`, directly and through the Vite proxy.
+- Postgres data survives `docker compose restart`.
+- `npm run build` builds server and client.
+**Issues / surprises**
+- **M0-S1 folder rename not done.** Renaming the directory would have broken the running Claude
+  session and the open IDE. Rename `restaurnat-ordering-system` → `restaurant-ordering-system`
+  yourself, with the IDE closed. Git history moves with it.
+- **CI not run on GitHub**: there's no remote yet. The workflow mirrors `npm run check` + build,
+  which pass locally.
+- Latest majors have moved on (React 19, Express 5, Tailwind 4, Vite 8, Prisma 7, Zod 4,
+  TypeScript 7). Versions pinned to what the design specifies or to the last proven major that
+  supports Node 20.17: React 18.3, Express 4.22, Tailwind 3.4, Vite 5.4, Vitest 2.1, Prisma 6.19,
+  Zod 3.25, TypeScript 5.9, ESLint 9.
+- Branching: CODING-STANDARDS §18 asks for one slice per branch. With 100+ slices that is a lot
+  of branches, so I used one branch per milestone with one commit per slice instead.
+**Next:** M1-S1.
+
 ### 2026-09-25 — Pre-M0 — Money type settled (ADR-004)
 
 **Slices:** none (design decision)

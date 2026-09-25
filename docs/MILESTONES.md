@@ -122,17 +122,17 @@ Every later milestone assumes these gates already exist, so cutting corners here
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
 | ☐ | **M0-S1** | Rename the working folder to `restaurant-ordering-system`, then `git init` and commit the three design docs plus `designs/` | S | HLD §4 | `git log` shows one commit; the folder name is spelled correctly |
-| ☐ | **M0-S2** | Create npm workspaces: root `package.json` with `shared`, `server`, `client` | S | HLD §4 | `npm install` at root links all three; `npm ls -w shared` resolves |
-| ☐ | **M0-S3** | `tsconfig.base.json` with `strict: true`, extended by each workspace | S | NFR-M1 | A deliberate type error fails `npm run typecheck` |
-| ☐ | **M0-S4** | ESLint + Prettier, one config, all workspaces | S | NFR-M2 | A deliberate lint error fails `npm run lint` |
-| ☐ | **M0-S5** | Vitest wired in all three workspaces with a root `test` script | S | HLD §12.3 | A trivial passing test runs in each workspace |
-| ☐ | **M0-S6** | `docker-compose.yml`: Postgres 15, pinned, named volume | S | NFR-B1 | `docker compose up -d` gives a reachable DB that survives a restart |
-| ☐ | **M0-S7** | `.env.example` + Zod env parsing that **fails fast at boot** on a missing var | M | HLD §11.4, NFR-S10 | Deleting `DATABASE_URL` stops the server with a named error, not a stack trace |
-| ☐ | **M0-S8** | Express app factory (`app.ts`, no `listen`) + `server.ts` bootstrap + `GET /health` | M | HLD §4 | `curl /health` returns `{status:"ok"}`; `app.ts` is importable by tests |
-| ☐ | **M0-S9** | Vite + React 18 + React Router + Tailwind SPA shell | M | HLD §5 | `npm run dev` serves a routed shell at :5173 |
-| ☐ | **M0-S10** | **Choose the design direction** from `designs/index.html`; extract its palette and type scale into Tailwind theme tokens | M | SRS §5.1 | `tailwind.config` carries named tokens; the shell renders in the chosen identity |
-| ☐ | **M0-S11** | CI: install → lint → typecheck → test → `prisma validate` → build | M | HLD §11.3 | A pushed branch runs the pipeline and goes green |
-| ☐ | **M0-S12** | `README.md`: one-command bootstrap, env setup, workspace map | S | NFR-B1 | A fresh clone reaches a running app following only the README |
+| ☑ | **M0-S2** | Create npm workspaces: root `package.json` with `shared`, `server`, `client` | S | HLD §4 | `npm install` at root links all three; `npm ls -w shared` resolves |
+| ☑ | **M0-S3** | `tsconfig.base.json` with `strict: true`, extended by each workspace | S | NFR-M1 | A deliberate type error fails `npm run typecheck` |
+| ☑ | **M0-S4** | ESLint + Prettier, one config, all workspaces | S | NFR-M2 | A deliberate lint error fails `npm run lint` |
+| ☑ | **M0-S5** | Vitest wired in all three workspaces with a root `test` script | S | HLD §12.3 | A trivial passing test runs in each workspace |
+| ☑ | **M0-S6** | `docker-compose.yml`: Postgres 15, pinned, named volume | S | NFR-B1 | `docker compose up -d` gives a reachable DB that survives a restart |
+| ☑ | **M0-S7** | `.env.example` + Zod env parsing that **fails fast at boot** on a missing var | M | HLD §11.4, NFR-S10 | Deleting `DATABASE_URL` stops the server with a named error, not a stack trace |
+| ☑ | **M0-S8** | Express app factory (`app.ts`, no `listen`) + `server.ts` bootstrap + `GET /health` | M | HLD §4 | `curl /health` returns `{status:"ok"}`; `app.ts` is importable by tests |
+| ☑ | **M0-S9** | Vite + React 18 + React Router + Tailwind SPA shell | M | HLD §5 | `npm run dev` serves a routed shell at :5173 |
+| ☑ | **M0-S10** | **Choose the design direction** from `designs/index.html`; extract its palette and type scale into Tailwind theme tokens | M | SRS §5.1 | `tailwind.config` carries named tokens; the shell renders in the chosen identity |
+| ☑ | **M0-S11** | CI: install → lint → typecheck → test → `prisma validate` → build | M | HLD §11.3 | A pushed branch runs the pipeline and goes green |
+| ☑ | **M0-S12** | `README.md`: one-command bootstrap, env setup, workspace map | S | NFR-B1 | A fresh clone reaches a running app following only the README |
 
 **Traps.** Do M0-S1 before anything else — renaming a folder with `node_modules` and git history
 in it is far more annoying than renaming an empty one. Do not skip M0-S7: a server that boots with
