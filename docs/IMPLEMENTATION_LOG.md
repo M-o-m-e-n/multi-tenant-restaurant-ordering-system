@@ -26,6 +26,43 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M7 — Order placement & lifecycle
+
+**Slices:** M7-S1…S13 ☑
+**Done**
+- `createOrder`: one transaction running LLD §4.4 steps 1–10 (idempotency claim, table from the QR
+  token with seating, DB re-pricing, `ZERO_TOTAL`, atomic discount redeem, business date in the
+  restaurant timezone, `OrderSequence` upsert for the number, order + snapshotted items +
+  `(null → PLACED)` event + delivery record). Events are published after commit; replays publish
+  nothing. Staff orders are counter orders with no `userId`.
+- `transitionStatus`: edge role gate (`409 ILLEGAL_TRANSITION`, logged), conditional update
+  (`409 CONCURRENT_UPDATE`), event insert and `completedAt` in one transaction; publishes
+  `order:status`, plus `order:removed` on cancel.
+- Reads: role-scoped `GET /orders` with filters and pagination; `GET /orders/:id` and `/events`
+  return 404 for another customer's order. `lib/idempotency.ts` with an hourly purge job.
+- Client: checkout (Idempotency-Key per attempt, enabled only when totals agree), the live tracker
+  (text-labelled steps, timeline times, cancel when allowed), order history. A shared
+  `useCartPricing` hook for cart and checkout.
+**Verified**
+- 18 order integration tests: I4, I5, I6, I7, I11, I15, I16, I21, I22, I23, snapshot survives a
+  rename, concurrent placements get distinct numbers, customer cancel limits, 404 for others'
+  orders, role-scoped lists. 117 server tests.
+- Browser: QR → menu → cart → checkout → login (returnTo) → order A-1002 → staff bumps to
+  PREPARING and the tracker follows → `COMPLETED`-style illegal move refused with 409.
+**Issues / surprises**
+- **Order lines were shuffled**: lines placed together share `addedAt`, so ordering fell back to
+  the random uuid. Added `OrderItem.lineNo` (migration `order_item_line_no`). Schema addition
+  beyond LLD §2.2.
+- **Empty-cart crash**: the pricing hook called `computeTotals` on an empty cart right after
+  placement (EMPTY_CART thrown in the browser). Found in the browser run and guarded.
+- Business date is computed in JS with `Intl` from the transaction's clock, not SQL
+  `AT TIME ZONE`. Same result, and it can be tested with an injected clock (I22).
+- Cancelling doesn't free the table; closing still needs staff (BR-08). The LLD mentions
+  "release the table session" but there is no session entity.
+- The first `OrderEvent` has `actorId = null` for a customer, per the LLD ("NULL = customer/system").
+- An `Idempotent-Replayed: true` header marks replays (not in the API contract).
+**Next:** M8-S1.
+
 ### 2026-09-25 — M6 — Cart & server pricing
 
 **Slices:** M6-S1…S9 ☑
