@@ -1,6 +1,7 @@
 import cookieParser from 'cookie-parser';
 import express, { type Express, type RequestHandler, Router } from 'express';
 
+import { corsMiddleware } from './middleware/cors';
 import { errorHandler, notFoundHandler } from './middleware/errors';
 import { requestId } from './middleware/request-id';
 import { authRouter } from './modules/auth';
@@ -22,6 +23,7 @@ export function createApp(_options: AppOptions = {}): Express {
   app.disable('x-powered-by');
   app.set('trust proxy', 'loopback');
   app.use(requestId);
+  app.use(corsMiddleware());
   app.use(express.json({ limit: '256kb' }));
   app.use(cookieParser());
 
