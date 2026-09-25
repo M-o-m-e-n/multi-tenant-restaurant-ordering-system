@@ -180,7 +180,27 @@ export async function seatByToken(
   token: string,
   tx: Tx,
 ): Promise<{ table: Table; seated: boolean }> {
-  const table = await resolveQr(token, tx);
+  return seat(await resolveQr(token, tx), tx);
+}
+
+/**
+ * Seat a table for a reservation (TABLE-06), with the same FREE → SEATED
+ * conditional update as a QR session. Unlike a QR scan it never joins an
+ * occupied table: a booked party does not sit with strangers.
+ * @throws NotFoundError TABLE_NOT_FOUND
+ * @throws ConflictError TABLE_DIRTY | TABLE_OCCUPIED
+ */
+export async function seatById(id: string, tx: Tx): Promise<Table> {
+  const table = await repo.findById(id, tx);
+  if (!table?.isActive) throw notFound();
+  const { table: seatedTable, seated } = await seat(table, tx);
+  if (!seated) {
+    throw new ConflictError('TABLE_OCCUPIED', `Table ${table.number} is already seated.`);
+  }
+  return seatedTable;
+}
+
+async function seat(table: Table, tx: Tx): Promise<{ table: Table; seated: boolean }> {
   if (table.status === 'DIRTY') {
     throw new ConflictError(
       'TABLE_DIRTY',

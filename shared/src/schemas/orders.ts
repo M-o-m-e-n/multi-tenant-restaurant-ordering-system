@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { ORDER_STATUSES, ORDER_TYPES } from '../domain/enums';
+import {
+  DELIVERY_STATUSES,
+  type DeliveryStatus,
+  ORDER_STATUSES,
+  ORDER_TYPES,
+} from '../domain/enums';
 import { businessDate, nonNegativeCents, paginationShape, repeatable, uuid } from './common';
 
 /** One requested line: ids only. The server re-resolves every price (PAY-07, AC-17). */
@@ -91,6 +96,21 @@ export const transitionSchema = z
   .strict();
 export type TransitionDto = z.infer<typeof transitionSchema>;
 
+/**
+ * PATCH /orders/:id/delivery (DEL-04): assign or reassign a driver, advance the
+ * delivery one step, or both. Naming a driver on a PENDING delivery assigns it.
+ */
+export const updateDeliverySchema = z
+  .object({
+    driverName: z.string().trim().min(1).max(80).optional(),
+    status: z.enum(DELIVERY_STATUSES).optional(),
+  })
+  .strict()
+  .refine((d) => d.driverName !== undefined || d.status !== undefined, {
+    message: 'Give a driver, a status, or both.',
+  });
+export type UpdateDeliveryDto = z.infer<typeof updateDeliverySchema>;
+
 /** POST /orders/:id/cancel */
 export const cancelOrderSchema = z
   .object({ reason: z.string().trim().max(200).optional() })
@@ -142,7 +162,7 @@ export interface OrderDto {
   delivery?: {
     address: string;
     note: string | null;
-    status: string;
+    status: DeliveryStatus;
     driverName: string | null;
   } | null;
   items: OrderItemDto[];

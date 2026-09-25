@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import type { OrderStatus, OrderType, PaymentStatus } from '@ros/shared';
+import type { DeliveryStatus, OrderStatus, OrderType, PaymentStatus } from '@ros/shared';
 
 import { prisma, type Tx } from '../../lib/prisma';
 
@@ -88,6 +88,20 @@ export function insertEvent(tx: Tx, data: Prisma.OrderEventUncheckedCreateInput)
 
 export function insertDelivery(tx: Tx, data: Prisma.DeliveryUncheckedCreateInput) {
   return tx.delivery.create({ data });
+}
+
+/**
+ * Update a delivery only if it is still in `from`; zero rows means someone
+ * else moved it first (the same conditional-update rule as `moveStatus`).
+ */
+export async function updateDelivery(
+  tx: Tx,
+  orderId: string,
+  from: DeliveryStatus,
+  data: { status: DeliveryStatus; driverName: string | null },
+): Promise<boolean> {
+  const { count } = await tx.delivery.updateMany({ where: { orderId, status: from }, data });
+  return count === 1;
 }
 
 /**

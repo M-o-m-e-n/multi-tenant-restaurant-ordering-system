@@ -6,6 +6,7 @@ import {
   listOrdersQuerySchema,
   previewOrderSchema,
   transitionSchema,
+  updateDeliverySchema,
 } from '@ros/shared';
 import { type RequestHandler, Router } from 'express';
 import { z } from 'zod';
@@ -108,6 +109,16 @@ export function ordersRouter(opts: { placeLimiter: RequestHandler }): Router {
       const { id } = idParamSchema.parse(req.params);
       const { to, reason } = transitionSchema.parse(req.body);
       res.json(await service.transitionStatus(id, to, actor(req), reason));
+    }),
+  );
+
+  router.patch(
+    '/:id/delivery',
+    requireRole('STAFF', 'ADMIN'),
+    validate({ params: idParamSchema, body: updateDeliverySchema }),
+    h(async (req, res) => {
+      const { id } = idParamSchema.parse(req.params);
+      res.json(await service.updateDelivery(id, updateDeliverySchema.parse(req.body), actor(req)));
     }),
   );
 

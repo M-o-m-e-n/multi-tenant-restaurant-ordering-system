@@ -1,4 +1,5 @@
 // The only public surface of @ros/shared (CODING-STANDARDS §4).
+export * from './domain/delivery-status';
 export * from './domain/discounts';
 export * from './domain/enums';
 export * from './domain/errors';
@@ -13,5 +14,6 @@ export * from './schemas/menu';
 export * from './schemas/orders';
 export * from './schemas/payments';
 export * from './schemas/reports';
+export * from './schemas/reservations';
 export * from './schemas/settings';
 export * from './schemas/tables';
