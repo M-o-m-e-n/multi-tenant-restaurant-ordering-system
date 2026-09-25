@@ -4,6 +4,7 @@ import { RequireRole } from './features/auth/RequireRole';
 import { AdminMenuPage } from './pages/admin/AdminMenuPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
+import { CartPage } from './pages/customer/CartPage';
 import { HomePage } from './pages/customer/HomePage';
 import { MenuPage } from './pages/customer/MenuPage';
 import { TableLandingPage } from './pages/customer/TableLandingPage';
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/menu', element: <MenuPage /> },
       { path: '/t/:token', element: <TableLandingPage /> },
+      { path: '/cart', element: <CartPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
       {

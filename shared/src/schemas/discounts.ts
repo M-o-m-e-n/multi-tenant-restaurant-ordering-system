@@ -67,4 +67,6 @@ export interface ValidateDiscountResponse {
 export interface PreviewResponse {
   totals: PricingBreakdown & { currency: string };
   lines: { menuItemId: string; lineTotal: number }[];
+  /** The applied code, so the client can price with it too (additive to API-CONTRACT §12). */
+  discount: Pick<DiscountDto, 'code' | 'type' | 'value'> | null;
 }

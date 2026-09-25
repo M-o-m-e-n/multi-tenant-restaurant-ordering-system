@@ -14,5 +14,6 @@ export async function previewCart(dto: PreviewOrderDto): Promise<PreviewResponse
   return {
     totals: { ...priced.totals, currency: settings.currency },
     lines: priced.lines.map((l) => ({ menuItemId: l.menuItemId, lineTotal: l.lineTotal })),
+    discount: priced.discount ? { code: priced.discount.code, ...priced.discount.pricing } : null,
   };
 }

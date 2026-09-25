@@ -1,6 +1,8 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../../features/auth/authStore';
+import { cartCount, useCart } from '../../features/cart/cartStore';
+import { CartIcon } from '../../features/menu/DishCard';
 import { buttonClass } from './buttonClass';
 import { Logo } from './Logo';
 
@@ -15,6 +17,7 @@ const links = [
 export function NavBar() {
   const { status, user, logout } = useAuth();
   const navigate = useNavigate();
+  const count = useCart((s) => cartCount(s.lines));
   const visible = links.filter(
     (l) => l.roles === null || (user && (l.roles as readonly string[]).includes(user.role)),
   );
@@ -39,6 +42,18 @@ export function NavBar() {
         ))}
       </nav>
       <div className="flex items-center gap-3">
+        <Link
+          to="/cart"
+          aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}
+          className="relative grid size-11 place-items-center rounded-full text-ink hover:bg-surface-raised"
+        >
+          <CartIcon className="size-6" />
+          {count > 0 && (
+            <span className="absolute right-0.5 top-0.5 grid min-w-5 place-items-center rounded-full bg-flame px-1 text-[0.65rem] font-bold text-white">
+              {count}
+            </span>
+          )}
+        </Link>
         {status === 'authenticated' && user ? (
           <>
             <span className="hidden text-sm text-ink-muted sm:inline">{user.name}</span>
