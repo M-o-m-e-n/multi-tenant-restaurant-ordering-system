@@ -171,6 +171,9 @@ model AuditLog {
   createdAt DateTime @default(now()) @db.Timestamptz
 
   actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([createdAt(sort: Desc)])
 }
 
 // ---------------------------------------------------------------------------
@@ -207,6 +210,9 @@ model MenuItem {
   category       MenuCategory            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   modifierGroups MenuItemModifierGroup[]
   orderItems     OrderItem[]
+
+  @@index([categoryId])
+  @@index([isAvailable])
 }
 
 model ModifierGroup {
@@ -241,6 +247,8 @@ model ModifierItem {
   isAvailable Boolean @default(true)
 
   group ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
 }
 
 // ---------------------------------------------------------------------------
@@ -292,6 +300,15 @@ model Order {
   events   OrderEvent[]
   payments Payment[]
   delivery Delivery?
+
+  // The number recycles daily, so uniqueness is per business date (BR-15).
+  @@unique([businessDate, orderNumber])
+  @@index([status])
+  @@index([businessDate])
+  @@index([placedAt(sort: Desc)])
+  @@index([tableId, status])
+  @@index([userId, placedAt(sort: Desc)])
+  @@index([paymentStatus])
 }
 
 model OrderItem {
@@ -313,6 +330,8 @@ model OrderItem {
 
   order    Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItem MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
 }
 
 // Append-only audit of every status change (NFR-R3).
@@ -329,6 +348,8 @@ model OrderEvent {
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
 }
 
 model Delivery {
@@ -363,6 +384,9 @@ model Payment {
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
   actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, state])
+  @@index([stripePaymentIntentId])
 }
 
 // The one webhook dedupe mechanism: the Stripe event id is the primary key (PAY-08).
@@ -394,4 +418,6 @@ model IdempotencyKey {
   createdAt      DateTime @default(now()) @db.Timestamptz
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
 }
