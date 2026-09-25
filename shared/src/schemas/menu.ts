@@ -145,12 +145,18 @@ export interface MenuDto {
   categories: MenuCategoryDto[];
 }
 
+export interface AdminMenuItemDto extends MenuItemDto {
+  isActive: boolean;
+}
+
+export interface AdminCategoryDto extends Omit<MenuCategoryDto, 'items'> {
+  isActive: boolean;
+  items: AdminMenuItemDto[];
+}
+
 /** Admin view: includes inactive rows so they can be restored. */
 export interface AdminMenuDto {
-  categories: (MenuCategoryDto & {
-    isActive: boolean;
-    items: (MenuItemDto & { isActive: boolean })[];
-  })[];
+  categories: AdminCategoryDto[];
   modifierGroups: (ModifierGroupDto & { isActive: boolean })[];
 }
 
