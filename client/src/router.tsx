@@ -1,9 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 
 import { RequireRole } from './features/auth/RequireRole';
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
-import { AdminMenuPage } from './pages/admin/AdminMenuPage';
-import { ReportsPage } from './pages/admin/ReportsPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { CartPage } from './pages/customer/CartPage';
@@ -12,17 +9,30 @@ import { HomePage } from './pages/customer/HomePage';
 import { MenuPage } from './pages/customer/MenuPage';
 import { MyOrdersPage } from './pages/customer/MyOrdersPage';
 import { OrderTrackerPage } from './pages/customer/OrderTrackerPage';
-import { PayPage } from './pages/customer/PayPage';
 import { ReceiptPage } from './pages/customer/ReceiptPage';
 import { ReservePage } from './pages/customer/ReservePage';
 import { TableLandingPage } from './pages/customer/TableLandingPage';
-import { KdsPage } from './pages/kitchen/KdsPage';
-import { KitchenTicketPrintPage } from './pages/kitchen/KitchenTicketPrintPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { PosPage } from './pages/pos/PosPage';
-import { ReservationsPage } from './pages/pos/ReservationsPage';
-import { TableMapPage } from './pages/pos/TableMapPage';
 import { AppShell } from './shared/ui/AppShell';
+import { lazyPage } from './shared/ui/lazyPage';
+
+// Staff, admin and card-payment screens load on demand, so a guest never
+// downloads Recharts, Stripe or the KDS (NFR-P2).
+const AdminDashboardPage = lazyPage(
+  () => import('./pages/admin/AdminDashboardPage'),
+  'AdminDashboardPage',
+);
+const AdminMenuPage = lazyPage(() => import('./pages/admin/AdminMenuPage'), 'AdminMenuPage');
+const ReportsPage = lazyPage(() => import('./pages/admin/ReportsPage'), 'ReportsPage');
+const PayPage = lazyPage(() => import('./pages/customer/PayPage'), 'PayPage');
+const KdsPage = lazyPage(() => import('./pages/kitchen/KdsPage'), 'KdsPage');
+const KitchenTicketPrintPage = lazyPage(
+  () => import('./pages/kitchen/KitchenTicketPrintPage'),
+  'KitchenTicketPrintPage',
+);
+const PosPage = lazyPage(() => import('./pages/pos/PosPage'), 'PosPage');
+const ReservationsPage = lazyPage(() => import('./pages/pos/ReservationsPage'), 'ReservationsPage');
+const TableMapPage = lazyPage(() => import('./pages/pos/TableMapPage'), 'TableMapPage');
 
 export const router = createBrowserRouter([
   // Print views sit outside the app shell: no navigation on paper.
