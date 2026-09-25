@@ -1,6 +1,7 @@
 import type { AdminMenuDto } from '@ros/shared';
 import { useState } from 'react';
 
+import { AdminNav } from '../../features/admin/AdminNav';
 import {
   useAdminMenu,
   useCreateCategory,
@@ -44,6 +45,9 @@ export function AdminMenuPage() {
 
   return (
     <main className="mx-auto w-full max-w-content px-5 pb-20 md:px-10">
+      <div className="mb-4">
+        <AdminNav />
+      </div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-bold">Menu</h1>
