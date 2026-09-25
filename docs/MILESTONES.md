@@ -298,15 +298,15 @@ shows it turn `SEATED`.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M6-S1** | Zustand cart store with persist middleware | M | CART-01 | The cart survives a reload and a login |
-| ☐ | **M6-S2** | Quantity increment, decrement, remove; per-line notes | M | CART-02, CART-08 | Decrementing to zero removes the line |
-| ☐ | **M6-S3** | Modifier dialog enforcing `minSelect`/`maxSelect` before "Add to cart" | L | CART-03 | The add button stays disabled until a required group is satisfied |
-| ☐ | **M6-S4** | `GET /settings` public subset — `taxBps`, `serviceChargeBps`, `serviceChargeTaxable`, `deliveryFee`, `currency`, `tipPresetsBps` | S | ADM-03 · LLD §5.6 | The client has everything `computeTotals` needs |
-| ☐ | **M6-S5** | Client-side live totals via the shared `computeTotals` | M | CART-04, CART-05 | No pricing arithmetic exists in the client outside the shared call |
-| ☐ | **M6-S6** | `POST /orders/preview` — public, server-priced, no persistence | M | CART-06 | A guest gets authoritative totals before logging in |
-| ☐ | **M6-S7** | Tip selector — presets plus a custom amount | M | TIP-01, TIP-03 | Adding a tip changes the total and leaves tax and discount untouched |
-| ☐ | **M6-S8** | Promo code field calling `POST /discounts/validate` | M | DISC-02 | Each `DISCOUNT_*` code renders a distinct inline message |
-| ☐ | **M6-S9** | Parity test: client preview vs server preview on the same cart | M | AC-4 | Identical to the cent across a matrix of order types and discounts |
+| ☑ | **M6-S1** | Zustand cart store with persist middleware | M | CART-01 | The cart survives a reload and a login |
+| ☑ | **M6-S2** | Quantity increment, decrement, remove; per-line notes | M | CART-02, CART-08 | Decrementing to zero removes the line |
+| ☑ | **M6-S3** | Modifier dialog enforcing `minSelect`/`maxSelect` before "Add to cart" | L | CART-03 | The add button stays disabled until a required group is satisfied |
+| ☑ | **M6-S4** | `GET /settings` public subset — `taxBps`, `serviceChargeBps`, `serviceChargeTaxable`, `deliveryFee`, `currency`, `tipPresetsBps` | S | ADM-03 · LLD §5.6 | The client has everything `computeTotals` needs |
+| ☑ | **M6-S5** | Client-side live totals via the shared `computeTotals` | M | CART-04, CART-05 | No pricing arithmetic exists in the client outside the shared call |
+| ☑ | **M6-S6** | `POST /orders/preview` — public, server-priced, no persistence | M | CART-06 | A guest gets authoritative totals before logging in |
+| ☑ | **M6-S7** | Tip selector — presets plus a custom amount | M | TIP-01, TIP-03 | Adding a tip changes the total and leaves tax and discount untouched |
+| ☑ | **M6-S8** | Promo code field calling `POST /discounts/validate` | M | DISC-02 | Each `DISCOUNT_*` code renders a distinct inline message |
+| ☑ | **M6-S9** | Parity test: client preview vs server preview on the same cart | M | AC-4 | Identical to the cent across a matrix of order types and discounts |
 
 **Traps.** M6-S9 is the whole point of the shared package. Run it over a matrix — every order type
 × discount present/absent × tip present/absent × `serviceChargeTaxable` both ways — not one case.
