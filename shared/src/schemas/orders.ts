@@ -109,3 +109,66 @@ export const listOrdersQuerySchema = z
   })
   .strict();
 export type ListOrdersQuery = z.infer<typeof listOrdersQuerySchema>;
+
+// ---- Response shapes (API-CONTRACT §9 OrderDto) ----
+
+export interface OrderItemDto {
+  id: string;
+  menuItemId: string | null;
+  nameSnapshot: string;
+  unitPrice: number;
+  qty: number;
+  modifiers: { groupName: string; items: { name: string; priceDelta: number }[] }[];
+  modifierTotal: number;
+  lineTotal: number;
+  notes: string | null;
+  station: string | null;
+  /** When the line was added; later rounds are badged on the KDS (ORD-12). */
+  addedAt: string;
+}
+
+export interface OrderDto {
+  id: string;
+  orderNumber: string;
+  businessDate: string;
+  type: (typeof ORDER_TYPES)[number];
+  status: (typeof ORDER_STATUSES)[number];
+  paymentStatus: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'REFUNDED';
+  amountPaid: number;
+  balanceDue: number;
+  table: { id: string; number: string } | null;
+  /** Owner and staff only (NFR-S9). */
+  customer?: { name: string | null; phone: string | null };
+  delivery?: {
+    address: string;
+    note: string | null;
+    status: string;
+    driverName: string | null;
+  } | null;
+  items: OrderItemDto[];
+  totals: {
+    subtotal: number;
+    discountAmount: number;
+    serviceCharge: number;
+    taxAmount: number;
+    deliveryFee: number;
+    tipAmount: number;
+    total: number;
+    currency: string;
+  };
+  discountCode: string | null;
+  notes: string | null;
+  placedAt: string;
+  completedAt: string | null;
+  /** Role-filtered for the caller; drives the action buttons (LLD §5.3). */
+  nextStatuses: (typeof ORDER_STATUSES)[number][];
+  isAmendable: boolean;
+}
+
+export interface OrderEventDto {
+  fromStatus: (typeof ORDER_STATUSES)[number] | null;
+  toStatus: (typeof ORDER_STATUSES)[number];
+  actor: { id: string; name: string } | null;
+  reason: string | null;
+  at: string;
+}

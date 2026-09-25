@@ -1,4 +1,5 @@
 import { logger } from '../lib/logger';
+import { purgeIdempotencyKeysJob } from './purge-idempotency-keys';
 import { purgeRefreshTokensJob } from './purge-refresh-tokens';
 
 export interface Job {
@@ -8,7 +9,7 @@ export interface Job {
 }
 
 /** Interval jobs (LLD §4.10). Later milestones register theirs here. */
-export const JOBS: Job[] = [purgeRefreshTokensJob];
+export const JOBS: Job[] = [purgeRefreshTokensJob, purgeIdempotencyKeysJob];
 
 /**
  * Start every job on its interval. A failing run is logged and retried on the

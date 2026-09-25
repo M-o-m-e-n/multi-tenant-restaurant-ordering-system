@@ -48,7 +48,7 @@ export function createApp(options: AppOptions = {}): Express {
   api.use('/menu', publicMenuRouter());
   api.use('/staff/menu', staffMenuRouter());
   api.use('/settings', publicSettingsRouter());
-  api.use('/orders', ordersRouter());
+  api.use('/orders', ordersRouter({ placeLimiter: limiter(LIMITS.orders, limits) }));
   api.use('/discounts', discountsRouter());
   api.use('/staff/discounts', staffDiscountsRouter());
   api.use('/staff/settings', staffSettingsRouter());

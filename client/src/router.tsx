@@ -5,8 +5,11 @@ import { AdminMenuPage } from './pages/admin/AdminMenuPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { CartPage } from './pages/customer/CartPage';
+import { CheckoutPage } from './pages/customer/CheckoutPage';
 import { HomePage } from './pages/customer/HomePage';
 import { MenuPage } from './pages/customer/MenuPage';
+import { MyOrdersPage } from './pages/customer/MyOrdersPage';
+import { OrderTrackerPage } from './pages/customer/OrderTrackerPage';
 import { TableLandingPage } from './pages/customer/TableLandingPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { TableMapPage } from './pages/pos/TableMapPage';
@@ -21,6 +24,30 @@ export const router = createBrowserRouter([
       { path: '/menu', element: <MenuPage /> },
       { path: '/t/:token', element: <TableLandingPage /> },
       { path: '/cart', element: <CartPage /> },
+      {
+        path: '/checkout',
+        element: (
+          <RequireRole roles={['CUSTOMER', 'STAFF', 'ADMIN']}>
+            <CheckoutPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: '/orders',
+        element: (
+          <RequireRole roles={['CUSTOMER', 'STAFF', 'ADMIN']}>
+            <MyOrdersPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: '/orders/:id',
+        element: (
+          <RequireRole roles={['CUSTOMER', 'STAFF', 'ADMIN']}>
+            <OrderTrackerPage />
+          </RequireRole>
+        ),
+      },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
       {

@@ -9,6 +9,7 @@ import { Logo } from './Logo';
 const links = [
   { to: '/', label: 'Home', end: true, roles: null },
   { to: '/menu', label: 'Menu', end: false, roles: null },
+  { to: '/orders', label: 'My orders', end: false, roles: ['CUSTOMER'] },
   { to: '/kitchen', label: 'Kitchen', end: false, roles: ['STAFF', 'ADMIN'] },
   { to: '/pos/tables', label: 'Tables', end: false, roles: ['STAFF', 'ADMIN'] },
   { to: '/admin/menu', label: 'Admin', end: false, roles: ['ADMIN'] },

@@ -323,19 +323,19 @@ system, and the milestone most worth slowing down for.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M7-S1** | `businessDate` helper — `(now() AT TIME ZONE settings.timezone)::date` | M | ORD-15, BR-15 · LLD §3.4 | An order at 00:30 local in a UTC+3 deployment gets the local day |
-| ☐ | **M7-S2** | Order number allocation from `OrderSequence`, inside the placement transaction | M | ORD-10, BR-15 | Two concurrent placements never collide; `A-1001` recurs on the next day |
-| ☐ | **M7-S3** | `createOrder` transaction, steps 1–10 in order | L | ORD-01, ORD-05, NFR-R1 · LLD §4.4 | Nothing is written unless every step succeeds |
-| ☐ | **M7-S4** | Bind `tableId` **from the resolved QR token**, never from client input | M | AC-12 | A request naming table B with table A's token attaches to A |
-| ☐ | **M7-S5** | Snapshot `nameSnapshot`, `unitPrice`, `modifiersJson`, `modifierTotal`, `lineTotal`, `station` onto each `OrderItem` | M | ORD-05, BR-11 | Renaming a menu item afterwards does not change the order |
-| ☐ | **M7-S6** | First `OrderEvent` written as `(null → PLACED)` | S | ORD-04 · LLD §2.2 | `fromStatus` is null on exactly the first event |
-| ☐ | **M7-S7** | Atomic discount redemption — conditional `UPDATE … WHERE usedCount < usageLimit` | M | DISC-06 · LLD §3.3 | Two concurrent checkouts cannot both take the last redemption |
-| ☐ | **M7-S8** | `Idempotency-Key` claim, store and replay | L | NFR-R5 · LLD §2.2, §5.3 | The same key returns the original `201`; a different body → `422 IDEMPOTENCY_KEY_REUSED` |
-| ☐ | **M7-S9** | `transitionStatus` — transactional, conditional update, `OrderEvent`, `completedAt` | L | ORD-02, ORD-04, NFR-R3 · LLD §4.4 | Illegal → `409 ILLEGAL_TRANSITION`; lost race → `409 CONCURRENT_UPDATE` |
-| ☐ | **M7-S10** | `GET /orders` role-scoped and `GET /orders/:id` with an ownership check | M | ORD-07, ORD-08, NFR-S9 | A customer requesting another's order gets `404`, not `403` |
-| ☐ | **M7-S11** | Customer cancellation via the state machine's own role gate | S | ORD-09, BR-06 | A customer cannot cancel from `PREPARING` |
-| ☐ | **M7-S12** | Client: checkout → order created → live tracker page | L | ORD-07 · LLD §7.4 | The tracker shows the current status and the event timeline |
-| ☐ | **M7-S13** | Tests **I4–I7, I21–I23** | L | LLD §10.2 | Including the concurrent-transition race and business-date bucketing |
+| ☑ | **M7-S1** | `businessDate` helper — `(now() AT TIME ZONE settings.timezone)::date` | M | ORD-15, BR-15 · LLD §3.4 | An order at 00:30 local in a UTC+3 deployment gets the local day |
+| ☑ | **M7-S2** | Order number allocation from `OrderSequence`, inside the placement transaction | M | ORD-10, BR-15 | Two concurrent placements never collide; `A-1001` recurs on the next day |
+| ☑ | **M7-S3** | `createOrder` transaction, steps 1–10 in order | L | ORD-01, ORD-05, NFR-R1 · LLD §4.4 | Nothing is written unless every step succeeds |
+| ☑ | **M7-S4** | Bind `tableId` **from the resolved QR token**, never from client input | M | AC-12 | A request naming table B with table A's token attaches to A |
+| ☑ | **M7-S5** | Snapshot `nameSnapshot`, `unitPrice`, `modifiersJson`, `modifierTotal`, `lineTotal`, `station` onto each `OrderItem` | M | ORD-05, BR-11 | Renaming a menu item afterwards does not change the order |
+| ☑ | **M7-S6** | First `OrderEvent` written as `(null → PLACED)` | S | ORD-04 · LLD §2.2 | `fromStatus` is null on exactly the first event |
+| ☑ | **M7-S7** | Atomic discount redemption — conditional `UPDATE … WHERE usedCount < usageLimit` | M | DISC-06 · LLD §3.3 | Two concurrent checkouts cannot both take the last redemption |
+| ☑ | **M7-S8** | `Idempotency-Key` claim, store and replay | L | NFR-R5 · LLD §2.2, §5.3 | The same key returns the original `201`; a different body → `422 IDEMPOTENCY_KEY_REUSED` |
+| ☑ | **M7-S9** | `transitionStatus` — transactional, conditional update, `OrderEvent`, `completedAt` | L | ORD-02, ORD-04, NFR-R3 · LLD §4.4 | Illegal → `409 ILLEGAL_TRANSITION`; lost race → `409 CONCURRENT_UPDATE` |
+| ☑ | **M7-S10** | `GET /orders` role-scoped and `GET /orders/:id` with an ownership check | M | ORD-07, ORD-08, NFR-S9 | A customer requesting another's order gets `404`, not `403` |
+| ☑ | **M7-S11** | Customer cancellation via the state machine's own role gate | S | ORD-09, BR-06 | A customer cannot cancel from `PREPARING` |
+| ☑ | **M7-S12** | Client: checkout → order created → live tracker page | L | ORD-07 · LLD §7.4 | The tracker shows the current status and the event timeline |
+| ☑ | **M7-S13** | Tests **I4–I7, I21–I23** | L | LLD §10.2 | Including the concurrent-transition race and business-date bucketing |
 
 **Traps.** `transitionStatus` must be one transaction — a crash between the status update and the
 `OrderEvent` insert breaks NFR-R3 silently, and you will not notice until a report disagrees with
