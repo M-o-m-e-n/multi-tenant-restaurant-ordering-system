@@ -55,6 +55,7 @@ export type PublicSettings = Pick<
   | 'deliveryFee'
   | 'currency'
   | 'tipPresetsBps'
+  | 'timezone'
 >;
 
 export const DEFAULT_SETTINGS: Settings = {

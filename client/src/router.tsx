@@ -14,11 +14,13 @@ import { MyOrdersPage } from './pages/customer/MyOrdersPage';
 import { OrderTrackerPage } from './pages/customer/OrderTrackerPage';
 import { PayPage } from './pages/customer/PayPage';
 import { ReceiptPage } from './pages/customer/ReceiptPage';
+import { ReservePage } from './pages/customer/ReservePage';
 import { TableLandingPage } from './pages/customer/TableLandingPage';
 import { KdsPage } from './pages/kitchen/KdsPage';
 import { KitchenTicketPrintPage } from './pages/kitchen/KitchenTicketPrintPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PosPage } from './pages/pos/PosPage';
+import { ReservationsPage } from './pages/pos/ReservationsPage';
 import { TableMapPage } from './pages/pos/TableMapPage';
 import { AppShell } from './shared/ui/AppShell';
 
@@ -76,6 +78,22 @@ export const router = createBrowserRouter([
         element: (
           <RequireRole roles={['CUSTOMER', 'STAFF', 'ADMIN']}>
             <OrderTrackerPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: '/reserve',
+        element: (
+          <RequireRole roles={['CUSTOMER', 'STAFF', 'ADMIN']}>
+            <ReservePage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: '/pos/reservations',
+        element: (
+          <RequireRole roles={['STAFF', 'ADMIN']}>
+            <ReservationsPage />
           </RequireRole>
         ),
       },

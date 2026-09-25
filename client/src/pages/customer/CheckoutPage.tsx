@@ -1,4 +1,4 @@
-import type { CreateOrderDto } from '@ros/shared';
+import { type CreateOrderDto, createOrderSchema } from '@ros/shared';
 import { type FormEvent, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -65,6 +65,13 @@ export function CheckoutPage() {
       tipAmount: totals.tipAmount,
       ...(notes ? { notes } : {}),
     };
+    // Same schema the server enforces: bad contact or address details stop here,
+    // before an order (and later a payment intent) is ever created (M12-S7).
+    const check = createOrderSchema.safeParse(dto);
+    if (!check.success) {
+      setError(check.error.issues[0]?.message ?? 'Check your details and try again.');
+      return;
+    }
     setError(null);
     try {
       const order = await place.mutateAsync({ dto, key: key.current });
@@ -117,10 +124,16 @@ export function CheckoutPage() {
                   name="address"
                   autoComplete="street-address"
                   minLength={5}
+                  maxLength={300}
                   required
                   className="sm:col-span-2"
                 />
-                <Field label="Door or buzzer note" name="addressNote" className="sm:col-span-2" />
+                <Field
+                  label="Door or buzzer note"
+                  name="addressNote"
+                  maxLength={120}
+                  className="sm:col-span-2"
+                />
               </>
             )}
           </div>

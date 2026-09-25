@@ -2,11 +2,54 @@ import { describe, expect, it } from 'vitest';
 
 import { registerSchema } from './auth';
 import { updateItemSchema } from './menu';
+import { updateDeliverySchema } from './orders';
 import { createOrderSchema, listOrdersQuerySchema, previewOrderSchema } from './orders';
+import {
+  createReservationSchema,
+  isReservationOverdue,
+  updateReservationSchema,
+} from './reservations';
 
 const itemId = '6f1d2c3b-4a5e-4f60-8a7b-9c0d1e2f3a4b';
 
 describe('schemas', () => {
+  it('needs a driver or a status to update a delivery', () => {
+    expect(updateDeliverySchema.safeParse({}).success).toBe(false);
+    expect(updateDeliverySchema.safeParse({ driverName: 'Ali' }).success).toBe(true);
+    expect(updateDeliverySchema.safeParse({ status: 'PICKED_UP' }).success).toBe(true);
+  });
+
+  it('validates reservations and their seat/cancel actions', () => {
+    const base = {
+      guestName: 'Ava',
+      guestPhone: '+15550100',
+      partySize: 4,
+      slotAt: '2026-10-01T19:30:00-04:00',
+    };
+    expect(createReservationSchema.safeParse(base).success).toBe(true);
+    expect(createReservationSchema.safeParse({ ...base, partySize: 0 }).success).toBe(false);
+    expect(createReservationSchema.safeParse({ ...base, slotAt: 'tonight' }).success).toBe(false);
+    expect(updateReservationSchema.safeParse({ action: 'seat' }).success).toBe(true);
+    expect(
+      updateReservationSchema.safeParse({ action: 'cancel', tableId: base.slotAt }).success,
+    ).toBe(false);
+    expect(updateReservationSchema.safeParse({ action: 'complete' }).success).toBe(false);
+  });
+
+  it('flags a pending booking only after the 15-minute grace', () => {
+    const slotAt = '2026-10-01T19:30:00Z';
+    const at = (iso: string) => new Date(iso);
+    expect(isReservationOverdue({ status: 'PENDING', slotAt }, at('2026-10-01T19:45:00Z'))).toBe(
+      false,
+    );
+    expect(isReservationOverdue({ status: 'PENDING', slotAt }, at('2026-10-01T19:45:01Z'))).toBe(
+      true,
+    );
+    expect(isReservationOverdue({ status: 'SEATED', slotAt }, at('2026-10-01T23:00:00Z'))).toBe(
+      false,
+    );
+  });
+
   it('accepts http(s) and same-origin image paths but no other scheme', () => {
     const ok = (imageUrl: string) => updateItemSchema.safeParse({ imageUrl }).success;
     expect(ok('https://cdn.example.com/a.jpg')).toBe(true);

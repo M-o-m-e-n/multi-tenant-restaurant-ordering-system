@@ -6,6 +6,7 @@ import { ApiError } from '../../shared/api/client';
 import { formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { useAuth } from '../auth/authStore';
+import { DeliveryPanel } from '../delivery/DeliveryPanel';
 import { AddToOrderDialog } from '../orders/AddToOrderDialog';
 import { paymentLabel, statusLabel } from '../orders/status';
 import { useOrderPayments, useRefund } from '../payments/paymentsApi';
@@ -92,6 +93,8 @@ export function OrderPanel({
           {formatMoney(order.balanceDue)}
         </dd>
       </dl>
+
+      {order.delivery && <DeliveryPanel orderId={order.id} delivery={order.delivery} />}
 
       {payments.data && payments.data.data.length > 0 && (
         <ul className="flex flex-col gap-1 text-xs text-ink-muted">

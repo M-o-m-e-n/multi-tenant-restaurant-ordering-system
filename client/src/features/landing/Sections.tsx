@@ -223,9 +223,9 @@ export function Visit() {
             ))}
           </dl>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href="tel:+17185550142" className={buttonClass('primary')}>
-              Call to book
-            </a>
+            <Link to="/reserve" className={buttonClass('primary')}>
+              Book A Table
+            </Link>
             <Link to="/menu" className={buttonClass('secondary')}>
               Order Takeaway
             </Link>
@@ -248,9 +248,9 @@ export function Footer() {
           <Link to="/menu" className="text-ink-muted hover:text-ink">
             Menu
           </Link>
-          <a href="#visit" className="text-ink-muted hover:text-ink">
+          <Link to="/reserve" className="text-ink-muted hover:text-ink">
             Reservations
-          </a>
+          </Link>
           <a href="#about" className="text-ink-muted hover:text-ink">
             About
           </a>

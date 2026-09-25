@@ -26,6 +26,40 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M12 — Delivery, takeaway & reservations (and the photo/landing UI pass)
+
+**Slices:** M12-S1…S7 ☑
+**Done**
+- UI pass first (user request): Unsplash photos in `client/public/images`, seeded as each dish's
+  `imageUrl`; the item schema accepts `/images/...`; a full landing page; a menu banner; the
+  signatures rail extracted and shared (ADR-026).
+- S1/S2 were already enforced by M6/M7 (schema + `CHECK`); added tests for DEL-01 and BR-10.
+- S3: `PATCH /orders/:id/delivery` on a shared `NEXT_DELIVERY_STATUS` map, conditional update,
+  audit row, `order:status` refresh.
+- S4–S6: `reservations` module (create / list by business date / seat / cancel), `seatById` in
+  the tables module sharing the QR seat logic but refusing an occupied table, and the
+  `reservationAlerts` job (flag once, 12-hour window).
+- S7: checkout validates with the shared `createOrderSchema` before posting; `/reserve`;
+  `/pos/reservations`; delivery panel in the POS; delivery progress on the tracker; the realtime
+  bridge refreshes bookings on `reservation:flag`.
+**Verified**
+- `npm run check` green: shared 58, server 163, client 23 tests. New
+  `delivery-reservations.test.ts` (8 tests): contact rules, the fee untouched by a 50% code,
+  the full driver walk with the order still PLACED, role/type/cancelled refusals, booking window,
+  business-date listing (a 23:30 local slot stays on its day), seat + table SEATED + event,
+  TABLE_OCCUPIED leaving the booking PENDING, and the overdue flag firing exactly once.
+- Landing and menu checked in Playwright at 1280 px and 390 px; no horizontal overflow at 360,
+  390, 768 or 1280 px on `/`, `/menu`, `/login`, `/cart`. `npm run build` succeeds.
+**Issues / surprises**
+- The dev servers were stopped by Claude Code under memory pressure midway, so the M12 screens were
+  verified by typecheck, tests and the production build rather than in a browser.
+- `GET /settings` deliberately hid `timezone`; booking needs it (ADR-024).
+- React 18 does not know `fetchPriority`; the hero uses `loading="eager"`.
+**Decisions raised:** ADR-024, ADR-025, ADR-026
+**Next:** M13 — hardening, accessibility, performance (the client bundle is 880 kB; split routes).
+
+---
+
 ### 2026-09-25 — M11 — Reports & dashboard
 
 **Slices:** M11-S1…S14 ☑

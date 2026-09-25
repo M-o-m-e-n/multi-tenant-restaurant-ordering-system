@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { ORDER_STATUSES, ORDER_TYPES } from '../domain/enums';
+import {
+  DELIVERY_STATUSES,
+  type DeliveryStatus,
+  ORDER_STATUSES,
+  ORDER_TYPES,
+} from '../domain/enums';
 import { businessDate, nonNegativeCents, paginationShape, repeatable, uuid } from './common';
 
 /** One requested line: ids only. The server re-resolves every price (PAY-07, AC-17). */
@@ -31,15 +36,15 @@ export type PreviewOrderDto = z.infer<typeof previewOrderSchema>;
 
 const customer = z
   .object({
-    name: z.string().trim().min(1).max(120),
-    phone: z.string().trim().min(5).max(30),
+    name: z.string().trim().min(1, 'Enter your name.').max(120),
+    phone: z.string().trim().min(5, 'Enter a phone number we can reach you on.').max(30),
   })
   .strict();
 
 const delivery = z
   .object({
-    address: z.string().trim().min(5).max(300),
-    note: z.string().trim().max(120).optional(),
+    address: z.string().trim().min(5, 'Enter the full delivery address.').max(300),
+    note: z.string().trim().max(120, 'Keep the door note under 120 characters.').optional(),
   })
   .strict();
 
@@ -90,6 +95,21 @@ export const transitionSchema = z
   })
   .strict();
 export type TransitionDto = z.infer<typeof transitionSchema>;
+
+/**
+ * PATCH /orders/:id/delivery (DEL-04): assign or reassign a driver, advance the
+ * delivery one step, or both. Naming a driver on a PENDING delivery assigns it.
+ */
+export const updateDeliverySchema = z
+  .object({
+    driverName: z.string().trim().min(1).max(80).optional(),
+    status: z.enum(DELIVERY_STATUSES).optional(),
+  })
+  .strict()
+  .refine((d) => d.driverName !== undefined || d.status !== undefined, {
+    message: 'Give a driver, a status, or both.',
+  });
+export type UpdateDeliveryDto = z.infer<typeof updateDeliverySchema>;
 
 /** POST /orders/:id/cancel */
 export const cancelOrderSchema = z
@@ -142,7 +162,7 @@ export interface OrderDto {
   delivery?: {
     address: string;
     note: string | null;
-    status: string;
+    status: DeliveryStatus;
     driverName: string | null;
   } | null;
   items: OrderItemDto[];

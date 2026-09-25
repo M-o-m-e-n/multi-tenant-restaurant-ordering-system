@@ -1,9 +1,12 @@
 import {
   AMENDABLE_ORDER_STATUSES,
   type AppendItemsDto,
+  canAdvanceDelivery,
+  canAssignDriver,
   canTransition,
   computeTotals,
   type CreateOrderDto,
+  type DeliveryStatus,
   derivePaymentStatus,
   type ListOrdersQuery,
   type OrderDto,
@@ -15,6 +18,7 @@ import {
   type PreviewOrderDto,
   type PreviewResponse,
   type ReceiptDto,
+  type UpdateDeliveryDto,
 } from '@ros/shared';
 
 import { writeAudit } from '../../lib/audit';
@@ -325,6 +329,75 @@ export async function transitionStatus(
  */
 export function cancelOrder(id: string, actor: AuthUser, reason?: string): Promise<OrderDto> {
   return transitionStatus(id, 'CANCELLED', actor, reason ?? null);
+}
+
+/**
+ * Assign a driver and/or advance a delivery (DEL-03, DEL-04). The delivery
+ * moves independently of the order's status: the kitchen and the driver never
+ * block each other. Naming a driver on a PENDING delivery assigns it; the
+ * driver can be changed until pick-up. Announced as an `order:status` refresh
+ * (`from === to`), like an amendment (LLD §6.2).
+ *
+ * @throws ConflictError NOT_A_DELIVERY | ILLEGAL_TRANSITION | CONCURRENT_UPDATE
+ * @throws BusinessRuleError DRIVER_REQUIRED
+ */
+export async function updateDelivery(
+  id: string,
+  dto: UpdateDeliveryDto,
+  actor: AuthUser,
+): Promise<OrderDto> {
+  const after = await prisma().$transaction(async (tx) => {
+    const order = await repo.findOrder(id, tx);
+    if (!order) throw notFound();
+    if (order.type !== 'DELIVERY' || !order.delivery) {
+      throw new ConflictError('NOT_A_DELIVERY', `Order ${order.orderNumber} is not a delivery.`);
+    }
+    if (order.status === 'CANCELLED') {
+      throw new ConflictError('ILLEGAL_TRANSITION', 'A cancelled order is not delivered.');
+    }
+    const from = order.delivery.status;
+    let driverName = order.delivery.driverName;
+    let status: DeliveryStatus = from;
+
+    if (dto.driverName !== undefined) {
+      if (!canAssignDriver(from)) {
+        throw new ConflictError('ILLEGAL_TRANSITION', 'The order has already left with a driver.', {
+          from,
+        });
+      }
+      driverName = dto.driverName;
+      if (from === 'PENDING') status = 'ASSIGNED';
+    }
+    if (dto.status !== undefined && dto.status !== status) {
+      if (!canAdvanceDelivery(status, dto.status)) {
+        throw new ConflictError(
+          'ILLEGAL_TRANSITION',
+          `A delivery cannot go from ${status} to ${dto.status}.`,
+          { from: status, to: dto.status },
+        );
+      }
+      status = dto.status;
+    }
+    if (status === 'ASSIGNED' && !driverName) {
+      throw new BusinessRuleError('DRIVER_REQUIRED', 'Name the driver to assign the delivery.');
+    }
+    if (!(await repo.updateDelivery(tx, id, from, { status, driverName }))) {
+      throw new ConflictError('CONCURRENT_UPDATE', 'Someone else updated this delivery first.');
+    }
+    await writeAudit(tx, {
+      actorId: actor.id,
+      action: 'DELIVERY_UPDATE',
+      entity: 'Order',
+      entityId: id,
+      before: { status: from, driverName: order.delivery.driverName },
+      after: { status, driverName },
+    });
+    const updated = await repo.findOrder(id, tx);
+    if (!updated) throw notFound();
+    return updated;
+  });
+  announceStatus(after, after.status, false);
+  return toOrderDto(after, actor);
 }
 
 export interface PaymentSnapshot {

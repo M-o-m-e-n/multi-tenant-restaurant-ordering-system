@@ -12,7 +12,33 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+- **Payments (M9):** a `PaymentGateway` abstraction with Stripe in test mode only (live keys
+  refused; with no keys card payment is off and cash still works); intents for the balance or a
+  split amount with `Idempotency-Key`; a raw-body, signature-checked, deduped webhook; cash with
+  tips; admin refunds; a reconciliation job; Stripe Elements pay page and the `/pos` till.
+- **Amendments & receipts (M10):** append items while PLACED/CONFIRMED/PREPARING, repriced from
+  the order's snapshots, with a conditional update; snapshot receipts; kitchen ticket printing.
+- **Reports (M11):** one BR-16 revenue scope for every report; summary, revenue by day, top
+  items, peak hours, breakdowns, cancellations; today's dashboard; Recharts admin pages; CSV export.
+- **Delivery & reservations (M12):** `PATCH /orders/:id/delivery` (assign a driver, then
+  `ASSIGNED → PICKED_UP → DELIVERED`); a reservations module (book, list by business date,
+  seat onto a free table, cancel); the `reservationAlerts` job raising `reservation:flag`;
+  the `/reserve` booking page, the `/pos/reservations` host list, delivery controls in the POS,
+  and delivery progress on the tracker.
+- **UI:** real food and venue photography (Unsplash, credited in the README) for every dish; a
+  full landing page (hero on a slate plate, marquee, live signatures rail, how-it-works, story,
+  quote band, reviews, visit/hours, footer); a photo banner on the menu.
+
+### Changed
+- `GET /settings` also returns `timezone`; the pure time helpers moved to `@ros/shared`
+  (ADR-024). LLD 1.3 records the M12 endpoints and error codes (ADR-025).
+- `MenuItem.imageUrl` accepts a same-origin `/images/...` path as well as an http(s) URL
+  (ADR-026).
+
+### Fixed
+- A refunded order no longer shows its total as still owed in the POS, and cannot take a further
+  payment (`409 ORDER_REFUNDED`).
 
 ---
 
