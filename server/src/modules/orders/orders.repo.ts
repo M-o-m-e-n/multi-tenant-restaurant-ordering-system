@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import type { OrderStatus, OrderType } from '@ros/shared';
+import type { OrderStatus, OrderType, PaymentStatus } from '@ros/shared';
 
 import { prisma, type Tx } from '../../lib/prisma';
 
@@ -113,4 +113,17 @@ export function listEvents(orderId: string) {
     orderBy: { createdAt: 'asc' },
     include: { actor: { select: { id: true, name: true } } },
   });
+}
+
+/** Payment records and total, for deriving the payment status. */
+export function paymentBasis(tx: Tx, orderId: string) {
+  return tx.order.findUnique({
+    where: { id: orderId },
+    select: { total: true, payments: { select: { amount: true, state: true } } },
+  });
+}
+
+/** The only write of Order.paymentStatus in the codebase (LLD §4.5). */
+export function writePaymentStatus(tx: Tx, orderId: string, paymentStatus: PaymentStatus) {
+  return tx.order.update({ where: { id: orderId }, data: { paymentStatus } });
 }

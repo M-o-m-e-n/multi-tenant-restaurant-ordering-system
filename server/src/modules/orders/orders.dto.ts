@@ -4,17 +4,11 @@ import {
   nextStatuses,
   type OrderDto,
   type OrderStatus,
+  paidSum,
 } from '@ros/shared';
 
 import type { AuthUser } from '../../types/express';
 import type { OrderWithRelations } from './orders.repo';
-
-/** Σ successful payment amounts; tips are not payment toward the balance (LLD §4.5). */
-export function paidSum(order: Pick<OrderWithRelations, 'payments'>): number {
-  return order.payments
-    .filter((p) => p.state === 'SUCCEEDED')
-    .reduce((sum, p) => sum + p.amount, 0);
-}
 
 function modifiersOf(json: unknown): OrderDto['items'][number]['modifiers'] {
   if (!Array.isArray(json)) return [];
@@ -37,7 +31,7 @@ export function canSeeContact(
  * own snapshots, never from the live menu (ORD-05).
  */
 export function toOrderDto(order: OrderWithRelations, viewer: AuthUser): OrderDto {
-  const amountPaid = paidSum(order);
+  const amountPaid = paidSum(order.payments);
   const contact = canSeeContact(order, viewer);
   return {
     id: order.id,

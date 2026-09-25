@@ -31,3 +31,36 @@ export const refundSchema = z
 export type RefundDto = z.infer<typeof refundSchema>;
 
 export const orderIdParamSchema = z.object({ orderId: uuid }).strict();
+
+// ---- Response shapes (API-CONTRACT §9, §13) ----
+
+export interface PaymentDto {
+  id: string;
+  method: 'STRIPE' | 'CASH';
+  amount: number;
+  tipAmount: number;
+  state: 'PENDING' | 'SUCCEEDED' | 'FAILED' | 'REFUNDED';
+  /** The cashier, for a cash payment. */
+  actor: { id: string; name: string } | null;
+  createdAt: string;
+}
+
+export interface IntentResponse {
+  clientSecret: string;
+  publishableKey: string;
+  amount: number;
+  currency: string;
+  paymentId: string;
+}
+
+export interface OrderPaymentsResponse {
+  data: PaymentDto[];
+  amountPaid: number;
+  balanceDue: number;
+}
+
+/** GET /payments/config — whether card payment is switched on (NFR-R6). */
+export interface PaymentsConfig {
+  cardEnabled: boolean;
+  publishableKey: string | null;
+}
