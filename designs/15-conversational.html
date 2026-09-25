@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>15 — WAITER Conversational</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#faf6f0; --card:#fff; --forest:#1f3d2f; --forest2:#2d5443;
+    --brass:#b8873b; --ink:#25231f; --mut:#8d8779; --line:#e7e0d4;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#e4ded2;font-family:Figtree,system-ui,sans-serif;display:flex;justify-content:center}
+  .app{
+    width:100%;max-width:430px;min-height:100vh;background:var(--ivory);color:var(--ink);
+    position:relative;padding:0 0 132px;
+  }
+
+  header{
+    background:var(--forest);color:var(--ivory);padding:18px 20px 16px;
+    display:flex;align-items:center;gap:13px;position:sticky;top:0;z-index:6;
+  }
+  .av{
+    width:42px;height:42px;border-radius:50%;flex-shrink:0;
+    background:linear-gradient(145deg,var(--brass),#8e6528);
+    display:flex;align-items:center;justify-content:center;
+    font-family:Fraunces,serif;font-size:19px;color:#fff;
+  }
+  .who{flex:1;min-width:0}
+  .who b{font-family:Fraunces,serif;font-weight:600;font-size:17px;letter-spacing:.2px;display:block}
+  .who span{font-size:11px;color:#a9bdb1;display:flex;align-items:center;gap:5px;margin-top:2px}
+  .dot{width:6px;height:6px;border-radius:50%;background:#6fd39b;display:inline-block}
+  .tablechip{
+    font-size:10px;letter-spacing:1.5px;text-transform:uppercase;border:1px solid rgba(250,246,240,.3);
+    padding:5px 9px;border-radius:99px;color:#cbd9d0;flex-shrink:0;
+  }
+
+  .feed{padding:20px 18px 0;display:flex;flex-direction:column;gap:13px}
+  .row{display:flex;gap:9px;align-items:flex-end;max-width:100%}
+  .row.me{justify-content:flex-end}
+  .mini{
+    width:25px;height:25px;border-radius:50%;flex-shrink:0;background:var(--brass);
+    display:flex;align-items:center;justify-content:center;font-family:Fraunces,serif;
+    font-size:11px;color:#fff;margin-bottom:2px;
+  }
+  .bub{
+    background:var(--card);border:1px solid var(--line);border-radius:16px 16px 16px 4px;
+    padding:11px 14px;font-size:13.5px;line-height:1.55;max-width:80%;
+    box-shadow:0 1px 2px rgba(0,0,0,.035);
+  }
+  .row.me .bub{
+    background:var(--forest2);color:var(--ivory);border-color:var(--forest2);
+    border-radius:16px 16px 4px 16px;
+  }
+  .time{font-size:9.5px;color:var(--mut);letter-spacing:.5px;margin:0 4px 3px}
+
+  .dishes{display:flex;flex-direction:column;gap:0;width:100%;max-width:100%;
+    background:var(--card);border:1px solid var(--line);border-radius:16px 16px 16px 4px;overflow:hidden}
+  .dish{display:flex;gap:11px;align-items:center;padding:11px 13px;border-bottom:1px solid var(--line)}
+  .dish:last-child{border-bottom:0}
+  .dem{font-size:20px;width:26px;text-align:center;flex-shrink:0}
+  .dinfo{flex:1;min-width:0}
+  .dname{font-family:Fraunces,serif;font-weight:600;font-size:14px;letter-spacing:.1px}
+  .ddesc{font-size:10.5px;color:var(--mut);line-height:1.45;margin-top:2px}
+  .dprice{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;flex-shrink:0}
+  .dadd{
+    width:27px;height:27px;border-radius:50%;border:0;background:var(--forest);color:#fff;
+    font-size:15px;line-height:0;cursor:pointer;flex-shrink:0;transition:.18s;
+  }
+  .dadd:hover{background:var(--brass)}
+
+  .typing{display:flex;gap:4px;padding:13px 15px}
+  .typing i{width:6px;height:6px;border-radius:50%;background:var(--mut);animation:bob 1s infinite}
+  .typing i:nth-child(2){animation-delay:.15s}
+  .typing i:nth-child(3){animation-delay:.3s}
+  @keyframes bob{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+  @media (prefers-reduced-motion:reduce){.typing i{animation:none;opacity:.6}}
+
+  .quick{
+    position:fixed;bottom:66px;width:100%;max-width:430px;padding:10px 16px;
+    display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;
+    background:linear-gradient(180deg,rgba(250,246,240,0),var(--ivory) 32%);z-index:5;
+  }
+  .quick::-webkit-scrollbar{display:none}
+  .chip{
+    background:var(--card);border:1px solid var(--line);color:var(--ink);white-space:nowrap;
+    font-family:Figtree,sans-serif;font-size:12.5px;font-weight:500;padding:8px 14px;
+    border-radius:99px;cursor:pointer;transition:.18s;flex-shrink:0;
+  }
+  .chip:hover{border-color:var(--forest);color:var(--forest)}
+
+  .composer{
+    position:fixed;bottom:0;width:100%;max-width:430px;background:var(--ivory);
+    border-top:1px solid var(--line);padding:11px 16px;display:flex;align-items:center;gap:10px;z-index:6;
+  }
+  .composer input{
+    flex:1;border:1px solid var(--line);background:var(--card);border-radius:99px;
+    padding:11px 15px;font-family:Figtree,sans-serif;font-size:13.5px;outline:0;color:var(--ink);
+  }
+  .composer input:focus{border-color:var(--forest)}
+  .send{
+    width:40px;height:40px;border-radius:50%;border:0;background:var(--forest);color:#fff;
+    font-size:16px;cursor:pointer;flex-shrink:0;
+  }
+  .send:hover{background:var(--brass)}
+
+  .tab{
+    position:fixed;bottom:118px;right:16px;background:var(--brass);color:#fff;
+    border-radius:99px;padding:9px 15px;font-size:12px;font-weight:700;display:none;
+    align-items:center;gap:7px;z-index:7;box-shadow:0 4px 14px rgba(184,135,59,.4);
+    font-variant-numeric:tabular-nums;
+  }
+  .tab.show{display:flex}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="av">M</div>
+    <div class="who"><b>Marco</b><span><i class="dot"></i>Your waiter this evening</span></div>
+    <div class="tablechip">Table 12</div>
+  </header>
+
+  <div class="feed" id="feed">
+    <div class="time">19:04</div>
+    <div class="row"><div class="mini">M</div>
+      <div class="bub">Good evening — welcome back. Shall I bring you something to start, or would you like a minute with the menu?</div></div>
+
+    <div class="row me"><div class="bub">Let's see the starters.</div></div>
+
+    <div class="row"><div class="mini">M</div>
+      <div class="bub">Of course. These two are going well tonight — the arancini especially.</div></div>
+
+    <div class="row"><div class="mini">M</div>
+      <div class="dishes" id="firstlist"></div></div>
+  </div>
+
+  <div class="tab" id="tab">🧾 <span id="cnt">0</span> items · $<span id="tot">0.00</span></div>
+
+  <div class="quick" id="quick">
+    <button class="chip" data-cat="mains">Show me the mains</button>
+    <button class="chip" data-cat="desserts">Anything sweet?</button>
+    <button class="chip" data-cat="drinks">Something to drink</button>
+    <button class="chip" data-cat="all">The whole menu</button>
+    <button class="chip" data-ask="wine">What do you recommend?</button>
+  </div>
+
+  <div class="composer">
+    <input id="msg" placeholder="Ask Marco anything…" aria-label="Message">
+    <button class="send" id="sendbtn" aria-label="Send">↑</button>
+  </div>
+</div>
+
+<script>
+const MENU=[
+  {c:'starters',e:'🧆',n:'Truffle Arancini',d:'Saffron risotto · black truffle · parmesan',p:12.50},
+  {c:'starters',e:'🥗',n:'Winter Caesar',d:'Baby gem · anchovy cream · brioche crumb',p:9.00},
+  {c:'mains',e:'🍔',n:'Wagyu Burger',d:'A5 blend · aged cheddar · house pickles',p:18.50},
+  {c:'mains',e:'🍕',n:'Margherita D.O.C.',d:'San Marzano · fior di latte · basil',p:14.00},
+  {c:'mains',e:'🐟',n:'Roast Halibut',d:'Brown butter · capers · confit potato',p:21.00},
+  {c:'desserts',e:'🍫',n:'Lava Fondant',d:'70% chocolate · vanilla bean gelato',p:8.50},
+  {c:'desserts',e:'🍰',n:'Tiramisu',d:'Espresso-soaked savoiardi · mascarpone',p:7.50},
+  {c:'drinks',e:'🍵',n:'Iced Matcha',d:'Ceremonial grade · oat milk',p:5.50},
+  {c:'drinks',e:'🥤',n:'Yuzu Lemonade',d:'Fresh citrus · mint · sparkling water',p:4.50}
+];
+const REPLY={
+  mains:"Three mains tonight. The halibut landed this morning — I'd take that one.",
+  desserts:"The fondant needs twelve minutes, so say the word early if you want it.",
+  drinks:"Both are made to order. The yuzu is sharper than it sounds.",
+  all:"Here is everything we're running this evening.",
+};
+const feed=document.getElementById('feed');
+let n=0,s=0;
+
+function listHTML(items){
+  return items.map(i=>`<div class="dish">
+    <div class="dem">${i.e}</div>
+    <div class="dinfo"><div class="dname">${i.n}</div><div class="ddesc">${i.d}</div></div>
+    <div class="dprice">$${i.p.toFixed(2)}</div>
+    <button class="dadd" data-p="${i.p}" data-n="${i.n}" aria-label="Add ${i.n}">+</button>
+  </div>`).join('');
+}
+function bindAdds(root){
+  root.querySelectorAll('.dadd').forEach(b=>{
+    if(b.dataset.bound) return; b.dataset.bound='1';
+    b.onclick=()=>{
+      n++; s+=parseFloat(b.dataset.p);
+      document.getElementById('cnt').textContent=n;
+      document.getElementById('tot').textContent=s.toFixed(2);
+      document.getElementById('tab').classList.add('show');
+      b.textContent='✓'; setTimeout(()=>b.textContent='+',800);
+      say('me',`${b.dataset.n}, please.`);
+      setTimeout(()=>say('them',"Noted — that's gone through to the kitchen."),600);
+    };
+  });
+}
+function say(side,text){
+  const row=document.createElement('div');
+  row.className='row'+(side==='me'?' me':'');
+  row.innerHTML=(side==='me'?'':'<div class="mini">M</div>')+`<div class="bub">${text}</div>`;
+  feed.appendChild(row); scroll();
+}
+function showList(cat){
+  const items=cat==='all'?MENU:MENU.filter(i=>i.c===cat);
+  const row=document.createElement('div');
+  row.className='row';
+  row.innerHTML='<div class="mini">M</div><div class="dishes">'+listHTML(items)+'</div>';
+  feed.appendChild(row); bindAdds(row); scroll();
+}
+function typing(){
+  const row=document.createElement('div');
+  row.className='row'; row.id='typing';
+  row.innerHTML='<div class="mini">M</div><div class="bub"><div class="typing"><i></i><i></i><i></i></div></div>';
+  feed.appendChild(row); scroll(); return row;
+}
+function scroll(){ window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'}); }
+
+document.getElementById('firstlist').innerHTML=listHTML(MENU.filter(i=>i.c==='starters'));
+bindAdds(document.getElementById('firstlist'));
+
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+  say('me',c.textContent);
+  const t=typing();
+  setTimeout(()=>{
+    t.remove();
+    if(c.dataset.ask){
+      say('them',"The halibut, without hesitation — brown butter, capers, confit potato. If you'd rather something richer, the wagyu.");
+      showList('mains');
+    }else{
+      say('them',REPLY[c.dataset.cat]);
+      showList(c.dataset.cat);
+    }
+  },800);
+});
+
+function sendMsg(){
+  const i=document.getElementById('msg');
+  if(!i.value.trim()) return;
+  say('me',i.value.replace(/[<>]/g,'')); i.value='';
+  const t=typing();
+  setTimeout(()=>{t.remove();say('them',"Let me check with the kitchen and come straight back to you.");},900);
+}
+document.getElementById('sendbtn').onclick=sendMsg;
+document.getElementById('msg').addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
+</script>
+</body>
+</html>

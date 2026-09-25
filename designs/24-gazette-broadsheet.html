@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>24 — GAZETTE Broadsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root { --paper:#f4f1e6; --ink:#191914; --mut:#6e6a5c; --rule:#191914; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#d9d4c2; font-family:'Source Serif 4',Georgia,serif; display:flex; justify-content:center; }
+  .app { width:100%; max-width:430px; min-height:100vh; background:var(--paper); color:var(--ink); position:relative; padding-bottom:120px;
+    background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.014) 0 1px,transparent 1px 3px); }
+  .dateline { display:flex; justify-content:space-between; font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:12px 20px 8px; border-bottom:3px double var(--rule); }
+  .mast { text-align:center; padding:16px 18px 10px; border-bottom:4px solid var(--rule); }
+  .mast h1 { font-family:'Playfair Display',serif; font-weight:900; font-size:46px; letter-spacing:-1px; line-height:1; }
+  .mast .ed { font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-top:8px; color:var(--mut); }
+  .lede { padding:14px 22px; border-bottom:1px solid var(--rule); font-size:13.5px; line-height:1.65; text-align:justify; }
+  .lede::first-letter { font-family:'Playfair Display',serif; font-size:38px; font-weight:900; float:left; line-height:.85; padding:2px 6px 0 0; }
+  .search { margin:14px 20px 0; display:flex; gap:8px; align-items:center; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:9px 2px; }
+  .search input { border:0; outline:0; width:100%; background:none; font-family:inherit; font-style:italic; font-size:13.5px; }
+  nav { display:flex; gap:0; margin:0 20px; border-bottom:3px double var(--rule); }
+  .chip { flex:1; background:none; border:0; font-family:'Playfair Display',serif; font-weight:700; font-size:11.5px; padding:11px 2px; cursor:pointer; letter-spacing:.5px; color:var(--mut); }
+  .chip.on { color:var(--ink); box-shadow:inset 0 -3px 0 var(--ink); }
+  .sect { padding:16px 20px 0; }
+  .sect h2 { font-family:'Playfair Display',serif; font-size:21px; font-weight:900; border-top:2px solid var(--rule); border-bottom:1px solid var(--rule); padding:7px 0; display:flex; justify-content:space-between; align-items:baseline; }
+  .sect h2 small { font-family:'Source Serif 4',serif; font-size:10.5px; font-weight:400; font-style:italic; color:var(--mut); }
+  article.item { padding:13px 0; border-bottom:1px dotted #b9b29c; display:flex; gap:12px; }
+  article.item:last-child { border-bottom:0; }
+  .emoji { font-size:24px; flex-shrink:0; padding-top:2px; }
+  .info { flex:1; min-width:0; }
+  .info h3 { font-family:'Playfair Display',serif; font-size:17.5px; font-weight:700; line-height:1.2; }
+  .info p { font-size:12.5px; font-style:italic; color:var(--mut); margin-top:4px; line-height:1.5; }
+  .right { text-align:right; flex-shrink:0; }
+  .price { font-family:'Playfair Display',serif; font-weight:900; font-size:17px; }
+  .add { margin-top:8px; background:none; border:1.5px solid var(--rule); font-family:'Playfair Display',serif; font-size:10.5px; font-weight:700; letter-spacing:2px; padding:7px 13px; cursor:pointer; text-transform:uppercase; }
+  .add:hover { background:var(--ink); color:var(--paper); }
+  .classifieds { margin:18px 20px 0; border:2px solid var(--rule); padding:12px 14px; font-size:11.5px; line-height:1.7; }
+  .classifieds b { font-family:'Playfair Display',serif; letter-spacing:1px; }
+  .foot { text-align:center; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--mut); padding:22px; border-top:3px double var(--rule); margin:20px 20px 0; }
+  .cart { position:fixed; bottom:0; width:100%; max-width:430px; background:var(--ink); color:var(--paper); padding:15px 22px; display:none; justify-content:space-between; align-items:center; }
+  .cart.show { display:flex; }
+  .cart .t { font-family:'Playfair Display',serif; font-size:20px; font-weight:900; }
+  .cart .l { font-size:10px; letter-spacing:2px; text-transform:uppercase; opacity:.7; }
+  .cart button { background:var(--paper); color:var(--ink); border:0; font-family:'Playfair Display',serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:12px 20px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="dateline"><span>Friday Evening · Late City Final</span><span>Table VII</span></div>
+  <div class="mast">
+    <h1>The Daily Menu</h1>
+    <div class="ed">All the dishes worth printing · Free with any order</div>
+  </div>
+  <div class="lede">Our correspondents in the kitchen report a evening of unusual deliciousness. The wagyu shipment has landed, the chocolate is at full melt, and the dining room is open. Below, the complete record — order directly from this page.</div>
+
+  <div class="search">🔍<input placeholder="Search the archives…"></div>
+  <nav>
+    <button class="chip on" data-cat="all">Front Page</button>
+    <button class="chip" data-cat="starters">Starters</button>
+    <button class="chip" data-cat="mains">Mains</button>
+    <button class="chip" data-cat="desserts">Desserts</button>
+    <button class="chip" data-cat="drinks">Drinks</button>
+  </nav>
+
+  <div class="sect" data-cat-head="starters"><h2>Starters <small>page two</small></h2>
+    <article class="item" data-cat="starters"><div class="emoji">🧆</div>
+      <div class="info"><h3>Truffle Arancini</h3><p>Saffron risotto, black truffle, aged parmesan. Crisped to order.</p></div>
+      <div class="right"><div class="price">$12.50</div><button class="add" data-price="12.50">Order</button></div></article>
+    <article class="item" data-cat="starters"><div class="emoji">🥗</div>
+      <div class="info"><h3>Winter Caesar</h3><p>Baby gem, anchovy cream, brioche crumb. A cold classic.</p></div>
+      <div class="right"><div class="price">$9.00</div><button class="add" data-price="9">Order</button></div></article>
+  </div>
+  <div class="sect" data-cat-head="mains"><h2>Mains <small>page three</small></h2>
+    <article class="item" data-cat="mains"><div class="emoji">🍔</div>
+      <div class="info"><h3>Wagyu Burger</h3><p>A5 blend, aged cheddar, house pickles. Our scoop of the year.</p></div>
+      <div class="right"><div class="price">$18.50</div><button class="add" data-price="18.50">Order</button></div></article>
+    <article class="item" data-cat="mains"><div class="emoji">🍕</div>
+      <div class="info"><h3>Margherita D.O.C.</h3><p>San Marzano, fior di latte, basil. Wood-fired at noon.</p></div>
+      <div class="right"><div class="price">$14.00</div><button class="add" data-price="14">Order</button></div></article>
+    <article class="item" data-cat="mains"><div class="emoji">🐟</div>
+      <div class="info"><h3>Roast Halibut</h3><p>Brown butter, capers, confit potato. Caught Thursday.</p></div>
+      <div class="right"><div class="price">$21.00</div><button class="add" data-price="21">Order</button></div></article>
+  </div>
+  <div class="sect" data-cat-head="desserts"><h2>Desserts <small>page four</small></h2>
+    <article class="item" data-cat="desserts"><div class="emoji">🍫</div>
+      <div class="info"><h3>Lava Fondant</h3><p>70% chocolate, vanilla bean gelato. Handle with a spoon.</p></div>
+      <div class="right"><div class="price">$8.50</div><button class="add" data-price="8.50">Order</button></div></article>
+    <article class="item" data-cat="desserts"><div class="emoji">🍰</div>
+      <div class="info"><h3>Tiramisu</h3><p>Espresso-soaked savoiardi, mascarpone. Sets overnight.</p></div>
+      <div class="right"><div class="price">$7.50</div><button class="add" data-price="7.50">Order</button></div></article>
+  </div>
+  <div class="sect" data-cat-head="drinks"><h2>Drinks <small>back page</small></h2>
+    <article class="item" data-cat="drinks"><div class="emoji">🍵</div>
+      <div class="info"><h3>Iced Matcha</h3><p>Ceremonial grade, oat milk. Whisked to order.</p></div>
+      <div class="right"><div class="price">$5.50</div><button class="add" data-price="5.50">Order</button></div></article>
+    <article class="item" data-cat="drinks"><div class="emoji">🥤</div>
+      <div class="info"><h3>Yuzu Lemonade</h3><p>Fresh citrus, mint, sparkling water. Fizzes loudly.</p></div>
+      <div class="right"><div class="price">$4.50</div><button class="add" data-price="4.50">Order</button></div></article>
+  </div>
+
+  <div class="classifieds"><b>CLASSIFIEDS —</b> Lost: one appetite, last seen before dinner. Reward: dessert. · Piano tuner seeks lunch crowd. · Will trade tiramisu recipe for babysitting.</div>
+  <div class="foot">Printed nightly · Set in Playfair &amp; Source Serif<br>© The Daily Menu · Table VII</div>
+
+  <div class="cart" id="cart">
+    <div><div class="t">$<span id="tot">0.00</span></div><div class="l"><span id="cnt">0</span> items clipped</div></div>
+    <button>Send to kitchen →</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('[data-cat]').forEach(i=>{i.style.display=(t==='all'||i.dataset.cat===t)?'':'none';});
+document.querySelectorAll('[data-cat-head]').forEach(h=>{h.style.display=(t==='all'||h.dataset.catHead===t)?'':'none';});});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>{const o=b.textContent;b.onclick=()=>{n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent=s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='✓';setTimeout(()=>b.textContent=o,700);};});
+</script>
+</body>
+</html>

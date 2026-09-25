@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 — NOIR Fine Dining</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0b0b0d; --panel:#121215; --gold:#c8a45c; --tx:#eae6dd; --mut:#8f8a7f; --line:#232326; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#050506; font-family:Inter,system-ui,sans-serif; display:flex; justify-content:center; }
+  .app { width:100%; max-width:430px; min-height:100vh; background:var(--bg); color:var(--tx); position:relative; padding-bottom:110px; }
+  header { text-align:center; padding:34px 24px 22px; border-bottom:1px solid var(--line); }
+  .est { font-size:10px; letter-spacing:5px; color:var(--gold); text-transform:uppercase; }
+  .logo { font-family:'Cormorant Garamond',serif; font-size:40px; font-weight:600; letter-spacing:8px; margin:10px 0 6px; }
+  .tag { font-size:11px; color:var(--mut); font-style:italic; font-family:'Cormorant Garamond',serif; font-size:14px; letter-spacing:1px; }
+  .search { margin:18px 20px 0; display:flex; align-items:center; gap:10px; border:1px solid var(--line); padding:11px 14px; }
+  .search input { background:none; border:0; outline:0; color:var(--tx); width:100%; font-family:Inter; font-size:13px; letter-spacing:.5px; }
+  .search input::placeholder { color:#5b564d; }
+  nav { display:flex; gap:22px; padding:18px 22px 6px; overflow-x:auto; }
+  .chip { background:none; border:0; color:var(--mut); font-size:11px; letter-spacing:3px; text-transform:uppercase; padding:6px 0; cursor:pointer; white-space:nowrap; border-bottom:1px solid transparent; font-family:Inter; }
+  .chip.on { color:var(--gold); border-color:var(--gold); }
+  .sect { padding:16px 22px 4px; font-family:'Cormorant Garamond',serif; font-size:24px; letter-spacing:3px; color:var(--gold); }
+  .item { display:flex; gap:16px; align-items:center; padding:18px 22px; border-bottom:1px solid var(--line); }
+  .thumb { width:56px; height:56px; border:1px solid var(--line); display:grid; place-items:center; font-size:26px; flex-shrink:0; background:var(--panel); }
+  .info { flex:1; min-width:0; }
+  .name { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:600; letter-spacing:.5px; }
+  .desc { font-size:11.5px; color:var(--mut); margin-top:4px; line-height:1.5; font-style:italic; font-family:'Cormorant Garamond',serif; font-size:13px; }
+  .right { text-align:right; flex-shrink:0; }
+  .price { color:var(--gold); font-family:'Cormorant Garamond',serif; font-size:20px; }
+  .add { margin-top:8px; background:none; border:1px solid var(--line); color:var(--mut); font-size:9px; letter-spacing:2px; padding:5px 10px; cursor:pointer; font-family:Inter; text-transform:uppercase; transition:.2s; }
+  .add:hover { border-color:var(--gold); color:var(--gold); }
+  .cart { position:fixed; bottom:0; width:100%; max-width:430px; background:#0e0e11; border-top:1px solid var(--gold); padding:16px 22px; display:none; justify-content:space-between; align-items:center; }
+  .cart.show { display:flex; }
+  .cart .l { font-size:10px; letter-spacing:3px; color:var(--mut); text-transform:uppercase; }
+  .cart .t { font-family:'Cormorant Garamond',serif; font-size:22px; color:var(--gold); }
+  .cart button { background:var(--gold); border:0; color:#0b0b0d; font-size:11px; letter-spacing:3px; padding:12px 22px; cursor:pointer; text-transform:uppercase; font-family:Inter; font-weight:500; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="est">Established 1998</div>
+    <div class="logo">NOIR</div>
+    <div class="tag">Steakhouse &amp; Cellar — Table Service</div>
+  </header>
+  <div class="search">🔍<input placeholder="Search the menu…"></div>
+  <nav>
+    <button class="chip on" data-cat="all">All</button>
+    <button class="chip" data-cat="starters">Starters</button>
+    <button class="chip" data-cat="mains">Mains</button>
+    <button class="chip" data-cat="desserts">Desserts</button>
+    <button class="chip" data-cat="drinks">Drinks</button>
+  </nav>
+
+  <div class="item" data-cat="starters">
+    <div class="thumb">🧆</div>
+    <div class="info"><div class="name">Truffle Arancini</div><div class="desc">Saffron risotto, black truffle, aged parmesan</div></div>
+    <div class="right"><div class="price">$12.50</div><button class="add" data-price="12.50">Add</button></div>
+  </div>
+  <div class="item" data-cat="starters">
+    <div class="thumb">🥗</div>
+    <div class="info"><div class="name">Winter Caesar</div><div class="desc">Baby gem, anchovy cream, brioche crumb</div></div>
+    <div class="right"><div class="price">$9.00</div><button class="add" data-price="9">Add</button></div>
+  </div>
+  <div class="item" data-cat="mains">
+    <div class="thumb">🥩</div>
+    <div class="info"><div class="name">Dry-Aged Ribeye</div><div class="desc">45-day aged, bone marrow butter, charred leek</div></div>
+    <div class="right"><div class="price">$42.00</div><button class="add" data-price="42">Add</button></div>
+  </div>
+  <div class="item" data-cat="mains">
+    <div class="thumb">🐟</div>
+    <div class="info"><div class="name">Roast Halibut</div><div class="desc">Brown butter, capers, confit potato</div></div>
+    <div class="right"><div class="price">$21.00</div><button class="add" data-price="21">Add</button></div>
+  </div>
+  <div class="item" data-cat="mains">
+    <div class="thumb">🍕</div>
+    <div class="info"><div class="name">Margherita D.O.C.</div><div class="desc">San Marzano, fior di latte, basil</div></div>
+    <div class="right"><div class="price">$14.00</div><button class="add" data-price="14">Add</button></div>
+  </div>
+  <div class="item" data-cat="desserts">
+    <div class="thumb">🍫</div>
+    <div class="info"><div class="name">Lava Fondant</div><div class="desc">70% chocolate, vanilla bean gelato</div></div>
+    <div class="right"><div class="price">$8.50</div><button class="add" data-price="8.50">Add</button></div>
+  </div>
+  <div class="item" data-cat="desserts">
+    <div class="thumb">🍰</div>
+    <div class="info"><div class="name">Tiramisu</div><div class="desc">Espresso-soaked savoiardi, mascarpone</div></div>
+    <div class="right"><div class="price">$7.50</div><button class="add" data-price="7.50">Add</button></div>
+  </div>
+  <div class="item" data-cat="drinks">
+    <div class="thumb">🍵</div>
+    <div class="info"><div class="name">Iced Matcha</div><div class="desc">Ceremonial grade, oat milk</div></div>
+    <div class="right"><div class="price">$5.50</div><button class="add" data-price="5.50">Add</button></div>
+  </div>
+  <div class="item" data-cat="drinks">
+    <div class="thumb">🥤</div>
+    <div class="info"><div class="name">Yuzu Lemonade</div><div class="desc">Fresh citrus, mint, sparkling water</div></div>
+    <div class="right"><div class="price">$4.50</div><button class="add" data-price="4.50">Add</button></div>
+  </div>
+
+  <div class="cart" id="cart">
+    <div><div class="l"><span id="cnt">0</span> selections</div><div class="t" id="tot">$0.00</div></div>
+    <button>View Cart</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=()=>{n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent='$'+s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='✓';setTimeout(()=>b.textContent='Add',700);});
+</script>
+</body>
+</html>

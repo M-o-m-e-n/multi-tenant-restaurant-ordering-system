@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>21 — BRUT Brutalist</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#d8d8d3; --ink:#111; --acc:#ff4d00; --card:#efefea; }
+  * { box-sizing:border-box; margin:0; border-radius:0 !important; }
+  body { background:#8f8f8a; font-family:'Archivo',sans-serif; display:flex; justify-content:center; }
+  .app { width:100%; max-width:430px; min-height:100vh; background:var(--bg); color:var(--ink); position:relative; padding-bottom:120px;
+    background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.025) 0 2px,transparent 2px 4px); }
+  .ticker { background:var(--ink); color:#fff; font-family:'Space Mono',monospace; font-size:11px; font-weight:700; letter-spacing:2px; padding:9px 0; overflow:hidden; white-space:nowrap; }
+  .ticker span { display:inline-block; padding-left:100%; animation:tk 14s linear infinite; }
+  @keyframes tk { to { transform:translateX(-100%); } }
+  header { padding:26px 18px 18px; border-bottom:5px solid var(--ink); }
+  .logo { font-size:52px; font-weight:900; letter-spacing:-3px; line-height:.9; text-transform:uppercase; }
+  .logo i { font-style:normal; background:var(--acc); color:#fff; padding:0 10px; }
+  .sub { font-family:'Space Mono',monospace; font-size:12px; font-weight:700; margin-top:10px; text-transform:uppercase; }
+  .meta { display:flex; border-bottom:5px solid var(--ink); font-family:'Space Mono',monospace; font-size:11px; font-weight:700; }
+  .meta div { flex:1; padding:10px; text-transform:uppercase; }
+  .meta div+div { border-left:5px solid var(--ink); }
+  .search { margin:16px; display:flex; border:4px solid var(--ink); background:#fff; }
+  .search span { padding:12px; font-weight:900; border-right:4px solid var(--ink); }
+  .search input { border:0; outline:0; width:100%; font-family:'Space Mono',monospace; font-size:13px; font-weight:700; padding:12px; background:none; text-transform:uppercase; }
+  nav { display:flex; gap:0; margin:0 16px; border:4px solid var(--ink); }
+  .chip { flex:1; background:var(--card); border:0; font-family:'Space Mono',monospace; font-weight:700; font-size:11px; padding:12px 4px; cursor:pointer; text-transform:uppercase; }
+  .chip+.chip { border-left:4px solid var(--ink); }
+  .chip.on { background:var(--ink); color:#fff; }
+  .item { display:flex; gap:12px; align-items:center; margin:14px 16px 0; padding:14px; background:var(--card); border:4px solid var(--ink); box-shadow:7px 7px 0 var(--ink); }
+  .idx { font-family:'Space Mono',monospace; font-weight:700; font-size:12px; background:var(--ink); color:#fff; padding:5px 8px; flex-shrink:0; }
+  .thumb { font-size:34px; flex-shrink:0; }
+  .info { flex:1; min-width:0; }
+  .name { font-size:17px; font-weight:900; text-transform:uppercase; letter-spacing:-.3px; line-height:1.1; }
+  .desc { font-family:'Space Mono',monospace; font-size:11px; margin-top:4px; }
+  .right { text-align:right; flex-shrink:0; }
+  .price { font-size:21px; font-weight:900; background:var(--acc); color:#fff; padding:3px 8px; display:inline-block; }
+  .add { display:block; margin-top:8px; width:100%; border:4px solid var(--ink); background:#fff; font-family:'Space Mono',monospace; font-weight:700; font-size:13px; padding:8px 10px; cursor:pointer; }
+  .add:active { background:var(--ink); color:#fff; }
+  .cart { position:fixed; bottom:0; width:100%; max-width:430px; background:var(--ink); color:#fff; padding:16px 18px; display:none; justify-content:space-between; align-items:center; border-top:5px solid var(--acc); }
+  .cart.show { display:flex; }
+  .cart .t { font-size:22px; font-weight:900; }
+  .cart .l { font-family:'Space Mono',monospace; font-size:11px; letter-spacing:1px; }
+  .cart button { background:var(--acc); border:0; color:#fff; font-family:'Space Mono',monospace; font-weight:700; font-size:14px; padding:13px 20px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="ticker"><span>WALK-INS WELCOME /// CASH + CARD /// KITCHEN OPEN TILL LATE /// NO RESERVATIONS /// WALK-INS WELCOME /// CASH + CARD ///&nbsp;</span></div>
+  <header>
+    <div class="logo">BRUT<i>.</i>EATS</div>
+    <div class="sub">Concrete canteen — no frills, just food</div>
+  </header>
+  <div class="meta"><div>◉ Table 04</div><div>◉ Order #A-1042</div></div>
+  <div class="search"><span>⌕</span><input placeholder="SEARCH DISHES"></div>
+  <nav>
+    <button class="chip on" data-cat="all">All</button>
+    <button class="chip" data-cat="starters">Start</button>
+    <button class="chip" data-cat="mains">Main</button>
+    <button class="chip" data-cat="desserts">Sweet</button>
+    <button class="chip" data-cat="drinks">Drink</button>
+  </nav>
+
+  <div class="item" data-cat="starters"><div class="idx">01</div><div class="thumb">🧆</div>
+    <div class="info"><div class="name">Truffle Arancini</div><div class="desc">SAFFRON / TRUFFLE / PARMESAN</div></div>
+    <div class="right"><div class="price">$12.50</div><button class="add" data-price="12.50">ADD [+]</button></div></div>
+  <div class="item" data-cat="starters"><div class="idx">02</div><div class="thumb">🥗</div>
+    <div class="info"><div class="name">Winter Caesar</div><div class="desc">GEM / ANCHOVY / BRIOCHE</div></div>
+    <div class="right"><div class="price">$9.00</div><button class="add" data-price="9">ADD [+]</button></div></div>
+  <div class="item" data-cat="mains"><div class="idx">03</div><div class="thumb">🍔</div>
+    <div class="info"><div class="name">Wagyu Burger</div><div class="desc">A5 BLEND / CHEDDAR / PICKLES</div></div>
+    <div class="right"><div class="price">$18.50</div><button class="add" data-price="18.50">ADD [+]</button></div></div>
+  <div class="item" data-cat="mains"><div class="idx">04</div><div class="thumb">🍕</div>
+    <div class="info"><div class="name">Margherita D.O.C.</div><div class="desc">SAN MARZANO / FIOR DI LATTE</div></div>
+    <div class="right"><div class="price">$14.00</div><button class="add" data-price="14">ADD [+]</button></div></div>
+  <div class="item" data-cat="mains"><div class="idx">05</div><div class="thumb">🐟</div>
+    <div class="info"><div class="name">Roast Halibut</div><div class="desc">BROWN BUTTER / CAPERS</div></div>
+    <div class="right"><div class="price">$21.00</div><button class="add" data-price="21">ADD [+]</button></div></div>
+  <div class="item" data-cat="desserts"><div class="idx">06</div><div class="thumb">🍫</div>
+    <div class="info"><div class="name">Lava Fondant</div><div class="desc">70% CHOCOLATE / GELATO</div></div>
+    <div class="right"><div class="price">$8.50</div><button class="add" data-price="8.50">ADD [+]</button></div></div>
+  <div class="item" data-cat="desserts"><div class="idx">07</div><div class="thumb">🍰</div>
+    <div class="info"><div class="name">Tiramisu</div><div class="desc">ESPRESSO / MASCARPONE</div></div>
+    <div class="right"><div class="price">$7.50</div><button class="add" data-price="7.50">ADD [+]</button></div></div>
+  <div class="item" data-cat="drinks"><div class="idx">08</div><div class="thumb">🍵</div>
+    <div class="info"><div class="name">Iced Matcha</div><div class="desc">CEREMONIAL / OAT MILK</div></div>
+    <div class="right"><div class="price">$5.50</div><button class="add" data-price="5.50">ADD [+]</button></div></div>
+  <div class="item" data-cat="drinks"><div class="idx">09</div><div class="thumb">🥤</div>
+    <div class="info"><div class="name">Yuzu Lemonade</div><div class="desc">CITRUS / MINT / SPARKLING</div></div>
+    <div class="right"><div class="price">$4.50</div><button class="add" data-price="4.50">ADD [+]</button></div></div>
+
+  <div class="cart" id="cart">
+    <div><div class="t">$<span id="tot">0.00</span></div><div class="l"><span id="cnt">0</span> ITEMS</div></div>
+    <button>CHECKOUT →</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>{const o=b.textContent;b.onclick=()=>{n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent=s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='✓';setTimeout(()=>b.textContent=o,700);};});
+</script>
+</body>
+</html>

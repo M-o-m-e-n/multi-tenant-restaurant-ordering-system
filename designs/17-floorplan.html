@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>17 — FLOOR Table Map</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0e1624; --panel:#141f31; --grid:rgba(79,209,224,.09);
+    --cyan:#4fd1e0; --amber:#ffb703; --rose:#e8697d; --paper:#dce7f0; --mut:#6f8296;
+    --line:rgba(220,231,240,.12);
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#070c14;font-family:'IBM Plex Sans',system-ui,sans-serif;display:flex;justify-content:center}
+  .app{
+    width:100%;max-width:430px;min-height:100vh;background:var(--navy);color:var(--paper);
+    position:relative;padding:0 0 106px;
+  }
+
+  header{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:flex-start}
+  .brand{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;letter-spacing:3px}
+  .brand small{display:block;font-size:9.5px;color:var(--mut);letter-spacing:2px;margin-top:4px;font-weight:400}
+  .live{
+    font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.5px;color:var(--cyan);
+    border:1px solid rgba(79,209,224,.35);padding:5px 9px;display:flex;align-items:center;gap:6px;
+  }
+  .pulse{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:blink 1.8s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  @media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+
+  .mapwrap{
+    margin:18px 20px 0;border:1px solid var(--line);background:var(--panel);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:18px 18px;padding:12px;position:relative;
+  }
+  .maplab{
+    position:absolute;top:10px;left:12px;font-family:'IBM Plex Mono',monospace;
+    font-size:9px;letter-spacing:2px;color:var(--mut);
+  }
+  svg{width:100%;height:auto;display:block}
+  .tbl{cursor:pointer}
+  .tbl rect,.tbl circle{transition:.2s}
+  .tbl:hover rect,.tbl:hover circle{stroke:#fff}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;padding:11px 20px 0;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:1.2px;color:var(--mut)}
+  .legend i{width:9px;height:9px;display:inline-block;margin-right:5px;vertical-align:-1px;border:1px solid}
+  .lg-free i{background:transparent;border-color:var(--cyan)}
+  .lg-seat i{background:var(--amber);border-color:var(--amber)}
+  .lg-dirty i{background:transparent;border-color:var(--rose);border-style:dashed}
+  .lg-you i{background:#fff;border-color:#fff}
+
+  .readout{
+    margin:14px 20px 0;padding:12px 14px;border-left:2px solid var(--cyan);background:var(--panel);
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.5px;line-height:1.7;
+  }
+  .readout b{color:var(--cyan);font-weight:500}
+  .readout span{color:var(--mut)}
+
+  .bar{
+    display:flex;justify-content:space-between;align-items:center;margin:20px 20px 0;
+    padding-bottom:9px;border-bottom:1px solid var(--line);
+  }
+  .bar h2{font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase}
+  nav{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding:12px 20px 0}
+  nav::-webkit-scrollbar{display:none}
+  .chip{
+    background:transparent;border:1px solid var(--line);color:var(--mut);white-space:nowrap;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.2px;text-transform:uppercase;
+    padding:6px 11px;cursor:pointer;transition:.18s;
+  }
+  .chip:hover{color:var(--paper);border-color:var(--mut)}
+  .chip.on{background:var(--cyan);border-color:var(--cyan);color:#0b1420;font-weight:600}
+
+  .item{display:flex;gap:12px;align-items:center;padding:13px 20px;border-bottom:1px solid var(--line)}
+  .em{font-size:20px;width:26px;text-align:center;flex-shrink:0}
+  .info{flex:1;min-width:0}
+  .name{font-size:13.5px;font-weight:600;letter-spacing:.2px}
+  .desc{font-size:10.5px;color:var(--mut);line-height:1.5;margin-top:3px}
+  .price{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--amber);flex-shrink:0}
+  .add{
+    width:27px;height:27px;border:1px solid var(--line);background:transparent;color:var(--paper);
+    font-size:15px;line-height:0;cursor:pointer;flex-shrink:0;transition:.18s;
+  }
+  .add:hover{background:var(--cyan);border-color:var(--cyan);color:#0b1420}
+
+  .foot{padding:16px 20px 8px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--mut);letter-spacing:1.5px;line-height:1.9}
+
+  .cart{
+    position:fixed;bottom:0;width:100%;max-width:430px;background:var(--panel);
+    border-top:1px solid var(--cyan);padding:13px 20px;display:none;
+    justify-content:space-between;align-items:center;gap:12px;
+  }
+  .cart.show{display:flex}
+  .cart .l{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--mut);text-transform:uppercase}
+  .cart .t{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+  .cart button{
+    background:var(--cyan);color:#0b1420;border:0;font-family:'IBM Plex Sans',sans-serif;
+    font-size:11.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:12px 16px;cursor:pointer;
+  }
+  .cart button:hover{background:var(--amber)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">FLOOR<small>DINING ROOM · GROUND</small></div>
+    <div class="live"><i class="pulse"></i>LIVE</div>
+  </header>
+
+  <div class="mapwrap">
+    <div class="maplab">PLAN 1:50</div>
+    <svg viewBox="0 0 360 226" role="img" aria-label="Dining room floor plan, you are at table 12">
+      <!-- room shell -->
+      <rect x="8" y="8" width="344" height="210" fill="none" stroke="rgba(220,231,240,.22)" stroke-width="1.5"/>
+      <!-- kitchen pass -->
+      <rect x="8" y="8" width="344" height="26" fill="rgba(79,209,224,.07)" stroke="rgba(79,209,224,.25)" stroke-width="1"/>
+      <text x="180" y="25" fill="#6f8296" font-family="IBM Plex Mono, monospace" font-size="9" letter-spacing="3" text-anchor="middle">KITCHEN PASS</text>
+      <!-- bar -->
+      <rect x="312" y="48" width="32" height="150" rx="3" fill="rgba(255,183,3,.08)" stroke="rgba(255,183,3,.3)" stroke-width="1"/>
+      <text x="328" y="128" fill="#8a7440" font-family="IBM Plex Mono, monospace" font-size="9" letter-spacing="2" text-anchor="middle" transform="rotate(90 328 128)">BAR</text>
+      <!-- entrance -->
+      <rect x="150" y="214" width="60" height="7" fill="#4fd1e0" opacity=".5"/>
+      <text x="180" y="210" fill="#6f8296" font-family="IBM Plex Mono, monospace" font-size="8" letter-spacing="2" text-anchor="middle">ENTRANCE</text>
+
+      <g class="tbl" data-t="1" data-s="SEATED" data-seats="2">
+        <rect x="26" y="52" width="40" height="30" rx="3" fill="#ffb703" stroke="#ffb703" stroke-width="1.2"/>
+        <text x="46" y="71" fill="#14202e" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" text-anchor="middle">1</text></g>
+      <g class="tbl" data-t="2" data-s="FREE" data-seats="2">
+        <rect x="86" y="52" width="40" height="30" rx="3" fill="none" stroke="#4fd1e0" stroke-width="1.2"/>
+        <text x="106" y="71" fill="#4fd1e0" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">2</text></g>
+      <g class="tbl" data-t="3" data-s="DIRTY" data-seats="4">
+        <rect x="146" y="52" width="46" height="30" rx="3" fill="none" stroke="#e8697d" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <text x="169" y="71" fill="#e8697d" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">3</text></g>
+      <g class="tbl" data-t="4" data-s="SEATED" data-seats="4">
+        <rect x="212" y="52" width="46" height="30" rx="3" fill="#ffb703" stroke="#ffb703" stroke-width="1.2"/>
+        <text x="235" y="71" fill="#14202e" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" text-anchor="middle">4</text></g>
+
+      <g class="tbl" data-t="6" data-s="FREE" data-seats="2">
+        <circle cx="46" cy="118" r="18" fill="none" stroke="#4fd1e0" stroke-width="1.2"/>
+        <text x="46" y="122" fill="#4fd1e0" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">6</text></g>
+      <g class="tbl" data-t="7" data-s="SEATED" data-seats="2">
+        <circle cx="106" cy="118" r="18" fill="#ffb703" stroke="#ffb703" stroke-width="1.2"/>
+        <text x="106" y="122" fill="#14202e" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" text-anchor="middle">7</text></g>
+      <g class="tbl" data-t="8" data-s="FREE" data-seats="6">
+        <rect x="146" y="98" width="112" height="40" rx="3" fill="none" stroke="#4fd1e0" stroke-width="1.2"/>
+        <text x="202" y="122" fill="#4fd1e0" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">8 · COMMUNAL</text></g>
+
+      <g class="tbl" data-t="10" data-s="SEATED" data-seats="4">
+        <rect x="26" y="160" width="46" height="32" rx="3" fill="#ffb703" stroke="#ffb703" stroke-width="1.2"/>
+        <text x="49" y="180" fill="#14202e" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="600" text-anchor="middle">10</text></g>
+      <g class="tbl" data-t="11" data-s="DIRTY" data-seats="2">
+        <circle cx="106" cy="176" r="18" fill="none" stroke="#e8697d" stroke-width="1.2" stroke-dasharray="4 3"/>
+        <text x="106" y="180" fill="#e8697d" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">11</text></g>
+
+      <!-- your table -->
+      <g class="tbl" data-t="12" data-s="YOURS" data-seats="4">
+        <circle cx="180" cy="176" r="27" fill="none" stroke="#ffffff" stroke-width="1" opacity=".3"/>
+        <circle cx="180" cy="176" r="20" fill="#ffffff" stroke="#ffffff" stroke-width="1.5"/>
+        <text x="180" y="181" fill="#0e1624" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600" text-anchor="middle">12</text></g>
+
+      <g class="tbl" data-t="14" data-s="FREE" data-seats="2">
+        <rect x="240" y="160" width="40" height="32" rx="3" fill="none" stroke="#4fd1e0" stroke-width="1.2"/>
+        <text x="260" y="180" fill="#4fd1e0" font-family="IBM Plex Mono, monospace" font-size="11" text-anchor="middle">14</text></g>
+    </svg>
+  </div>
+
+  <div class="legend">
+    <span class="lg-free"><i></i>FREE</span>
+    <span class="lg-seat"><i></i>SEATED</span>
+    <span class="lg-dirty"><i></i>DIRTY</span>
+    <span class="lg-you"><i></i>YOU</span>
+  </div>
+
+  <div class="readout" id="readout">
+    <b>TABLE 12</b> · 4 covers · check A-1042<br>
+    <span>Seated 19:04 · you scanned the code on this table, so everything you order lands here.</span>
+  </div>
+
+  <div class="bar"><h2>Order to this table</h2></div>
+
+  <nav>
+    <button class="chip on" data-cat="all">ALL</button>
+    <button class="chip" data-cat="starters">STARTERS</button>
+    <button class="chip" data-cat="mains">MAINS</button>
+    <button class="chip" data-cat="desserts">SWEET</button>
+    <button class="chip" data-cat="drinks">DRINKS</button>
+  </nav>
+
+  <div class="item" data-cat="starters"><div class="em">🧆</div>
+    <div class="info"><div class="name">Truffle Arancini</div><div class="desc">Saffron risotto · black truffle · parmesan</div></div>
+    <div class="price">12.50</div><button class="add" data-price="12.50">+</button></div>
+  <div class="item" data-cat="starters"><div class="em">🥗</div>
+    <div class="info"><div class="name">Winter Caesar</div><div class="desc">Baby gem · anchovy cream · brioche crumb</div></div>
+    <div class="price">9.00</div><button class="add" data-price="9">+</button></div>
+  <div class="item" data-cat="mains"><div class="em">🍔</div>
+    <div class="info"><div class="name">Wagyu Burger</div><div class="desc">A5 blend · aged cheddar · house pickles</div></div>
+    <div class="price">18.50</div><button class="add" data-price="18.50">+</button></div>
+  <div class="item" data-cat="mains"><div class="em">🍕</div>
+    <div class="info"><div class="name">Margherita D.O.C.</div><div class="desc">San Marzano · fior di latte · basil</div></div>
+    <div class="price">14.00</div><button class="add" data-price="14">+</button></div>
+  <div class="item" data-cat="mains"><div class="em">🐟</div>
+    <div class="info"><div class="name">Roast Halibut</div><div class="desc">Brown butter · capers · confit potato</div></div>
+    <div class="price">21.00</div><button class="add" data-price="21">+</button></div>
+  <div class="item" data-cat="desserts"><div class="em">🍫</div>
+    <div class="info"><div class="name">Lava Fondant</div><div class="desc">70% chocolate · vanilla bean gelato</div></div>
+    <div class="price">8.50</div><button class="add" data-price="8.50">+</button></div>
+  <div class="item" data-cat="desserts"><div class="em">🍰</div>
+    <div class="info"><div class="name">Tiramisu</div><div class="desc">Espresso-soaked savoiardi · mascarpone</div></div>
+    <div class="price">7.50</div><button class="add" data-price="7.50">+</button></div>
+  <div class="item" data-cat="drinks"><div class="em">🍵</div>
+    <div class="info"><div class="name">Iced Matcha</div><div class="desc">Ceremonial grade · oat milk</div></div>
+    <div class="price">5.50</div><button class="add" data-price="5.50">+</button></div>
+  <div class="item" data-cat="drinks"><div class="em">🥤</div>
+    <div class="info"><div class="name">Yuzu Lemonade</div><div class="desc">Fresh citrus · mint · sparkling water</div></div>
+    <div class="price">4.50</div><button class="add" data-price="4.50">+</button></div>
+
+  <div class="foot">TAP ANY TABLE TO INSPECT IT<br>SERVICE 10% DINE-IN · PRICES EXCLUDE TAX</div>
+
+  <div class="cart" id="cart">
+    <div><div class="l">TABLE 12 RUNNING TAB</div><div class="t"><span id="cnt">0</span> items · $<span id="tot">0.00</span></div></div>
+    <button>Fire order</button>
+  </div>
+</div>
+<script>
+const NOTE={
+  FREE:'Open — staff can seat a party here now.',
+  SEATED:'Occupied. A check is already open on this table.',
+  DIRTY:'Needs clearing before it can be seated again.',
+  YOURS:'Seated 19:04 · you scanned the code on this table, so everything you order lands here.'
+};
+document.querySelectorAll('.tbl').forEach(g=>g.onclick=()=>{
+  const t=g.dataset.t,s=g.dataset.s,seats=g.dataset.seats;
+  document.getElementById('readout').innerHTML =
+    `<b>TABLE ${t}</b> · ${seats} covers · ${s==='YOURS'?'check A-1042':s}<br><span>${NOTE[s]}</span>`;
+});
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{
+  chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  const t=c.dataset.cat;
+  document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');
+});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=()=>{
+  n++;s+=+b.dataset.price;
+  document.getElementById('cnt').textContent=n;
+  document.getElementById('tot').textContent=s.toFixed(2);
+  document.getElementById('cart').classList.add('show');
+  b.textContent='✓';setTimeout(()=>b.textContent='+',700);
+});
+</script>
+</body>
+</html>

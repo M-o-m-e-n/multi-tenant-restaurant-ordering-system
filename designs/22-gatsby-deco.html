@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>22 — GATSBY Art Deco</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0d0c0a; --gold:#d4af37; --gold2:#f2e3ac; --cream:#f2e8c9; --mut:#9a8f74; --line:#3a3223; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#050403; font-family:Jost,sans-serif; display:flex; justify-content:center; }
+  .app { width:100%; max-width:430px; min-height:100vh; color:var(--cream); position:relative; padding-bottom:120px;
+    background:radial-gradient(ellipse at 50% -60px,rgba(212,175,55,.14),transparent 60%),var(--bg); }
+  .frame-outer { border:1px solid var(--line); margin:12px; border-top:0; }
+  header { text-align:center; padding:30px 22px 20px; border:1px solid var(--line); border-bottom:0; position:relative; }
+  header::before,header::after { content:""; position:absolute; top:14px; bottom:14px; width:1px; background:var(--line); }
+  header::before { left:8px; } header::after { right:8px; }
+  .est { font-size:10px; letter-spacing:6px; color:var(--gold); text-transform:uppercase; }
+  .logo { font-family:Cinzel,serif; font-size:42px; font-weight:700; letter-spacing:6px; margin:8px 0 2px; color:var(--gold2); }
+  .yr { font-family:Cinzel,serif; font-size:13px; letter-spacing:10px; color:var(--mut); }
+  .deco { display:flex; align-items:center; gap:10px; margin:16px 30px 0; }
+  .deco::before,.deco::after { content:""; flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+  .deco i { width:9px; height:9px; background:var(--gold); transform:rotate(45deg); font-style:normal; }
+  .tag { font-size:11px; letter-spacing:4px; text-transform:uppercase; color:var(--mut); margin-top:10px; }
+  .search { margin:18px 26px 0; display:flex; align-items:center; gap:10px; border:1px solid var(--line); padding:11px 14px; background:rgba(212,175,55,.04); }
+  .search input { background:none; border:0; outline:0; color:var(--cream); width:100%; font-family:Jost; font-size:13px; letter-spacing:2px; }
+  .search input::placeholder { color:#5f573f; letter-spacing:2px; }
+  nav { display:flex; justify-content:center; gap:20px; padding:18px 20px 4px; flex-wrap:wrap; }
+  .chip { background:none; border:0; color:var(--mut); font-family:Cinzel,serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; padding:6px 2px; cursor:pointer; border-bottom:1px solid transparent; }
+  .chip.on { color:var(--gold); border-color:var(--gold); }
+  .sect { text-align:center; font-family:Cinzel,serif; font-size:15px; letter-spacing:6px; color:var(--gold); padding:22px 0 4px; text-transform:uppercase; }
+  .item { text-align:center; padding:20px 26px 22px; border-bottom:1px solid var(--line); margin:0 26px; }
+  .item:last-of-type { border-bottom:0; }
+  .thumb { font-size:30px; }
+  .name { font-family:Cinzel,serif; font-size:20px; font-weight:600; letter-spacing:2px; margin-top:8px; color:var(--gold2); }
+  .desc { font-size:12.5px; font-weight:300; font-style:italic; color:var(--mut); margin-top:6px; letter-spacing:.5px; }
+  .pricerow { display:flex; align-items:center; gap:12px; margin-top:12px; }
+  .pricerow::before,.pricerow::after { content:""; flex:1; height:1px; background:var(--line); }
+  .price { font-family:Cinzel,serif; font-size:19px; color:var(--gold); letter-spacing:1px; }
+  .add { margin:12px auto 0; display:block; background:none; border:1px solid var(--gold); color:var(--gold); font-family:Cinzel,serif; font-size:10px; letter-spacing:4px; text-transform:uppercase; padding:10px 26px; cursor:pointer; transition:.2s; }
+  .add:hover { background:var(--gold); color:#0d0c0a; }
+  .foot { text-align:center; font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--mut); padding:26px; line-height:2.4; }
+  .cart { position:fixed; bottom:0; width:100%; max-width:430px; background:#12100b; border-top:2px solid var(--gold); padding:16px 24px; display:none; justify-content:space-between; align-items:center; }
+  .cart.show { display:flex; }
+  .cart .t { font-family:Cinzel,serif; font-size:22px; color:var(--gold); }
+  .cart .l { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--mut); }
+  .cart button { background:var(--gold); border:0; color:#0d0c0a; font-family:Cinzel,serif; font-size:11px; letter-spacing:3px; text-transform:uppercase; padding:13px 24px; cursor:pointer; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="frame-outer">
+  <header>
+    <div class="est">Est. MCMXXV</div>
+    <div class="logo">GATSBY</div>
+    <div class="yr">◆ 1925 ◆</div>
+    <div class="deco"><i></i></div>
+    <div class="tag">Supper Club &amp; Oyster Bar</div>
+  </header>
+  </div>
+  <div class="search">✦<input placeholder="SEARCH THE MENU"></div>
+  <nav>
+    <button class="chip on" data-cat="all">All</button>
+    <button class="chip" data-cat="starters">Starters</button>
+    <button class="chip" data-cat="mains">Mains</button>
+    <button class="chip" data-cat="desserts">Desserts</button>
+    <button class="chip" data-cat="drinks">Drinks</button>
+  </nav>
+
+  <div class="item" data-cat="starters"><div class="thumb">🧆</div>
+    <div class="name">Truffle Arancini</div><div class="desc">Saffron risotto, black truffle, aged parmesan</div>
+    <div class="pricerow"><div class="price">$12.50</div></div>
+    <button class="add" data-price="12.50">Add to Order</button></div>
+  <div class="item" data-cat="starters"><div class="thumb">🥗</div>
+    <div class="name">Winter Caesar</div><div class="desc">Baby gem, anchovy cream, brioche crumb</div>
+    <div class="pricerow"><div class="price">$9.00</div></div>
+    <button class="add" data-price="9">Add to Order</button></div>
+  <div class="item" data-cat="mains"><div class="thumb">🍔</div>
+    <div class="name">Wagyu Burger</div><div class="desc">A5 blend, aged cheddar, house pickles</div>
+    <div class="pricerow"><div class="price">$18.50</div></div>
+    <button class="add" data-price="18.50">Add to Order</button></div>
+  <div class="item" data-cat="mains"><div class="thumb">🍕</div>
+    <div class="name">Margherita D.O.C.</div><div class="desc">San Marzano, fior di latte, basil</div>
+    <div class="pricerow"><div class="price">$14.00</div></div>
+    <button class="add" data-price="14">Add to Order</button></div>
+  <div class="item" data-cat="mains"><div class="thumb">🐟</div>
+    <div class="name">Roast Halibut</div><div class="desc">Brown butter, capers, confit potato</div>
+    <div class="pricerow"><div class="price">$21.00</div></div>
+    <button class="add" data-price="21">Add to Order</button></div>
+  <div class="item" data-cat="desserts"><div class="thumb">🍫</div>
+    <div class="name">Lava Fondant</div><div class="desc">70% chocolate, vanilla bean gelato</div>
+    <div class="pricerow"><div class="price">$8.50</div></div>
+    <button class="add" data-price="8.50">Add to Order</button></div>
+  <div class="item" data-cat="desserts"><div class="thumb">🍰</div>
+    <div class="name">Tiramisu</div><div class="desc">Espresso-soaked savoiardi, mascarpone</div>
+    <div class="pricerow"><div class="price">$7.50</div></div>
+    <button class="add" data-price="7.50">Add to Order</button></div>
+  <div class="item" data-cat="drinks"><div class="thumb">🍵</div>
+    <div class="name">Iced Matcha</div><div class="desc">Ceremonial grade, oat milk</div>
+    <div class="pricerow"><div class="price">$5.50</div></div>
+    <button class="add" data-price="5.50">Add to Order</button></div>
+  <div class="item" data-cat="drinks"><div class="thumb">🥤</div>
+    <div class="name">Yuzu Lemonade</div><div class="desc">Fresh citrus, mint, sparkling water</div>
+    <div class="pricerow"><div class="price">$4.50</div></div>
+    <button class="add" data-price="4.50">Add to Order</button></div>
+
+  <div class="foot">◆ ◆ ◆<br>Champagne served till late<br>Table 7 · Evening sitting</div>
+
+  <div class="cart" id="cart">
+    <div><div class="t">$<span id="tot">0.00</span></div><div class="l"><span id="cnt">0</span> selections</div></div>
+    <button>Review Order</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>{const o=b.textContent;b.onclick=()=>{n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent=s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='✓ Added';setTimeout(()=>b.textContent=o,700);};});
+</script>
+</body>
+</html>

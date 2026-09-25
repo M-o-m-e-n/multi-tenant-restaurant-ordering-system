@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>07 — MAISON Editorial Luxury</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --ivory:#f7f4ee; --ink:#141414; --mut:#6f6a61; --line:#ded8cc; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#e8e4db; font-family:Inter,sans-serif; display:flex; justify-content:center; }
+  .app { width:100%; max-width:430px; min-height:100vh; background:var(--ivory); position:relative; padding-bottom:120px; }
+  .kicker { font-size:10px; letter-spacing:5px; text-transform:uppercase; color:var(--mut); padding:30px 24px 0; display:flex; justify-content:space-between; }
+  h1 { font-family:'Playfair Display',serif; font-size:70px; font-weight:900; letter-spacing:-3px; line-height:.9; padding:14px 20px 0; }
+  h1 em { font-weight:400; font-style:italic; }
+  .lede { font-family:'Playfair Display',serif; font-style:italic; font-size:16px; color:var(--mut); padding:14px 24px 20px; border-bottom:1px solid var(--ink); margin:0 0 0; }
+  nav { display:flex; gap:20px; padding:14px 24px; overflow-x:auto; border-bottom:1px solid var(--line); }
+  .chip { background:none; border:0; font-family:Inter; font-size:11px; font-weight:500; letter-spacing:2.5px; text-transform:uppercase; color:var(--mut); cursor:pointer; white-space:nowrap; padding:4px 0; border-bottom:2px solid transparent; }
+  .chip.on { color:var(--ink); border-color:var(--ink); }
+  .feature { margin:22px 20px 6px; background:linear-gradient(135deg,#1d1d1d,#3c352c); color:#f4efe4; border-radius:4px; padding:26px 22px; position:relative; overflow:hidden; }
+  .feature::after { content:"Ⅰ"; position:absolute; right:10px; bottom:-26px; font-family:'Playfair Display',serif; font-size:130px; color:rgba(255,255,255,.06); }
+  .feature .lab { font-size:10px; letter-spacing:4px; text-transform:uppercase; color:#c8a45c; }
+  .feature .nm { font-family:'Playfair Display',serif; font-size:34px; font-weight:700; line-height:1.05; margin:10px 0 8px; }
+  .feature .ds { font-size:12.5px; color:#b9b2a4; line-height:1.6; max-width:75%; font-weight:300; }
+  .feature .bt { display:flex; justify-content:space-between; align-items:center; margin-top:20px; }
+  .feature .pr { font-family:'Playfair Display',serif; font-size:26px; }
+  .feature button, .add { background:none; border:1px solid currentColor; color:inherit; font-family:Inter; font-size:10px; letter-spacing:3px; text-transform:uppercase; padding:11px 20px; cursor:pointer; transition:.2s; }
+  .feature button:hover { background:#c8a45c; border-color:#c8a45c; color:#141414; }
+  .sect { font-family:'Playfair Display',serif; font-size:26px; padding:26px 24px 6px; display:flex; align-items:baseline; gap:12px; }
+  .sect small { font-family:Inter; font-size:10px; letter-spacing:3px; color:var(--mut); text-transform:uppercase; }
+  .item { display:flex; gap:16px; padding:18px 24px; border-bottom:1px solid var(--line); align-items:baseline; }
+  .no { font-family:'Playfair Display',serif; font-style:italic; font-size:15px; color:var(--mut); width:24px; flex-shrink:0; }
+  .info { flex:1; min-width:0; }
+  .name { font-family:'Playfair Display',serif; font-size:21px; font-weight:700; letter-spacing:-.3px; }
+  .desc { font-family:'Playfair Display',serif; font-style:italic; font-size:13.5px; color:var(--mut); margin-top:5px; line-height:1.5; }
+  .dots { flex:1; border-bottom:1.5px dotted var(--line); margin:0 4px; min-width:14px; transform:translateY(-4px); }
+  .right { text-align:right; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
+  .price { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; }
+  .add { padding:8px 14px; }
+  .add:hover { background:var(--ink); color:var(--ivory); }
+  .foot { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--mut); text-align:center; padding:30px 24px; line-height:2.2; }
+  .cart { position:fixed; bottom:0; width:100%; max-width:430px; background:var(--ink); color:var(--ivory); padding:17px 24px; display:none; justify-content:space-between; align-items:center; }
+  .cart.show { display:flex; }
+  .cart .t { font-family:'Playfair Display',serif; font-size:19px; }
+  .cart .l { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:#8f887c; }
+  .cart button { background:var(--ivory); color:var(--ink); border:0; font-family:Inter; font-size:11px; letter-spacing:3px; text-transform:uppercase; padding:13px 22px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="kicker"><span>Est. MMXII</span><span>Table №14</span></div>
+  <h1>The<br><em>Menu</em></h1>
+  <div class="lede">“Cooking is not about convenience. It is about generosity.” — seasonal, sourced within 50 miles.</div>
+
+  <nav>
+    <button class="chip on" data-cat="all">All</button>
+    <button class="chip" data-cat="starters">Starters</button>
+    <button class="chip" data-cat="mains">Mains</button>
+    <button class="chip" data-cat="desserts">Desserts</button>
+    <button class="chip" data-cat="drinks">Drinks</button>
+  </nav>
+
+  <div class="feature" data-cat="mains">
+    <div class="lab">Chef's signature</div>
+    <div class="nm">Dry-Aged<br>Ribeye</div>
+    <div class="ds">45 days in our cellar, bone-marrow butter, charred leek, smoked salt.</div>
+    <div class="bt"><div class="pr">$42.00</div><button class="add" data-price="42">Add</button></div>
+  </div>
+
+  <div class="sect" data-cat-head="starters">Starters <small>I — III</small></div>
+  <div class="item" data-cat="starters"><div class="no">i.</div>
+    <div class="info"><div class="name">Truffle Arancini</div><div class="desc">saffron risotto, black truffle, aged parmesan</div></div>
+    <div class="dots"></div>
+    <div class="right"><div class="price">$12.50</div><button class="add" data-price="12.50">Add</button></div></div>
+  <div class="item" data-cat="starters"><div class="no">ii.</div>
+    <div class="info"><div class="name">Winter Caesar</div><div class="desc">baby gem, anchovy cream, brioche crumb</div></div>
+    <div class="dots"></div>
+    <div class="right"><div class="price">$9.00</div><button class="add" data-price="9">Add</button></div></div>
+
+  <div class="sect" data-cat-head="mains">Mains <small>IV — VI</small></div>
+  <div class="item" data-cat="mains"><div class="no">iv.</div>
+    <div class="info"><div class="name">Roast Halibut</div><div class="desc">brown butter, capers, confit potato</div></div>
+    <div class="dots"></div>
+    <div class="right"><div class="price">$21.00</div><button class="add" data-price="21">Add</button></div></div>
+  <div class="item" data-cat="mains"><div class="no">v.</div>
+    <div class="info"><div class="name">Margherita D.O.C.</div><div class="desc">San Marzano, fior di latte, basil</div></div>
+    <div class="dots"></div>
+    <div class="right"><div class="price">$14.00</div><button class="add" data-price="14">Add</button></div></div>
+  <div class="item" data-cat="mains"><div class="no">vi.</div>
+    <div class="info"><div class="name">Wagyu Burger</div><div class="desc">A5 blend, aged cheddar, house pickles</div></div>
+    <div class="dots"></div>
+    <div class="right"><div class="price">$18.50</div><button class="add" data-price="18.50">Add</button></div></div>
+
+  <div class="sect" data-cat-head="desserts">Desserts <small>VII — VIII</small></div>
+  <div class="item" data-cat="desserts"><div class="no">vii.</div>
+    <div class="info"><div class="name">Lava Fondant</div><div class="desc">70% chocolate, vanilla bean gelato</div></div>
+    <div class="dots"></div>
+    <div class="right"><div class="price">$8.50</div><button class="add" data-price="8.50">Add</button></div></div>
+  <div class="item" data-cat="desserts"><div class="no">viii.</div>
+    <div class="info"><div class="name">Tiramisu</div><div class="desc">espresso-soaked savoiardi, mascarpone</div></div>
+    <div class="dots"></div>
+    <div class="right"><div class="price">$7.50</div><button class="add" data-price="7.50">Add</button></div></div>
+
+  <div class="sect" data-cat-head="drinks">Drinks <small>IX — X</small></div>
+  <div class="item" data-cat="drinks"><div class="no">ix.</div>
+    <div class="info"><div class="name">Iced Matcha</div><div class="desc">ceremonial grade, oat milk</div></div>
+    <div class="dots"></div>
+    <div class="right"><div class="price">$5.50</div><button class="add" data-price="5.50">Add</button></div></div>
+  <div class="item" data-cat="drinks"><div class="no">x.</div>
+    <div class="info"><div class="name">Yuzu Lemonade</div><div class="desc">fresh citrus, mint, sparkling water</div></div>
+    <div class="dots"></div>
+    <div class="right"><div class="price">$4.50</div><button class="add" data-price="4.50">Add</button></div></div>
+
+  <div class="foot">Please inform your server of allergies<br>· Service 10% · Thank you ·</div>
+
+  <div class="cart" id="cart">
+    <div><div class="t">$<span id="tot">0.00</span></div><div class="l"><span id="cnt">0</span> selections</div></div>
+    <button>Review order →</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('[data-cat]').forEach(i=>{const own=i.dataset.cat;
+ i.style.display=(t==='all'||own===t)?'':'none';});
+document.querySelectorAll('[data-cat-head]').forEach(h=>{h.style.display=(t==='all'||h.dataset.catHead===t)?'':'none';});});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=e=>{e.stopPropagation();n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent=s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='✓';setTimeout(()=>b.textContent='Add',700);});
+</script>
+</body>
+</html>

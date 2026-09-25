@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 — POP Fast Food</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#161616; --yellow:#ffd23f; --red:#ff4d4d; --blue:#2d7dd2; --bg:#fff8e7; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#efe7d2; font-family:Inter,sans-serif; display:flex; justify-content:center; }
+  .app { width:100%; max-width:430px; min-height:100vh; background:var(--bg); position:relative; padding-bottom:120px; border-left:3px solid var(--ink); border-right:3px solid var(--ink); }
+  header { background:var(--yellow); border-bottom:3px solid var(--ink); padding:26px 20px 20px; position:relative; overflow:hidden; }
+  header::after { content:""; position:absolute; inset:auto -20px -34px auto; width:110px; height:110px; background:var(--red); border:3px solid var(--ink); border-radius:50%; opacity:.9; }
+  .logo { font-family:Fredoka,sans-serif; font-size:44px; font-weight:700; letter-spacing:-1px; line-height:.95; text-transform:uppercase; }
+  .logo span { color:var(--red); -webkit-text-stroke:2px var(--ink); }
+  .sub { font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; margin-top:8px; }
+  .badge { position:absolute; top:18px; right:14px; background:var(--ink); color:var(--yellow); font-size:10px; font-weight:800; letter-spacing:1px; padding:7px 10px; border-radius:99px; transform:rotate(6deg); z-index:2; }
+  .search { margin:16px 16px 0; display:flex; align-items:center; gap:8px; background:#fff; border:3px solid var(--ink); border-radius:99px; padding:11px 16px; box-shadow:4px 4px 0 var(--ink); }
+  .search input { border:0; outline:0; width:100%; font-family:Inter; font-weight:600; font-size:13px; background:none; }
+  nav { display:flex; gap:10px; padding:16px; overflow-x:auto; }
+  .chip { background:#fff; border:3px solid var(--ink); border-radius:99px; padding:8px 15px; font-family:Fredoka; font-weight:600; font-size:13px; cursor:pointer; white-space:nowrap; box-shadow:3px 3px 0 var(--ink); transition:.1s; }
+  .chip:active { transform:translate(3px,3px); box-shadow:0 0 0 var(--ink); }
+  .chip.on { background:var(--red); color:#fff; }
+  .grid { padding:0 16px 20px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .item { background:#fff; border:3px solid var(--ink); border-radius:18px; padding:14px 12px 12px; text-align:center; box-shadow:5px 5px 0 var(--ink); position:relative; }
+  .flag { position:absolute; top:-11px; left:10px; background:var(--blue); color:#fff; font-size:9px; font-weight:800; letter-spacing:1px; padding:4px 8px; border:2px solid var(--ink); border-radius:99px; text-transform:uppercase; }
+  .thumb { font-size:44px; margin:6px 0 8px; }
+  .name { font-family:Fredoka; font-weight:600; font-size:15px; line-height:1.15; }
+  .desc { font-size:10.5px; color:#666; margin:5px 0 10px; line-height:1.4; min-height:28px; }
+  .row { display:flex; align-items:center; justify-content:space-between; }
+  .price { font-family:Fredoka; font-weight:700; font-size:18px; }
+  .add { width:34px; height:34px; border:3px solid var(--ink); background:var(--yellow); border-radius:10px; font-size:20px; font-weight:800; cursor:pointer; line-height:1; box-shadow:2px 2px 0 var(--ink); }
+  .add:active { transform:translate(2px,2px); box-shadow:0 0 0; }
+  .cart { position:fixed; bottom:16px; width:calc(100% - 32px); max-width:398px; margin:0 16px; background:var(--ink); color:#fff; border:3px solid var(--ink); border-radius:99px; padding:13px 20px; display:none; justify-content:space-between; align-items:center; box-shadow:6px 6px 0 var(--red); }
+  .cart.show { display:flex; }
+  .cart b { font-family:Fredoka; font-size:17px; }
+  .cart span { font-size:12px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--yellow); }
+  .cart button { background:var(--yellow); border:3px solid #fff; color:var(--ink); font-family:Fredoka; font-weight:700; font-size:13px; padding:9px 16px; border-radius:99px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="badge">🔥 Open till 3AM</div>
+    <div class="logo">POP<br><span>BURGERS</span></div>
+    <div class="sub">Smash patties · Loaded fries · Shakes</div>
+  </header>
+  <div class="search">🔍<input placeholder="Craving something?"></div>
+  <nav>
+    <button class="chip on" data-cat="all">All 🍔</button>
+    <button class="chip" data-cat="starters">Sides 🍟</button>
+    <button class="chip" data-cat="mains">Burgers 🍔</button>
+    <button class="chip" data-cat="desserts">Shakes 🍦</button>
+    <button class="chip" data-cat="drinks">Drinks 🥤</button>
+  </nav>
+  <div class="grid">
+    <div class="item" data-cat="mains"><div class="flag">Best seller</div>
+      <div class="thumb">🍔</div><div class="name">Classic Smash</div>
+      <div class="desc">Double patty, cheese, house sauce</div>
+      <div class="row"><div class="price">$9.50</div><button class="add" data-price="9.50">+</button></div>
+    </div>
+    <div class="item" data-cat="mains">
+      <div class="thumb">🥓</div><div class="name">Bacon Bomb</div>
+      <div class="desc">Smoked bacon, cheddar, crispy onion</div>
+      <div class="row"><div class="price">$11.00</div><button class="add" data-price="11">+</button></div>
+    </div>
+    <div class="item" data-cat="mains"><div class="flag">Spicy 🌶</div>
+      <div class="thumb">🌶️</div><div class="name">Fire Chicken</div>
+      <div class="desc">Nashville hot, pickles, slaw</div>
+      <div class="row"><div class="price">$10.50</div><button class="add" data-price="10.50">+</button></div>
+    </div>
+    <div class="item" data-cat="starters">
+      <div class="thumb">🍟</div><div class="name">Loaded Fries</div>
+      <div class="desc">Cheese sauce, jalapeño, bacon bits</div>
+      <div class="row"><div class="price">$6.50</div><button class="add" data-price="6.50">+</button></div>
+    </div>
+    <div class="item" data-cat="starters">
+      <div class="thumb">🧅</div><div class="name">Onion Rings</div>
+      <div class="desc">Beer-battered, chipotle dip</div>
+      <div class="row"><div class="price">$5.00</div><button class="add" data-price="5">+</button></div>
+    </div>
+    <div class="item" data-cat="desserts">
+      <div class="thumb">🥤</div><div class="name">Oreo Shake</div>
+      <div class="desc">Thick vanilla shake, cookie crumble</div>
+      <div class="row"><div class="price">$5.50</div><button class="add" data-price="5.50">+</button></div>
+    </div>
+    <div class="item" data-cat="desserts">
+      <div class="thumb">🍦</div><div class="name">Sundae Stack</div>
+      <div class="desc">Caramel, brownie bites, sprinkles</div>
+      <div class="row"><div class="price">$6.00</div><button class="add" data-price="6">+</button></div>
+    </div>
+    <div class="item" data-cat="drinks">
+      <div class="thumb">🥤</div><div class="name">Fizz Cola</div>
+      <div class="desc">Ice cold, free refills</div>
+      <div class="row"><div class="price">$2.50</div><button class="add" data-price="2.50">+</button></div>
+    </div>
+    <div class="item" data-cat="drinks">
+      <div class="thumb">🍋</div><div class="name">Lemonade</div>
+      <div class="desc">Fresh squeezed, mint twist</div>
+      <div class="row"><div class="price">$3.00</div><button class="add" data-price="3">+</button></div>
+    </div>
+    <div class="item" data-cat="starters">
+      <div class="thumb">🍗</div><div class="name">Chicken Bites</div>
+      <div class="desc">Crispy nuggets, honey mustard</div>
+      <div class="row"><div class="price">$7.00</div><button class="add" data-price="7">+</button></div>
+    </div>
+  </div>
+  <div class="cart" id="cart">
+    <div><span><b id="cnt">0</b> items</span> &nbsp;·&nbsp; <b id="tot">$0.00</b></div>
+    <button>Checkout →</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=()=>{n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent='$'+s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='✓';setTimeout(()=>b.textContent='+',700);});
+</script>
+</body>
+</html>

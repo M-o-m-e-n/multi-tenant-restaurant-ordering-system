@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>28 — BLUEPRINT Architect's Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root { --blue:#1e4f9c; --blued:#163a73; --ln:rgba(255,255,255,.9); --dim:rgba(255,255,255,.55); --yel:#ffd23f; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#0d2447; font-family:'Space Mono',monospace; display:flex; justify-content:center; }
+  .app { width:100%; max-width:430px; min-height:100vh; background:var(--blue); color:#fff; position:relative; padding-bottom:140px;
+    background-image:linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.16) 1px,transparent 1px);
+    background-size:16px 16px,16px 16px,80px 80px,80px 80px; }
+  .sheet { border:2px solid var(--ln); margin:12px; min-height:calc(100vh - 24px); display:flex; flex-direction:column; }
+  header { padding:22px 18px 14px; border-bottom:2px solid var(--ln); position:relative; }
+  .cross { position:absolute; font-size:14px; color:var(--dim); }
+  .logo { font-size:30px; font-weight:700; letter-spacing:2px; }
+  .logo span { color:var(--yel); }
+  .sub { font-size:11.5px; color:var(--dim); margin-top:6px; letter-spacing:1px; }
+  .tblock { display:flex; border-bottom:2px solid var(--ln); font-size:10px; }
+  .tblock div { flex:1; padding:8px 10px; letter-spacing:1px; }
+  .tblock div+div { border-left:2px solid var(--ln); }
+  .tblock b { display:block; color:var(--yel); font-size:12px; margin-top:2px; }
+  .search { margin:14px 16px 0; display:flex; gap:8px; align-items:center; border:1.5px dashed var(--ln); padding:10px 12px; font-size:12.5px; }
+  .search input { background:none; border:0; outline:0; color:#fff; width:100%; font-family:inherit; font-size:12.5px; }
+  .search input::placeholder { color:var(--dim); }
+  nav { display:flex; gap:8px; padding:12px 16px 0; overflow-x:auto; }
+  .chip { background:none; border:1.5px solid var(--dim); color:var(--dim); font-family:inherit; font-size:11px; font-weight:700; letter-spacing:1px; padding:8px 12px; cursor:pointer; white-space:nowrap; }
+  .chip.on { border-color:var(--yel); color:var(--yel); background:rgba(255,210,63,.08); }
+  .detail { margin:14px 16px 0; border:1.5px solid var(--ln); padding:0; position:relative; background:rgba(13,36,71,.35); }
+  .detail .tag { position:absolute; top:-11px; left:12px; background:var(--blue); padding:0 8px; font-size:10.5px; font-weight:700; letter-spacing:2px; color:var(--yel); }
+  .detail .in { padding:14px; display:flex; gap:12px; align-items:center; }
+  .thumb { width:56px; height:56px; border:1.5px solid var(--ln); display:grid; place-items:center; font-size:28px; flex-shrink:0; position:relative; }
+  .thumb::after { content:"+"; position:absolute; right:-7px; bottom:-9px; font-size:12px; color:var(--yel); background:var(--blued); padding:0 3px; }
+  .info { flex:1; min-width:0; }
+  .name { font-size:14.5px; font-weight:700; letter-spacing:.5px; }
+  .spec { font-size:11px; color:var(--dim); margin-top:4px; }
+  .dim { font-size:10.5px; color:var(--yel); margin-top:4px; letter-spacing:1px; }
+  .right { text-align:right; flex-shrink:0; }
+  .price { font-size:17px; font-weight:700; }
+  .add { margin-top:8px; background:none; border:1.5px dashed var(--ln); color:#fff; font-family:inherit; font-weight:700; font-size:11.5px; padding:8px 13px; cursor:pointer; letter-spacing:1px; }
+  .add:hover { border-style:solid; border-color:var(--yel); color:var(--yel); }
+  .note { margin:16px; border:1.5px solid var(--dim); padding:10px 12px; font-size:10.5px; color:var(--dim); line-height:1.7; letter-spacing:.5px; }
+  .cart { position:fixed; bottom:0; width:100%; max-width:430px; background:var(--blued); border-top:2px solid var(--ln); padding:14px 18px; display:none; justify-content:space-between; align-items:center; }
+  .cart.show { display:flex; }
+  .cart .t { font-size:19px; font-weight:700; color:var(--yel); }
+  .cart .l { font-size:10px; letter-spacing:2px; color:var(--dim); }
+  .cart button { background:var(--yel); border:0; color:var(--blued); font-family:inherit; font-weight:700; font-size:12.5px; letter-spacing:1px; padding:12px 18px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sheet">
+  <header>
+    <span class="cross" style="top:8px;left:10px">+</span><span class="cross" style="top:8px;right:10px">+</span>
+    <div class="logo">MENU<span>·</span>DWG</div>
+    <div class="sub">PLAN NO. A-1042 — DINING ROOM, TABLE 07 — SCALE 1:1 (REAL FOOD)</div>
+  </header>
+  <div class="tblock"><div>PROJECT<b>GRID.EATS</b></div><div>DATE<b>2026-09-25</b></div><div>SHEET<b>A-101</b></div><div>REV<b>C</b></div></div>
+
+  <div class="search">⌕<input placeholder="FIND DETAIL…"></div>
+  <nav>
+    <button class="chip on" data-cat="all">ALL</button>
+    <button class="chip" data-cat="starters">S-100</button>
+    <button class="chip" data-cat="mains">M-200</button>
+    <button class="chip" data-cat="desserts">D-300</button>
+    <button class="chip" data-cat="drinks">B-400</button>
+  </nav>
+
+  <div class="detail" data-cat="starters"><div class="tag">DETAIL S-101</div>
+    <div class="in"><div class="thumb">🧆</div>
+      <div class="info"><div class="name">TRUFFLE ARANCINI</div><div class="spec">SPEC: saffron / truffle / parmesan</div><div class="dim">◄── Ø 45 · QTY 4 ──►</div></div>
+      <div class="right"><div class="price">$12.50</div><button class="add" data-price="12.50">ADD [+]</button></div></div></div>
+  <div class="detail" data-cat="starters"><div class="tag">DETAIL S-102</div>
+    <div class="in"><div class="thumb">🥗</div>
+      <div class="info"><div class="name">WINTER CAESAR</div><div class="spec">SPEC: baby gem / anchovy / brioche</div><div class="dim">◄── 220 × 220 ──►</div></div>
+      <div class="right"><div class="price">$9.00</div><button class="add" data-price="9">ADD [+]</button></div></div></div>
+  <div class="detail" data-cat="mains"><div class="tag">DETAIL M-201 ★</div>
+    <div class="in"><div class="thumb">🍔</div>
+      <div class="info"><div class="name">WAGYU BURGER</div><div class="spec">SPEC: A5 blend / cheddar / pickles</div><div class="dim">◄── H 120 · STRUCTURAL ──►</div></div>
+      <div class="right"><div class="price">$18.50</div><button class="add" data-price="18.50">ADD [+]</button></div></div></div>
+  <div class="detail" data-cat="mains"><div class="tag">DETAIL M-202</div>
+    <div class="in"><div class="thumb">🍕</div>
+      <div class="info"><div class="name">MARGHERITA D.O.C.</div><div class="spec">SPEC: san marzano / fior di latte</div><div class="dim">◄── Ø 300 ──►</div></div>
+      <div class="right"><div class="price">$14.00</div><button class="add" data-price="14">ADD [+]</button></div></div></div>
+  <div class="detail" data-cat="mains"><div class="tag">DETAIL M-203</div>
+    <div class="in"><div class="thumb">🐟</div>
+      <div class="info"><div class="name">ROAST HALIBUT</div><div class="spec">SPEC: brown butter / capers</div><div class="dim">◄── L 240 ──►</div></div>
+      <div class="right"><div class="price">$21.00</div><button class="add" data-price="21">ADD [+]</button></div></div></div>
+  <div class="detail" data-cat="desserts"><div class="tag">DETAIL D-301</div>
+    <div class="in"><div class="thumb">🍫</div>
+      <div class="info"><div class="name">LAVA FONDANT</div><div class="spec">SPEC: 70% / gelato · SERVE HOT</div><div class="dim">◄── Ø 90 ──►</div></div>
+      <div class="right"><div class="price">$8.50</div><button class="add" data-price="8.50">ADD [+]</button></div></div></div>
+  <div class="detail" data-cat="desserts"><div class="tag">DETAIL D-302</div>
+    <div class="in"><div class="thumb">🍰</div>
+      <div class="info"><div class="name">TIRAMISU</div><div class="spec">SPEC: espresso / mascarpone</div><div class="dim">◄── 120 × 90 ──►</div></div>
+      <div class="right"><div class="price">$7.50</div><button class="add" data-price="7.50">ADD [+]</button></div></div></div>
+  <div class="detail" data-cat="drinks"><div class="tag">DETAIL B-401</div>
+    <div class="in"><div class="thumb">🍵</div>
+      <div class="info"><div class="name">ICED MATCHA</div><div class="spec">SPEC: ceremonial / oat milk</div><div class="dim">◄── V 350ml ──►</div></div>
+      <div class="right"><div class="price">$5.50</div><button class="add" data-price="5.50">ADD [+]</button></div></div></div>
+  <div class="detail" data-cat="drinks"><div class="tag">DETAIL B-402</div>
+    <div class="in"><div class="thumb">🥤</div>
+      <div class="info"><div class="name">YUZU LEMONADE</div><div class="spec">SPEC: citrus / mint / sparkling</div><div class="dim">◄── V 400ml ──►</div></div>
+      <div class="right"><div class="price">$4.50</div><button class="add" data-price="4.50">ADD [+]</button></div></div></div>
+
+  <div class="note">GENERAL NOTES:<br>1. ALL DIMENSIONS IN MILLIMETRES (OR BITES).<br>2. DO NOT SCALE DRAWING — TASTE PORTION.<br>3. ★ DENOTES LOAD-BEARING FLAVOUR.</div>
+  </div>
+
+  <div class="cart" id="cart">
+    <div><div class="t">$<span id="tot">0.00</span></div><div class="l"><span id="cnt">0</span> ITEMS SCHEDULED</div></div>
+    <button>ISSUE ORDER ▸</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('.detail').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>{const o=b.textContent;b.onclick=()=>{n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent=s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='[✓]';setTimeout(()=>b.textContent=o,700);};});
+</script>
+</body>
+</html>

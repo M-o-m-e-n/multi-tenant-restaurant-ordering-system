@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>30 — CARNIVAL Food Truck</title>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --cream:#fff8ec; --red:#d63a2f; --navy:#22314e; --yel:#ffc93d; --ink:#33302a; --mut:#8a7f6d; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#e4d3ae; font-family:Inter,sans-serif; display:flex; justify-content:center; }
+  .app { width:100%; max-width:430px; min-height:100vh; background:var(--cream); color:var(--ink); position:relative; padding-bottom:140px; }
+  .awning { height:56px; background:repeating-linear-gradient(90deg,var(--red) 0 32px,#fff 32px 64px); border-bottom:5px solid var(--navy); position:relative; }
+  .awning::after { content:""; position:absolute; left:0; right:0; bottom:-15px; height:14px;
+    background:radial-gradient(circle at 16px -4px,var(--red) 12px,transparent 13px) 0 0/64px 14px repeat-x,radial-gradient(circle at 48px -4px,#fff 12px,transparent 13px) 0 0/64px 14px repeat-x; }
+  .lights { display:flex; justify-content:space-around; padding:16px 20px 0; }
+  .lights i { width:11px; height:11px; border-radius:50%; font-style:normal; animation:gl 1.2s infinite; box-shadow:0 0 10px currentColor; }
+  .lights i:nth-child(3n){ color:#ffd23f; background:#ffd23f; } .lights i:nth-child(3n+1){ color:#ff6b6b; background:#ff6b6b; animation-delay:.4s; } .lights i:nth-child(3n+2){ color:#4ecdc4; background:#4ecdc4; animation-delay:.8s; }
+  @keyframes gl { 0%,100%{opacity:1} 50%{opacity:.25} }
+  header { text-align:center; padding:10px 20px 6px; }
+  .open { display:inline-block; background:var(--navy); color:#fff; font-size:10px; font-weight:800; letter-spacing:3px; padding:6px 14px; border-radius:99px; text-transform:uppercase; }
+  .open i { font-style:normal; color:#7bff9e; }
+  .logo { font-family:'Lilita One',cursive; font-size:50px; color:var(--red); letter-spacing:1px; line-height:1; margin:10px 0 2px; text-shadow:3px 3px 0 var(--navy); }
+  .tag { font-size:12.5px; font-weight:700; color:var(--mut); }
+  .bunting { height:30px; margin:12px 0 0; background:
+    conic-gradient(from 135deg at 50% 0,var(--red) 90deg,transparent 90deg) 0 0/36px 22px repeat-x,
+    conic-gradient(from 135deg at 50% 0,var(--yel) 90deg,transparent 90deg) 18px 0/36px 22px repeat-x; opacity:.9; }
+  .search { margin:14px 18px 0; display:flex; gap:8px; align-items:center; background:#fff; border:3px solid var(--navy); border-radius:99px; padding:11px 18px; }
+  .search input { border:0; outline:0; width:100%; font-family:Inter; font-weight:600; font-size:13px; }
+  nav { display:flex; gap:9px; padding:14px 18px 2px; overflow-x:auto; }
+  .chip { background:#fff; border:2.5px solid var(--navy); border-radius:99px; padding:8px 16px; font-weight:800; font-size:12.5px; cursor:pointer; white-space:nowrap; font-family:Inter; }
+  .chip.on { background:var(--navy); color:#fff; }
+  .stub { background:#fff; border:2.5px solid var(--navy); margin:14px 16px 0; display:flex; position:relative; }
+  .stub::before,.stub::after { content:""; position:absolute; width:22px; height:22px; background:var(--cream); border:2.5px solid var(--navy); border-radius:50%; top:50%; margin-top:-13px; }
+  .stub::before { left:-14px; } .stub::after { right:-14px; }
+  .main { flex:1; padding:13px 6px 13px 16px; display:flex; gap:11px; align-items:center; min-width:0; }
+  .thumb { font-size:34px; flex-shrink:0; }
+  .info { min-width:0; }
+  .name { font-family:'Lilita One',cursive; font-size:18px; letter-spacing:.5px; }
+  .desc { font-size:11px; color:var(--mut); margin-top:2px; font-weight:600; }
+  .tear { width:86px; flex-shrink:0; border-left:2.5px dashed var(--navy); text-align:center; padding:12px 6px; display:flex; flex-direction:column; justify-content:center; gap:7px; }
+  .price { font-family:'Lilita One',cursive; font-size:19px; color:var(--red); }
+  .add { border:0; background:var(--navy); color:#fff; font-family:Inter; font-weight:800; font-size:11.5px; padding:9px 0; border-radius:8px; cursor:pointer; width:100%; }
+  .add:active { transform:scale(.93); }
+  .serve { margin:18px 16px 0; background:var(--navy); color:#fff; border-radius:14px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center; }
+  .serve .a { font-family:'Lilita One',cursive; font-size:17px; letter-spacing:.5px; }
+  .serve .b { font-size:11px; opacity:.75; font-weight:600; }
+  .serve .num { font-family:'Lilita One',cursive; font-size:30px; color:var(--yel); }
+  .cart { position:fixed; bottom:14px; width:calc(100% - 32px); max-width:398px; margin:0 16px; background:var(--red); color:#fff; border:3px solid var(--navy); border-radius:16px; padding:13px 18px; display:none; justify-content:space-between; align-items:center; box-shadow:5px 5px 0 var(--navy); }
+  .cart.show { display:flex; }
+  .cart .t { font-family:'Lilita One',cursive; font-size:24px; }
+  .cart .l { font-size:11px; font-weight:700; opacity:.9; }
+  .cart button { background:var(--yel); border:3px solid var(--navy); color:var(--navy); font-weight:800; font-size:13px; padding:11px 18px; border-radius:10px; cursor:pointer; font-family:Inter; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="awning"></div>
+  <div class="lights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <header>
+    <div class="open"><i>●</i> Now serving · Truck #3</div>
+    <div class="logo">BIG TOP BITES</div>
+    <div class="tag">🎪 order at the window · ready in ~15 min 🎪</div>
+  </header>
+  <div class="bunting"></div>
+  <div class="search">🔍<input placeholder="What's cookin', good lookin'?"></div>
+  <nav>
+    <button class="chip on" data-cat="all">Everything</button>
+    <button class="chip" data-cat="starters">Snacks</button>
+    <button class="chip" data-cat="mains">Mains</button>
+    <button class="chip" data-cat="desserts">Sweets</button>
+    <button class="chip" data-cat="drinks">Drinks</button>
+  </nav>
+
+  <div class="stub" data-cat="starters"><div class="main"><div class="thumb">🧆</div>
+    <div class="info"><div class="name">Truffle Arancini</div><div class="desc">Saffron risotto · black truffle</div></div></div>
+    <div class="tear"><div class="price">$12.50</div><button class="add" data-price="12.50">GRAB</button></div></div>
+  <div class="stub" data-cat="starters"><div class="main"><div class="thumb">🥗</div>
+    <div class="info"><div class="name">Winter Caesar</div><div class="desc">Baby gem · brioche crumb</div></div></div>
+    <div class="tear"><div class="price">$9.00</div><button class="add" data-price="9">GRAB</button></div></div>
+  <div class="stub" data-cat="mains"><div class="main"><div class="thumb">🍔</div>
+    <div class="info"><div class="name">Wagyu Burger</div><div class="desc">A5 blend · aged cheddar</div></div></div>
+    <div class="tear"><div class="price">$18.50</div><button class="add" data-price="18.50">GRAB</button></div></div>
+  <div class="stub" data-cat="mains"><div class="main"><div class="thumb">🍕</div>
+    <div class="info"><div class="name">Margherita D.O.C.</div><div class="desc">San Marzano · basil</div></div></div>
+    <div class="tear"><div class="price">$14.00</div><button class="add" data-price="14">GRAB</button></div></div>
+  <div class="stub" data-cat="mains"><div class="main"><div class="thumb">🐟</div>
+    <div class="info"><div class="name">Roast Halibut</div><div class="desc">Brown butter · capers</div></div></div>
+    <div class="tear"><div class="price">$21.00</div><button class="add" data-price="21">GRAB</button></div></div>
+  <div class="stub" data-cat="desserts"><div class="main"><div class="thumb">🍫</div>
+    <div class="info"><div class="name">Lava Fondant</div><div class="desc">70% chocolate · gelato</div></div></div>
+    <div class="tear"><div class="price">$8.50</div><button class="add" data-price="8.50">GRAB</button></div></div>
+  <div class="stub" data-cat="desserts"><div class="main"><div class="thumb">🍰</div>
+    <div class="info"><div class="name">Tiramisu</div><div class="desc">Espresso · mascarpone</div></div></div>
+    <div class="tear"><div class="price">$7.50</div><button class="add" data-price="7.50">GRAB</button></div></div>
+  <div class="stub" data-cat="drinks"><div class="main"><div class="thumb">🍵</div>
+    <div class="info"><div class="name">Iced Matcha</div><div class="desc">Ceremonial · oat milk</div></div></div>
+    <div class="tear"><div class="price">$5.50</div><button class="add" data-price="5.50">GRAB</button></div></div>
+  <div class="stub" data-cat="drinks"><div class="main"><div class="thumb">🥤</div>
+    <div class="info"><div class="name">Yuzu Lemonade</div><div class="desc">Citrus · mint · fizz</div></div></div>
+    <div class="tear"><div class="price">$4.50</div><button class="add" data-price="4.50">GRAB</button></div></div>
+
+  <div class="serve"><div><div class="a">🔔 Now calling</div><div class="b">Listen for your number at the window</div></div><div class="num">#037</div></div>
+
+  <div class="cart" id="cart">
+    <div><div class="t">$<span id="tot">0.00</span></div><div class="l">🎟 <span id="cnt">0</span> items on your tray</div></div>
+    <button>PLACE ORDER →</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('.stub').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>{const o=b.textContent;b.onclick=()=>{n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent=s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='✓';setTimeout(()=>b.textContent=o,700);};});
+</script>
+</body>
+</html>

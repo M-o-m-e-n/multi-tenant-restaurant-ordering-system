@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>16 — COURSES Tasting Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#14201a; --forest2:#1c2b23; --bone:#e8e2d6; --sage:#9aab97;
+    --dim:#6f7d70; --line:rgba(232,226,214,.15);
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#0b120e;font-family:Jost,system-ui,sans-serif;display:flex;justify-content:center}
+  .app{
+    width:100%;max-width:430px;min-height:100vh;background:var(--forest);color:var(--bone);
+    display:flex;flex-direction:column;position:relative;overflow:hidden;
+  }
+  .app::after{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 80% 50% at 50% 0%, rgba(154,171,151,.08), transparent 65%);
+  }
+
+  header{padding:26px 26px 0;position:relative;z-index:2}
+  .top{display:flex;justify-content:space-between;align-items:center}
+  .brand{font-family:'Bodoni Moda',serif;font-size:19px;letter-spacing:5px;text-transform:uppercase}
+  .tbl{font-size:10px;letter-spacing:2.5px;color:var(--dim);text-transform:uppercase}
+
+  .rail{display:flex;gap:6px;margin-top:22px}
+  .seg{flex:1;height:2px;background:var(--line);position:relative;overflow:hidden}
+  .seg i{position:absolute;inset:0;background:var(--sage);transform:scaleX(0);transform-origin:left;transition:transform .5s ease}
+  .seg.done i,.seg.now i{transform:scaleX(1)}
+  .seg.now i{background:var(--bone)}
+  .raillab{display:flex;justify-content:space-between;margin-top:9px;font-size:9px;letter-spacing:2px;color:var(--dim);text-transform:uppercase}
+  .raillab span.on{color:var(--bone)}
+
+  .stage{flex:1;position:relative;z-index:2;padding:0 26px}
+  .step{display:none;padding:34px 0 20px;animation:fade .45s ease}
+  .step.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.step{animation:none}}
+
+  .ghost{
+    font-family:'Bodoni Moda',serif;font-size:96px;line-height:.8;color:transparent;
+    -webkit-text-stroke:1px rgba(232,226,214,.16);letter-spacing:-2px;
+  }
+  .coursename{
+    font-family:'Bodoni Moda',serif;font-size:36px;font-weight:400;line-height:1.1;
+    letter-spacing:.5px;margin-top:-26px;
+  }
+  .coursenote{font-size:12px;color:var(--dim);line-height:1.85;margin-top:14px;letter-spacing:.6px;max-width:34ch}
+
+  .opts{margin-top:26px;display:flex;flex-direction:column;gap:0}
+  .opt{
+    display:flex;gap:14px;align-items:center;padding:17px 0;border-top:1px solid var(--line);
+    cursor:pointer;transition:.22s;
+  }
+  .opt:last-child{border-bottom:1px solid var(--line)}
+  .opt:hover{padding-left:6px}
+  .oem{font-size:22px;width:28px;text-align:center;flex-shrink:0;opacity:.85}
+  .oinfo{flex:1;min-width:0}
+  .oname{font-family:'Bodoni Moda',serif;font-size:18px;letter-spacing:.3px;line-height:1.25}
+  .odesc{font-size:10.5px;color:var(--dim);line-height:1.6;margin-top:5px;letter-spacing:.4px}
+  .oprice{font-size:13px;font-variant-numeric:tabular-nums;color:var(--sage);flex-shrink:0;letter-spacing:.5px}
+  .tick{
+    width:21px;height:21px;border-radius:50%;border:1px solid var(--line);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--forest);transition:.22s;
+  }
+  .opt.sel .tick{background:var(--sage);border-color:var(--sage)}
+  .opt.sel .oname{color:#fff}
+
+  .review{margin-top:26px}
+  .rrow{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .rrow span:last-child{font-variant-numeric:tabular-nums;color:var(--sage)}
+  .rtot{display:flex;justify-content:space-between;padding:18px 0 0;font-family:'Bodoni Moda',serif;font-size:21px}
+  .rtot span:last-child{font-variant-numeric:tabular-nums}
+  .empty{font-size:12px;color:var(--dim);line-height:1.9;padding:14px 0}
+
+  nav{
+    padding:18px 26px calc(22px + env(safe-area-inset-bottom,0px));display:flex;gap:11px;
+    align-items:center;border-top:1px solid var(--line);position:relative;z-index:2;background:var(--forest2);
+  }
+  .back{
+    background:none;border:1px solid var(--line);color:var(--dim);font-family:Jost,sans-serif;
+    font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:13px 16px;cursor:pointer;transition:.22s;
+  }
+  .back:hover{color:var(--bone);border-color:var(--bone)}
+  .back[disabled]{opacity:.3;cursor:default}
+  .next{
+    flex:1;background:var(--bone);color:var(--forest);border:0;font-family:Jost,sans-serif;
+    font-size:12px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;padding:14px;cursor:pointer;transition:.22s;
+  }
+  .next:hover{background:var(--sage)}
+  .runt{font-size:10px;letter-spacing:2px;color:var(--dim);text-align:center;padding:0 26px 10px;position:relative;z-index:2;background:var(--forest2);text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="top"><div class="brand">Ember</div><div class="tbl">Table 12 · A-1042</div></div>
+    <div class="rail" id="rail">
+      <div class="seg now"><i></i></div><div class="seg"><i></i></div>
+      <div class="seg"><i></i></div><div class="seg"><i></i></div><div class="seg"><i></i></div>
+    </div>
+    <div class="raillab" id="raillab">
+      <span class="on">First</span><span>Main</span><span>Sweet</span><span>Drink</span><span>Review</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <section class="step on" data-step="0">
+      <div class="ghost">I</div>
+      <h1 class="coursename">To begin</h1>
+      <p class="coursenote">Something small while the kitchen settles. Choose one, or go straight through.</p>
+      <div class="opts">
+        <div class="opt" data-p="12.50" data-n="Truffle Arancini"><div class="oem">🧆</div>
+          <div class="oinfo"><div class="oname">Truffle Arancini</div><div class="odesc">Saffron risotto · black truffle · parmesan</div></div>
+          <div class="oprice">12.50</div><div class="tick">✓</div></div>
+        <div class="opt" data-p="9" data-n="Winter Caesar"><div class="oem">🥗</div>
+          <div class="oinfo"><div class="oname">Winter Caesar</div><div class="odesc">Baby gem · anchovy cream · brioche crumb</div></div>
+          <div class="oprice">9.00</div><div class="tick">✓</div></div>
+      </div>
+    </section>
+
+    <section class="step" data-step="1">
+      <div class="ghost">II</div>
+      <h1 class="coursename">The main</h1>
+      <p class="coursenote">The halibut came off the boat this morning. Nine portions, then it's gone.</p>
+      <div class="opts">
+        <div class="opt" data-p="18.50" data-n="Wagyu Burger"><div class="oem">🍔</div>
+          <div class="oinfo"><div class="oname">Wagyu Burger</div><div class="odesc">A5 blend · aged cheddar · house pickles</div></div>
+          <div class="oprice">18.50</div><div class="tick">✓</div></div>
+        <div class="opt" data-p="14" data-n="Margherita D.O.C."><div class="oem">🍕</div>
+          <div class="oinfo"><div class="oname">Margherita D.O.C.</div><div class="odesc">San Marzano · fior di latte · basil</div></div>
+          <div class="oprice">14.00</div><div class="tick">✓</div></div>
+        <div class="opt" data-p="21" data-n="Roast Halibut"><div class="oem">🐟</div>
+          <div class="oinfo"><div class="oname">Roast Halibut</div><div class="odesc">Brown butter · capers · confit potato</div></div>
+          <div class="oprice">21.00</div><div class="tick">✓</div></div>
+      </div>
+    </section>
+
+    <section class="step" data-step="2">
+      <div class="ghost">III</div>
+      <h1 class="coursename">Something sweet</h1>
+      <p class="coursenote">The fondant takes twelve minutes. Order it now and it arrives when you're ready.</p>
+      <div class="opts">
+        <div class="opt" data-p="8.50" data-n="Lava Fondant"><div class="oem">🍫</div>
+          <div class="oinfo"><div class="oname">Lava Fondant</div><div class="odesc">70% chocolate · vanilla bean gelato</div></div>
+          <div class="oprice">8.50</div><div class="tick">✓</div></div>
+        <div class="opt" data-p="7.50" data-n="Tiramisu"><div class="oem">🍰</div>
+          <div class="oinfo"><div class="oname">Tiramisu</div><div class="odesc">Espresso-soaked savoiardi · mascarpone</div></div>
+          <div class="oprice">7.50</div><div class="tick">✓</div></div>
+      </div>
+    </section>
+
+    <section class="step" data-step="3">
+      <div class="ghost">IV</div>
+      <h1 class="coursename">To drink</h1>
+      <p class="coursenote">Both made to order at the bar.</p>
+      <div class="opts">
+        <div class="opt" data-p="5.50" data-n="Iced Matcha"><div class="oem">🍵</div>
+          <div class="oinfo"><div class="oname">Iced Matcha</div><div class="odesc">Ceremonial grade · oat milk</div></div>
+          <div class="oprice">5.50</div><div class="tick">✓</div></div>
+        <div class="opt" data-p="4.50" data-n="Yuzu Lemonade"><div class="oem">🥤</div>
+          <div class="oinfo"><div class="oname">Yuzu Lemonade</div><div class="odesc">Fresh citrus · mint · sparkling water</div></div>
+          <div class="oprice">4.50</div><div class="tick">✓</div></div>
+      </div>
+    </section>
+
+    <section class="step" data-step="4">
+      <div class="ghost">V</div>
+      <h1 class="coursename">Your table</h1>
+      <p class="coursenote">Everything goes to the kitchen at once. You can still add to the table afterwards.</p>
+      <div class="review" id="review"></div>
+    </section>
+  </div>
+
+  <div class="runt" id="runt">No courses chosen yet</div>
+  <nav>
+    <button class="back" id="back" disabled>Back</button>
+    <button class="next" id="next">Continue</button>
+  </nav>
+</div>
+
+<script>
+let step=0, chosen=[];
+const steps=document.querySelectorAll('.step'),
+      segs=document.querySelectorAll('.seg'),
+      labs=document.querySelectorAll('#raillab span'),
+      TOTAL=steps.length;
+
+document.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{
+  const sect=o.closest('.step');
+  const was=o.classList.contains('sel');
+  sect.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+  if(!was) o.classList.add('sel');
+  recount();
+});
+
+function recount(){
+  chosen=[...document.querySelectorAll('.opt.sel')].map(o=>({n:o.dataset.n,p:parseFloat(o.dataset.p)}));
+  const t=chosen.reduce((a,b)=>a+b.p,0);
+  document.getElementById('runt').textContent =
+    chosen.length ? `${chosen.length} course${chosen.length>1?'s':''} · $${t.toFixed(2)}` : 'No courses chosen yet';
+}
+function paintReview(){
+  const box=document.getElementById('review');
+  if(!chosen.length){ box.innerHTML='<div class="empty">Nothing chosen yet — step back and pick a course, or call the waiter over.</div>'; return; }
+  const t=chosen.reduce((a,b)=>a+b.p,0), svc=t*0.10, tax=t*0.0875;
+  box.innerHTML = chosen.map(c=>`<div class="rrow"><span>${c.n}</span><span>$${c.p.toFixed(2)}</span></div>`).join('')
+    + `<div class="rrow"><span>Service 10%</span><span>$${svc.toFixed(2)}</span></div>`
+    + `<div class="rrow"><span>Tax 8.75%</span><span>$${tax.toFixed(2)}</span></div>`
+    + `<div class="rtot"><span>Total</span><span>$${(t+svc+tax).toFixed(2)}</span></div>`;
+}
+function go(i){
+  step=Math.max(0,Math.min(TOTAL-1,i));
+  steps.forEach((s,k)=>s.classList.toggle('on',k===step));
+  segs.forEach((s,k)=>{s.classList.toggle('done',k<step);s.classList.toggle('now',k===step);});
+  labs.forEach((l,k)=>l.classList.toggle('on',k===step));
+  document.getElementById('back').disabled = step===0;
+  document.getElementById('next').textContent = step===TOTAL-1 ? 'Send to kitchen' : 'Continue';
+  if(step===TOTAL-1) paintReview();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('next').onclick=()=>{ if(step<TOTAL-1) go(step+1); };
+document.getElementById('back').onclick=()=>go(step-1);
+</script>
+</body>
+</html>

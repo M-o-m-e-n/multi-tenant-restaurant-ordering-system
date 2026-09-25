@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03 — STUDIO Swiss Minimal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#fff; --ink:#111; --mut:#8a8a8a; --line:#e8e8e8; --accent:#e63946; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#f4f4f4; font-family:Inter,sans-serif; display:flex; justify-content:center; }
+  .app { width:100%; max-width:430px; min-height:100vh; background:var(--bg); position:relative; padding-bottom:110px; }
+  header { padding:34px 24px 0; display:flex; justify-content:space-between; align-items:flex-start; }
+  .logo { font-size:24px; font-weight:700; letter-spacing:-1px; }
+  .logo em { font-style:normal; color:var(--accent); }
+  .meta { font-size:10px; color:var(--mut); text-align:right; line-height:1.7; letter-spacing:.5px; text-transform:uppercase; }
+  .num { font-size:10px; color:var(--mut); letter-spacing:2px; margin-top:26px; text-transform:uppercase; }
+  h1 { font-size:44px; font-weight:300; letter-spacing:-2.5px; line-height:1; margin:8px 0 20px; }
+  h1 b { font-weight:700; }
+  .search { border-top:1px solid var(--ink); border-bottom:1px solid var(--line); padding:14px 24px; display:flex; gap:12px; align-items:center; }
+  .search input { border:0; outline:0; width:100%; font-family:Inter; font-size:14px; }
+  .search span { font-size:11px; color:var(--mut); letter-spacing:1px; }
+  nav { display:flex; gap:0; padding:0 24px; border-bottom:1px solid var(--ink); }
+  .chip { background:none; border:0; border-bottom:3px solid transparent; margin-bottom:-1px; padding:14px 0; margin-right:24px; font-family:Inter; font-size:12px; font-weight:500; letter-spacing:.5px; color:var(--mut); cursor:pointer; }
+  .chip.on { color:var(--ink); border-color:var(--accent); font-weight:600; }
+  .item { display:flex; align-items:baseline; gap:16px; padding:20px 24px; border-bottom:1px solid var(--line); cursor:default; }
+  .idx { font-size:10px; color:var(--mut); width:22px; flex-shrink:0; letter-spacing:1px; }
+  .emoji { font-size:22px; width:30px; text-align:center; flex-shrink:0; }
+  .info { flex:1; min-width:0; }
+  .name { font-size:15.5px; font-weight:600; letter-spacing:-.3px; }
+  .desc { font-size:12px; color:var(--mut); margin-top:4px; line-height:1.5; }
+  .price { font-size:15px; font-weight:500; font-variant-numeric:tabular-nums; }
+  .add { background:none; border:1px solid var(--line); width:30px; height:30px; border-radius:50%; font-size:16px; cursor:pointer; color:var(--ink); transition:.15s; flex-shrink:0; }
+  .add:hover { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .tagline { font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--mut); padding:26px 24px 6px; }
+  .cart { position:fixed; bottom:0; width:100%; max-width:430px; background:var(--ink); color:#fff; padding:18px 24px; display:none; justify-content:space-between; align-items:center; }
+  .cart.show { display:flex; }
+  .cart .t { font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .cart .l { font-size:11px; color:#999; letter-spacing:1px; text-transform:uppercase; }
+  .cart button { background:#fff; color:#111; border:0; font-family:Inter; font-size:12px; font-weight:600; letter-spacing:1px; padding:12px 20px; cursor:pointer; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">STUDIO<em>.</em>kitchen</div>
+    <div class="meta">Table 12<br>Order #A-1042<br>Wi-Fi: studio</div>
+  </header>
+  <div class="num">Menu — 2026 / Spring</div>
+  <h1>Good food,<br><b>nothing extra.</b></h1>
+
+  <div class="search"><span>FIND</span><input placeholder="Type to search the menu…"></div>
+  <nav>
+    <button class="chip on" data-cat="all">Everything</button>
+    <button class="chip" data-cat="starters">Starters</button>
+    <button class="chip" data-cat="mains">Mains</button>
+    <button class="chip" data-cat="desserts">Desserts</button>
+    <button class="chip" data-cat="drinks">Drinks</button>
+  </nav>
+
+  <div class="item" data-cat="starters"><div class="idx">01</div><div class="emoji">🧆</div>
+    <div class="info"><div class="name">Truffle Arancini</div><div class="desc">Saffron risotto · black truffle · parmesan</div></div>
+    <div class="price">$12.50</div><button class="add" data-price="12.50">+</button></div>
+
+  <div class="item" data-cat="starters"><div class="idx">02</div><div class="emoji">🥗</div>
+    <div class="info"><div class="name">Winter Caesar</div><div class="desc">Baby gem · anchovy cream · brioche crumb</div></div>
+    <div class="price">$9.00</div><button class="add" data-price="9">+</button></div>
+
+  <div class="item" data-cat="mains"><div class="idx">03</div><div class="emoji">🍔</div>
+    <div class="info"><div class="name">Wagyu Burger</div><div class="desc">A5 blend · aged cheddar · house pickles</div></div>
+    <div class="price">$18.50</div><button class="add" data-price="18.50">+</button></div>
+
+  <div class="item" data-cat="mains"><div class="idx">04</div><div class="emoji">🍕</div>
+    <div class="info"><div class="name">Margherita D.O.C.</div><div class="desc">San Marzano · fior di latte · basil</div></div>
+    <div class="price">$14.00</div><button class="add" data-price="14">+</button></div>
+
+  <div class="item" data-cat="mains"><div class="idx">05</div><div class="emoji">🐟</div>
+    <div class="info"><div class="name">Roast Halibut</div><div class="desc">Brown butter · capers · confit potato</div></div>
+    <div class="price">$21.00</div><button class="add" data-price="21">+</button></div>
+
+  <div class="item" data-cat="desserts"><div class="idx">06</div><div class="emoji">🍫</div>
+    <div class="info"><div class="name">Lava Fondant</div><div class="desc">70% chocolate · vanilla bean gelato</div></div>
+    <div class="price">$8.50</div><button class="add" data-price="8.50">+</button></div>
+
+  <div class="item" data-cat="desserts"><div class="idx">07</div><div class="emoji">🍰</div>
+    <div class="info"><div class="name">Tiramisu</div><div class="desc">Espresso-soaked savoiardi · mascarpone</div></div>
+    <div class="price">$7.50</div><button class="add" data-price="7.50">+</button></div>
+
+  <div class="item" data-cat="drinks"><div class="idx">08</div><div class="emoji">🍵</div>
+    <div class="info"><div class="name">Iced Matcha</div><div class="desc">Ceremonial grade · oat milk</div></div>
+    <div class="price">$5.50</div><button class="add" data-price="5.50">+</button></div>
+
+  <div class="item" data-cat="drinks"><div class="idx">09</div><div class="emoji">🥤</div>
+    <div class="info"><div class="name">Yuzu Lemonade</div><div class="desc">Fresh citrus · mint · sparkling water</div></div>
+    <div class="price">$4.50</div><button class="add" data-price="4.50">+</button></div>
+
+  <div class="tagline">All prices exclude tax · Service 10% dine-in</div>
+
+  <div class="cart" id="cart">
+    <div><div class="l">Your order</div><div class="t"><span id="cnt">0</span> items — <span id="tot">$0.00</span></div></div>
+    <button>Checkout →</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=()=>{n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent='$'+s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='✓';setTimeout(()=>b.textContent='+',700);});
+</script>
+</body>
+</html>

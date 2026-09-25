@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>31 — FORK & FLAME Landing</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#141414; --panel:#1e1e1e; --card:#242424; --red:#e5322d; --redd:#b91414; --tx:#f5f2ec; --mut:#a9a49a; --star:#f5a623; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:#0b0b0b; font-family:Inter,sans-serif; display:flex; justify-content:center; padding:14px; }
+  .frame { width:100%; max-width:1060px; background:var(--bg); color:var(--tx); border:1.5px solid #3a3a3a; border-radius:26px; overflow:hidden; position:relative; }
+  .dots { position:absolute; top:16px; left:20px; display:flex; gap:7px; }
+  .dots i { width:11px; height:11px; border-radius:50%; font-style:normal; }
+  /* NAV */
+  nav { display:flex; align-items:center; justify-content:space-between; padding:20px 34px; gap:12px; flex-wrap:wrap; }
+  .logo { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; }
+  .logo span { color:var(--red); }
+  .links { display:flex; gap:28px; }
+  .links a { color:var(--tx); text-decoration:none; font-size:13.5px; font-weight:500; opacity:.9; }
+  .links a:hover { color:var(--red); }
+  .nav-r { display:flex; align-items:center; gap:16px; }
+  .cartico { position:relative; font-size:20px; cursor:pointer; background:none; border:0; }
+  .cartico .dot { position:absolute; top:-2px; right:-3px; width:9px; height:9px; background:var(--red); border-radius:50%; display:none; }
+  .cartico .dot.on { display:block; }
+  .cartico .n { position:absolute; top:-9px; right:-9px; background:var(--red); color:#fff; font-size:9px; font-weight:700; min-width:16px; height:16px; border-radius:99px; display:none; place-items:center; padding:0 4px; }
+  .cartico .n.on { display:grid; }
+  .signup { background:linear-gradient(180deg,#f0443e,var(--redd)); border:0; color:#fff; font-family:Inter; font-weight:600; font-size:13px; padding:11px 26px; border-radius:99px; cursor:pointer; box-shadow:0 4px 14px rgba(229,50,45,.4); }
+  /* HERO */
+  .hero { display:grid; grid-template-columns:1.05fr 1fr; gap:20px; align-items:center; padding:26px 40px 10px; }
+  .hero h1 { font-family:'Playfair Display',serif; font-size:56px; line-height:1.12; font-weight:700; letter-spacing:-.5px; }
+  .cta { display:flex; gap:14px; margin-top:26px; flex-wrap:wrap; }
+  .cta button { font-family:Inter; font-weight:600; font-size:13.5px; padding:14px 30px; border-radius:99px; cursor:pointer; border:0; }
+  .cta .vm { background:linear-gradient(180deg,#f0443e,var(--redd)); color:#fff; box-shadow:0 6px 18px rgba(229,50,45,.4); }
+  .cta .bt { background:#fff; color:#222; }
+  .rev { margin-top:30px; }
+  .rev .t { font-size:12.5px; color:var(--mut); margin-bottom:10px; }
+  .avs { display:flex; align-items:center; }
+  .avs i { width:34px; height:34px; border-radius:50%; border:2.5px solid var(--bg); display:grid; place-items:center; font-size:17px; margin-left:-10px; font-style:normal; }
+  .avs i:first-child { margin-left:0; }
+  .avs .more { background:#3a3a3a; color:#fff; font-size:10px; font-weight:700; }
+  .stars { color:var(--star); font-size:19px; letter-spacing:3px; margin-top:10px; }
+  .visual { position:relative; display:flex; justify-content:center; padding:10px 0; }
+  .plate { width:min(360px,80%); aspect-ratio:1; border-radius:50%; display:grid; place-items:center; font-size:min(190px,42vw);
+    background:radial-gradient(circle at 50% 42%,#3a3a3a 0 58%,#2b2b2b 59% 68%,#171717 69%);
+    box-shadow:0 30px 70px rgba(0,0,0,.6), inset 0 4px 14px rgba(255,255,255,.08); }
+  .float { position:absolute; font-size:44px; filter:drop-shadow(0 10px 12px rgba(0,0,0,.5)); animation:fl 3.4s ease-in-out infinite; }
+  .f1 { top:6%; right:6%; } .f2 { top:34%; left:2%; font-size:36px; animation-delay:.8s; } .f3 { bottom:8%; right:16%; font-size:30px; animation-delay:1.6s; }
+  @keyframes fl { 0%,100%{transform:translateY(0) rotate(-6deg)} 50%{transform:translateY(-14px) rotate(6deg)} }
+  /* CAROUSEL */
+  .carwrap { padding:26px 40px 8px; position:relative; }
+  .carhead { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .carhead h3 { font-family:'Playfair Display',serif; font-size:22px; }
+  .carhead span { font-size:12px; color:var(--mut); }
+  .car { display:flex; gap:18px; overflow-x:auto; scroll-behavior:smooth; padding:26px 4px 10px; scrollbar-width:none; }
+  .car::-webkit-scrollbar { display:none; }
+  .dish { flex:0 0 200px; background:var(--card); border-radius:20px; padding:0 16px 18px; text-align:center; position:relative; border:1px solid #333; }
+  .dish .ph { width:120px; height:120px; border-radius:50%; margin:-24px auto 0; display:grid; place-items:center; font-size:64px;
+    background:radial-gradient(circle at 50% 40%,#4a4a4a 0 60%,#333 61% 72%,#1c1c1c 73%);
+    box-shadow:0 14px 26px rgba(0,0,0,.5); border:4px solid #2e2e2e; }
+  .dish .n { font-size:15.5px; font-weight:600; margin-top:12px; }
+  .dish .d { font-size:11.5px; color:var(--mut); margin-top:3px; }
+  .dish .row { display:flex; justify-content:space-between; align-items:center; margin-top:12px; }
+  .dish .p { color:var(--red); font-weight:700; font-size:14.5px; }
+  .dish .add { width:38px; height:38px; border-radius:12px; border:0; background:var(--red); color:#fff; font-size:18px; cursor:pointer; box-shadow:0 4px 10px rgba(229,50,45,.4); }
+  .dish .add:active { transform:scale(.9); }
+  .arr { position:absolute; top:44%; width:42px; height:42px; border-radius:50%; border:0; cursor:pointer; font-size:17px; z-index:2; }
+  .arr.l { left:8px; background:#3d3d3d; color:#fff; }
+  .arr.r { right:8px; background:var(--red); color:#fff; box-shadow:0 4px 12px rgba(229,50,45,.45); }
+  /* MENU LIST */
+  .menu { padding:18px 40px 30px; }
+  .menu h3 { font-family:'Playfair Display',serif; font-size:22px; margin-bottom:12px; }
+  .chips { display:flex; gap:9px; overflow-x:auto; padding-bottom:6px; margin-bottom:6px; }
+  .chip { background:#2b2b2b; border:1px solid #3d3d3d; color:var(--tx); font-family:Inter; font-size:12px; font-weight:600; padding:8px 16px; border-radius:99px; cursor:pointer; white-space:nowrap; }
+  .chip.on { background:var(--red); border-color:var(--red); }
+  .item { display:flex; gap:13px; align-items:center; padding:13px 4px; border-bottom:1px solid #2c2c2c; }
+  .item .e { font-size:30px; width:52px; height:52px; border-radius:50%; background:#2b2b2b; display:grid; place-items:center; flex-shrink:0; }
+  .item .in { flex:1; min-width:0; }
+  .item .nm { font-size:14.5px; font-weight:600; }
+  .item .ds { font-size:11.5px; color:var(--mut); margin-top:2px; }
+  .item .pr { color:var(--red); font-weight:700; font-size:14px; }
+  .item .add { width:34px; height:34px; border-radius:10px; border:0; background:var(--red); color:#fff; font-size:18px; cursor:pointer; flex-shrink:0; }
+  /* CART BAR + MODAL + TOAST */
+  .cartbar { position:sticky; bottom:12px; margin:0 40px; background:var(--red); border-radius:16px; padding:14px 20px; display:none; justify-content:space-between; align-items:center; box-shadow:0 12px 30px rgba(229,50,45,.45); }
+  .cartbar.show { display:flex; }
+  .cartbar b { font-size:17px; } .cartbar span { font-size:12px; opacity:.9; }
+  .cartbar button { background:#fff; border:0; color:var(--redd); font-weight:700; font-size:13px; padding:11px 20px; border-radius:12px; cursor:pointer; font-family:Inter; }
+  .modal { position:fixed; inset:0; background:rgba(0,0,0,.65); display:none; place-items:center; z-index:20; padding:20px; }
+  .modal.show { display:grid; }
+  .mbox { background:#222; border:1px solid #3d3d3d; border-radius:20px; padding:28px; width:100%; max-width:340px; color:var(--tx); }
+  .mbox h3 { font-family:'Playfair Display',serif; font-size:22px; margin-bottom:4px; }
+  .mbox p { font-size:12.5px; color:var(--mut); margin-bottom:16px; }
+  .mbox label { font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--mut); }
+  .mbox input, .mbox select { width:100%; background:#141414; border:1px solid #3d3d3d; color:#fff; border-radius:10px; padding:11px 13px; margin:6px 0 14px; font-family:Inter; font-size:13.5px; outline:0; }
+  .mbox .go { width:100%; background:var(--red); border:0; color:#fff; font-weight:700; font-size:14px; padding:13px; border-radius:12px; cursor:pointer; font-family:Inter; }
+  .mbox .x { float:right; background:none; border:0; color:var(--mut); font-size:18px; cursor:pointer; }
+  #toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); background:#fff; color:#141414; font-size:13px; font-weight:600; padding:12px 22px; border-radius:99px; opacity:0; transition:.25s; z-index:30; pointer-events:none; white-space:nowrap; }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  @media (max-width:700px) {
+    nav { padding:16px 20px; } .links { display:none; }
+    .hero { grid-template-columns:1fr; padding:10px 24px; text-align:center; }
+    .hero h1 { font-size:40px; }
+    .cta, .rev .avs { justify-content:center; }
+    .stars { text-align:center; } .rev .t { text-align:center; }
+    .carwrap, .menu { padding-left:20px; padding-right:20px; }
+    .arr { display:none; }
+    .cartbar { margin:0 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+  <nav>
+    <div class="logo">Fork <span>&</span> Flame</div>
+    <div class="links"><a href="#">Home</a><a href="#menu">Menu</a><a href="#" onclick="toast('Our story page is coming soon');return false">About Us</a><a href="#" onclick="openBook();return false">Contact</a></div>
+    <div class="nav-r">
+      <button class="cartico" onclick="toast(n? n+' item(s) · $'+s.toFixed(2)+' — checkout below ↓':'Your cart is empty — grab a dish!')">🛍<span class="dot" id="cdot"></span><span class="n" id="cn">0</span></button>
+      <button class="signup" onclick="toast('Accounts open at launch — we saved you a seat!')">Sign Up</button>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div>
+      <h1>it's not just Food, It's an Experience.</h1>
+      <div class="cta">
+        <button class="vm" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">View Menu</button>
+        <button class="bt" onclick="openBook()">Book A Table</button>
+      </div>
+      <div class="rev">
+        <div class="t">Reviews</div>
+        <div class="avs"><i style="background:#7c5cff">🧔</i><i style="background:#00b894">👩</i><i style="background:#e17055">👨‍🦰</i><i class="more">45+</i></div>
+        <div class="stars">★★★★★</div>
+      </div>
+    </div>
+    <div class="visual">
+      <div class="plate">🥗</div>
+      <span class="float f1">🍅</span><span class="float f2">🌿</span><span class="float f3">🌿</span>
+    </div>
+  </div>
+
+  <div class="carwrap">
+    <div class="carhead"><h3>Chef's signatures</h3><span>scroll →</span></div>
+    <button class="arr l" onclick="slide(-1)">←</button>
+    <div class="car" id="car"></div>
+    <button class="arr r" onclick="slide(1)">→</button>
+  </div>
+
+  <div class="menu" id="menu">
+    <h3>The full menu</h3>
+    <div class="chips">
+      <button class="chip on" data-cat="all">All</button>
+      <button class="chip" data-cat="starters">Starters</button>
+      <button class="chip" data-cat="mains">Mains</button>
+      <button class="chip" data-cat="desserts">Desserts</button>
+      <button class="chip" data-cat="drinks">Drinks</button>
+    </div>
+    <div id="list"></div>
+    <div class="cartbar" id="cart">
+      <div><b>$<span id="tot">0.00</span></b><br><span><span id="cnt">0</span> items · Table 7</span></div>
+      <button onclick="toast('Order sent to the kitchen — ~15 min!');reset()">Checkout →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="book"><div class="mbox">
+  <button class="x" onclick="closeBook()">✕</button>
+  <h3>Book a table</h3><p>We hold every reservation for 15 minutes.</p>
+  <label>Date</label><input type="date" id="bd" value="2026-09-26">
+  <label>Time</label><select id="bt"><option>12:30</option><option>18:00</option><option selected>19:30</option><option>21:00</option></select>
+  <label>Guests</label><select id="bg"><option>2 guests</option><option>4 guests</option><option>6 guests</option><option>8+ (call us)</option></select>
+  <button class="go" onclick="confirmBook()">Confirm reservation</button>
+</div></div>
+<div id="toast"></div>
+
+<script>
+const DISHES=[
+ {e:'🧆',n:'Truffle Arancini',d:'With Saffron',p:12.50,c:'starters'},
+ {e:'🥗',n:'Winter Caesar',d:'With Baby Gem',p:9.00,c:'starters'},
+ {e:'🍔',n:'Wagyu Burger',d:'With Aged Cheddar',p:18.50,c:'mains'},
+ {e:'🍕',n:'Margherita D.O.C.',d:'With Basil',p:14.00,c:'mains'},
+ {e:'🐟',n:'Roast Halibut',d:'With Brown Butter',p:21.00,c:'mains'},
+ {e:'🍫',n:'Lava Fondant',d:'With Gelato',p:8.50,c:'desserts'},
+ {e:'🍰',n:'Tiramisu',d:'With Espresso',p:7.50,c:'desserts'},
+ {e:'🍵',n:'Iced Matcha',d:'With Oat Milk',p:5.50,c:'drinks'},
+ {e:'🥤',n:'Yuzu Lemonade',d:'With Mint',p:4.50,c:'drinks'}];
+let n=0,s=0;
+const car=document.getElementById('car'), list=document.getElementById('list');
+DISHES.slice(2,8).forEach(d=>{ const el=document.createElement('div'); el.className='dish';
+ el.innerHTML=`<div class="ph">${d.e}</div><div class="n">${d.n}</div><div class="d">${d.d}</div><div class="row"><span class="p">$${d.p.toFixed(2)}</span><button class="add" data-p="${d.p}">🛒</button></div>`;
+ el.querySelector('.add').onclick=ev=>add(+ev.target.dataset.p,ev.target); car.appendChild(el); });
+function renderList(f='all'){ list.innerHTML='';
+ DISHES.filter(d=>f==='all'||d.c===f).forEach(d=>{ const el=document.createElement('div'); el.className='item';
+  el.innerHTML=`<div class="e">${d.e}</div><div class="in"><div class="nm">${d.n}</div><div class="ds">${d.d} · ${d.c}</div></div><div class="pr">$${d.p.toFixed(2)}</div><button class="add" data-p="${d.p}">+</button>`;
+  el.querySelector('.add').onclick=ev=>add(+ev.target.dataset.p,ev.target); list.appendChild(el); }); }
+renderList();
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');renderList(c.dataset.cat);});
+function add(p,btn){ n++; s+=p;
+ document.getElementById('cnt').textContent=n; document.getElementById('tot').textContent=s.toFixed(2);
+ document.getElementById('cart').classList.add('show');
+ document.getElementById('cdot').classList.add('on');
+ const cn=document.getElementById('cn'); cn.textContent=n; cn.classList.add('on');
+ const o=btn.textContent; btn.textContent='✓'; setTimeout(()=>btn.textContent=o,700); }
+function reset(){ n=0; s=0; document.getElementById('cart').classList.remove('show');
+ document.getElementById('cdot').classList.remove('on'); document.getElementById('cn').classList.remove('on'); }
+function slide(d){ car.scrollBy({left:d*220,behavior:'smooth'}); }
+function openBook(){ document.getElementById('book').classList.add('show'); }
+function closeBook(){ document.getElementById('book').classList.remove('show'); }
+function confirmBook(){ closeBook(); toast(`Table for ${document.getElementById('bg').value} · ${document.getElementById('bd').value} ${document.getElementById('bt').value} — booked!`); }
+let tt; function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove('show'),2600); }
+document.getElementById('book').addEventListener('click',e=>{ if(e.target.id==='book') closeBook(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+coverage/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+
+# editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# local Claude Code state (skills are shared, local settings are not)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+# test artefacts
+server/prisma/seed-fixture.json
+playwright-report/
+test-results/
+.claude/settings.json

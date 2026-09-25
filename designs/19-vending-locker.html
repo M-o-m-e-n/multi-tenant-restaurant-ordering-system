@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>19 — CASE Vending Locker</title>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --machine:#15171a; --steel:#22262c; --steel2:#2c323a; --edge:#3a414b;
+    --glass:#1b1f24; --warm:#ffcf7a; --led:#2ee08a; --txt:#dfe3e8; --mut:#7c848f;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#0a0b0d;font-family:'Chakra Petch',system-ui,sans-serif;display:flex;justify-content:center}
+  .app{
+    width:100%;max-width:430px;min-height:100vh;background:var(--machine);color:var(--txt);
+    position:relative;padding:0 0 104px;
+  }
+
+  .head{
+    background:linear-gradient(180deg,var(--steel2),var(--steel));padding:15px 18px 16px;
+    border-bottom:1px solid #0c0e10;box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .brandrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .brand{font-size:21px;font-weight:700;letter-spacing:5px;text-transform:uppercase;line-height:1}
+  .brand span{color:var(--warm)}
+  .unit{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--mut);letter-spacing:1.5px;text-align:right;line-height:1.5}
+
+  .lcd{
+    background:#0b1410;border:1px solid #1d2b23;border-radius:3px;padding:11px 13px;
+    position:relative;overflow:hidden;
+  }
+  .lcd::after{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(circle at 1px 1px, rgba(0,0,0,.55) 1px, transparent 1.3px);
+    background-size:3px 3px;
+  }
+  .lcd .line{
+    font-family:'DM Mono',monospace;font-size:12px;color:var(--led);letter-spacing:2px;
+    text-shadow:0 0 7px rgba(46,224,138,.5);line-height:1.8;
+  }
+  .lcd .line.dim{color:#1d7a51;text-shadow:none;font-size:10px;letter-spacing:2.5px}
+
+  .rowlab{
+    display:flex;justify-content:space-between;align-items:center;padding:16px 18px 0;
+  }
+  .rowlab h2{font-size:12px;font-weight:600;letter-spacing:3.5px;text-transform:uppercase;color:var(--mut)}
+  nav{display:flex;gap:5px;padding:11px 18px 0;overflow-x:auto;scrollbar-width:none}
+  nav::-webkit-scrollbar{display:none}
+  .chip{
+    background:var(--steel);border:1px solid var(--edge);color:var(--mut);white-space:nowrap;
+    font-family:'Chakra Petch',sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;
+    text-transform:uppercase;padding:7px 12px;cursor:pointer;border-radius:2px;transition:.15s;
+  }
+  .chip:hover{color:var(--txt);border-color:var(--mut)}
+  .chip.on{background:var(--warm);border-color:var(--warm);color:#1a1408}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:13px 18px 0}
+  .bay{
+    background:var(--steel);border:1px solid var(--edge);border-radius:4px;padding:7px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05);display:flex;flex-direction:column;
+  }
+  .window{
+    background:radial-gradient(ellipse 80% 60% at 50% 22%, rgba(255,207,122,.20), transparent 70%), var(--glass);
+    border:1px solid #11141800;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,207,122,.13), inset 0 -14px 22px rgba(0,0,0,.45);
+    height:88px;display:flex;align-items:center;justify-content:center;position:relative;
+  }
+  .window .em{font-size:38px;filter:drop-shadow(0 4px 9px rgba(0,0,0,.6))}
+  .baycode{
+    position:absolute;top:5px;left:6px;font-family:'DM Mono',monospace;font-size:9px;
+    color:var(--warm);letter-spacing:1.5px;opacity:.75;
+  }
+  .stock{
+    position:absolute;bottom:5px;right:6px;font-family:'DM Mono',monospace;font-size:8.5px;
+    color:var(--mut);letter-spacing:1px;
+  }
+  .shelf{height:3px;background:linear-gradient(90deg,transparent,var(--edge),transparent);margin:0 2px}
+  .bayinfo{padding:8px 3px 2px;flex:1;display:flex;flex-direction:column}
+  .name{font-size:13.5px;font-weight:600;letter-spacing:.4px;line-height:1.2;text-transform:uppercase}
+  .desc{font-size:9.5px;color:var(--mut);line-height:1.45;margin-top:4px;flex:1;font-family:'DM Mono',monospace;letter-spacing:.1px}
+  .buy{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-top:9px}
+  .price{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--warm)}
+  .sel{
+    background:var(--steel2);border:1px solid var(--edge);color:var(--txt);
+    font-family:'Chakra Petch',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;
+    text-transform:uppercase;padding:7px 10px;cursor:pointer;border-radius:2px;transition:.14s;
+  }
+  .sel:hover{background:var(--warm);border-color:var(--warm);color:#1a1408}
+  .sel:active{transform:translateY(1px)}
+  .bay.sold .window{filter:grayscale(1) brightness(.5)}
+  .bay.sold .sel{opacity:.35;pointer-events:none}
+  .bay.sold .price{color:var(--mut);text-decoration:line-through}
+
+  .foot{
+    margin:18px 18px 0;padding:13px 14px;border:1px dashed var(--edge);border-radius:3px;
+    font-family:'DM Mono',monospace;font-size:10px;color:var(--mut);letter-spacing:1.2px;line-height:1.9;
+  }
+  .foot b{color:var(--led)}
+
+  .cart{
+    position:fixed;bottom:0;width:100%;max-width:430px;
+    background:linear-gradient(180deg,var(--steel2),var(--steel));border-top:1px solid var(--edge);
+    padding:12px 18px;display:none;justify-content:space-between;align-items:center;gap:12px;
+  }
+  .cart.show{display:flex}
+  .cart .l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--mut);text-transform:uppercase}
+  .cart .t{font-size:18px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+  .cart button{
+    background:var(--led);color:#06190f;border:0;font-family:'Chakra Petch',sans-serif;
+    font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:12px 16px;cursor:pointer;border-radius:2px;
+  }
+  .cart button:hover{background:var(--warm);color:#1a1408}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head">
+    <div class="brandrow">
+      <div class="brand">CA<span>S</span>E</div>
+      <div class="unit">UNIT 04 · PLATFORM LEVEL<br>LOCKERS 1–12</div>
+    </div>
+    <div class="lcd">
+      <div class="line">&gt; SELECT A BAY</div>
+      <div class="line dim" id="lcd2">ORDER A-1042 · COLLECT AT LOCKER 07</div>
+    </div>
+  </div>
+
+  <div class="rowlab"><h2>Bays</h2></div>
+  <nav>
+    <button class="chip on" data-cat="all">All bays</button>
+    <button class="chip" data-cat="starters">Row A</button>
+    <button class="chip" data-cat="mains">Row B</button>
+    <button class="chip" data-cat="desserts">Row C</button>
+    <button class="chip" data-cat="drinks">Row D</button>
+  </nav>
+
+  <div class="grid">
+    <div class="bay" data-cat="starters">
+      <div class="window"><span class="baycode">A1</span><span class="em">🧆</span><span class="stock">×6</span></div>
+      <div class="shelf"></div>
+      <div class="bayinfo"><div class="name">Truffle Arancini</div><div class="desc">saffron risotto / truffle / parmesan</div>
+        <div class="buy"><span class="price">12.50</span><button class="sel" data-price="12.50">Select</button></div></div>
+    </div>
+    <div class="bay" data-cat="starters">
+      <div class="window"><span class="baycode">A2</span><span class="em">🥗</span><span class="stock">×9</span></div>
+      <div class="shelf"></div>
+      <div class="bayinfo"><div class="name">Winter Caesar</div><div class="desc">baby gem / anchovy / brioche crumb</div>
+        <div class="buy"><span class="price">9.00</span><button class="sel" data-price="9">Select</button></div></div>
+    </div>
+    <div class="bay" data-cat="mains">
+      <div class="window"><span class="baycode">B1</span><span class="em">🍔</span><span class="stock">×4</span></div>
+      <div class="shelf"></div>
+      <div class="bayinfo"><div class="name">Wagyu Burger</div><div class="desc">a5 blend / aged cheddar / pickles</div>
+        <div class="buy"><span class="price">18.50</span><button class="sel" data-price="18.50">Select</button></div></div>
+    </div>
+    <div class="bay" data-cat="mains">
+      <div class="window"><span class="baycode">B2</span><span class="em">🍕</span><span class="stock">×7</span></div>
+      <div class="shelf"></div>
+      <div class="bayinfo"><div class="name">Margherita</div><div class="desc">san marzano / fior di latte / basil</div>
+        <div class="buy"><span class="price">14.00</span><button class="sel" data-price="14">Select</button></div></div>
+    </div>
+    <div class="bay sold" data-cat="mains">
+      <div class="window"><span class="baycode">B3</span><span class="em">🐟</span><span class="stock">×0</span></div>
+      <div class="shelf"></div>
+      <div class="bayinfo"><div class="name">Roast Halibut</div><div class="desc">sold out 20:12 — back tomorrow</div>
+        <div class="buy"><span class="price">21.00</span><button class="sel" data-price="21">Empty</button></div></div>
+    </div>
+    <div class="bay" data-cat="desserts">
+      <div class="window"><span class="baycode">C1</span><span class="em">🍫</span><span class="stock">×5</span></div>
+      <div class="shelf"></div>
+      <div class="bayinfo"><div class="name">Lava Fondant</div><div class="desc">70% chocolate / vanilla gelato</div>
+        <div class="buy"><span class="price">8.50</span><button class="sel" data-price="8.50">Select</button></div></div>
+    </div>
+    <div class="bay" data-cat="desserts">
+      <div class="window"><span class="baycode">C2</span><span class="em">🍰</span><span class="stock">×8</span></div>
+      <div class="shelf"></div>
+      <div class="bayinfo"><div class="name">Tiramisu</div><div class="desc">savoiardi / espresso / mascarpone</div>
+        <div class="buy"><span class="price">7.50</span><button class="sel" data-price="7.50">Select</button></div></div>
+    </div>
+    <div class="bay" data-cat="drinks">
+      <div class="window"><span class="baycode">D1</span><span class="em">🍵</span><span class="stock">×12</span></div>
+      <div class="shelf"></div>
+      <div class="bayinfo"><div class="name">Iced Matcha</div><div class="desc">ceremonial grade / oat milk</div>
+        <div class="buy"><span class="price">5.50</span><button class="sel" data-price="5.50">Select</button></div></div>
+    </div>
+    <div class="bay" data-cat="drinks">
+      <div class="window"><span class="baycode">D2</span><span class="em">🥤</span><span class="stock">×12</span></div>
+      <div class="shelf"></div>
+      <div class="bayinfo"><div class="name">Yuzu Lemonade</div><div class="desc">citrus / mint / sparkling</div>
+        <div class="buy"><span class="price">4.50</span><button class="sel" data-price="4.50">Select</button></div></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    PAY AT THE PANEL, THEN WATCH FOR YOUR LOCKER NUMBER.<br>
+    DOOR STAYS LIT FOR <b>90 SECONDS</b> AFTER IT UNLOCKS.
+  </div>
+
+  <div class="cart" id="cart">
+    <div><div class="l">Bay selections</div><div class="t"><span id="cnt">0</span> × $<span id="tot">0.00</span></div></div>
+    <button>Pay at panel</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{
+  chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  const t=c.dataset.cat;
+  document.querySelectorAll('.bay').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');
+});
+let n=0,s=0;
+document.querySelectorAll('.sel').forEach(b=>b.onclick=()=>{
+  if(b.closest('.bay').classList.contains('sold')) return;
+  n++;s+=+b.dataset.price;
+  const code=b.closest('.bay').querySelector('.baycode').textContent;
+  document.getElementById('cnt').textContent=n;
+  document.getElementById('tot').textContent=s.toFixed(2);
+  document.getElementById('cart').classList.add('show');
+  document.getElementById('lcd2').textContent='BAY '+code+' HELD · '+n+' ITEM'+(n>1?'S':'')+' · LOCKER 07';
+  b.textContent='Held';setTimeout(()=>b.textContent='Select',900);
+});
+</script>
+</body>
+</html>

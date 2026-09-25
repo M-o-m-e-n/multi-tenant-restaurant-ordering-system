@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>09 — AURA Glassmorphism</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; }
+  body { font-family:Inter,sans-serif; display:flex; justify-content:center; background:#2b1055; }
+  .app { width:100%; max-width:430px; min-height:100vh; position:relative; color:#fff; padding-bottom:120px; overflow:hidden;
+    background:linear-gradient(160deg,#7c3aed 0%,#2563eb 45%,#db2777 100%); background-attachment:fixed; }
+  .orb { position:absolute; border-radius:50%; filter:blur(70px); opacity:.55; pointer-events:none; }
+  .o1 { width:230px; height:230px; background:#f472b6; top:-60px; left:-70px; }
+  .o2 { width:260px; height:260px; background:#22d3ee; top:280px; right:-110px; }
+  .o3 { width:220px; height:220px; background:#a78bfa; bottom:60px; left:-80px; }
+  header { position:relative; padding:34px 22px 18px; }
+  .row { display:flex; justify-content:space-between; align-items:center; }
+  .logo { font-family:Sora,sans-serif; font-size:28px; font-weight:700; letter-spacing:-.5px; }
+  .logo i { font-style:normal; opacity:.7; font-weight:300; }
+  .avatar { width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.35); display:grid; place-items:center; backdrop-filter:blur(10px); }
+  .hi { font-size:13.5px; color:rgba(255,255,255,.85); margin-top:18px; font-weight:400; }
+  .headline { font-family:Sora,sans-serif; font-size:30px; font-weight:600; line-height:1.2; margin-top:6px; letter-spacing:-.5px; }
+  .glass { background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.3); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); border-radius:22px; box-shadow:0 8px 32px rgba(0,0,0,.18); }
+  .search { margin:16px 18px 0; display:flex; gap:10px; align-items:center; padding:14px 18px; border-radius:99px; }
+  .search input { background:none; border:0; outline:0; color:#fff; width:100%; font-family:Inter; font-size:13.5px; }
+  .search input::placeholder { color:rgba(255,255,255,.65); }
+  nav { display:flex; gap:8px; padding:16px 18px 6px; overflow-x:auto; }
+  .chip { background:rgba(255,255,255,.13); border:1px solid rgba(255,255,255,.28); color:#fff; font-family:Inter; font-weight:500; font-size:13px; padding:9px 17px; border-radius:99px; cursor:pointer; white-space:nowrap; backdrop-filter:blur(10px); transition:.15s; }
+  .chip.on { background:#fff; color:#4f46e5; border-color:#fff; font-weight:600; }
+  .item { display:flex; gap:13px; align-items:center; margin:12px 18px; padding:14px; }
+  .thumb { width:60px; height:60px; border-radius:18px; background:rgba(255,255,255,.2); display:grid; place-items:center; font-size:30px; flex-shrink:0; border:1px solid rgba(255,255,255,.3); }
+  .info { flex:1; min-width:0; }
+  .name { font-family:Sora,sans-serif; font-size:16px; font-weight:600; }
+  .desc { font-size:11.5px; color:rgba(255,255,255,.75); margin-top:4px; line-height:1.45; font-weight:400; }
+  .right { text-align:right; flex-shrink:0; }
+  .price { font-family:Sora,sans-serif; font-weight:600; font-size:16.5px; }
+  .add { margin-top:8px; width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.5); background:rgba(255,255,255,.2); color:#fff; font-size:20px; cursor:pointer; backdrop-filter:blur(8px); transition:.15s; }
+  .add:hover { background:#fff; color:#4f46e5; }
+  .banner { margin:18px; padding:18px 20px; display:flex; justify-content:space-between; align-items:center; background:rgba(15,23,42,.35); border:1px solid rgba(255,255,255,.25); }
+  .banner .t { font-family:Sora,sans-serif; font-weight:600; font-size:15px; }
+  .banner .s { font-size:11.5px; color:rgba(255,255,255,.75); margin-top:3px; }
+  .banner .pct { font-family:Sora,sans-serif; font-size:26px; font-weight:700; color:#fde68a; }
+  .cart { position:fixed; bottom:16px; width:calc(100% - 36px); max-width:394px; margin:0 18px; padding:15px 20px; border-radius:99px; display:none; justify-content:space-between; align-items:center; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); box-shadow:0 12px 40px rgba(0,0,0,.3); }
+  .cart.show { display:flex; }
+  .cart .t { font-family:Sora,sans-serif; font-weight:700; font-size:17px; }
+  .cart .l { font-size:11px; color:rgba(255,255,255,.8); }
+  .cart button { background:#fff; border:0; color:#4f46e5; font-family:Sora,sans-serif; font-weight:600; font-size:13.5px; padding:12px 22px; border-radius:99px; cursor:pointer; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+
+  <header>
+    <div class="row"><div class="logo">aura<i>.bar</i></div><div class="avatar">🙂</div></div>
+    <div class="hi">Good evening — Table 9 · Happy hour till 8pm</div>
+    <div class="headline">Sip. Dine.<br>Repeat.</div>
+  </header>
+
+  <div class="search glass">🔍<input placeholder="Search cocktails, plates, desserts…"></div>
+  <nav>
+    <button class="chip on" data-cat="all">All</button>
+    <button class="chip" data-cat="starters">Small plates</button>
+    <button class="chip" data-cat="mains">Mains</button>
+    <button class="chip" data-cat="desserts">Sweet</button>
+    <button class="chip" data-cat="drinks">Drinks</button>
+  </nav>
+
+  <div class="item glass" data-cat="drinks">
+    <div class="thumb">🍸</div>
+    <div class="info"><div class="name">Signature Negroni</div><div class="desc">Barrel-aged, orange oil, big ice</div></div>
+    <div class="right"><div class="price">$12.00</div><button class="add" data-price="12">+</button></div>
+  </div>
+  <div class="item glass" data-cat="starters">
+    <div class="thumb">🧆</div>
+    <div class="info"><div class="name">Truffle Arancini</div><div class="desc">Saffron risotto, black truffle</div></div>
+    <div class="right"><div class="price">$12.50</div><button class="add" data-price="12.50">+</button></div>
+  </div>
+  <div class="item glass" data-cat="starters">
+    <div class="thumb">🥗</div>
+    <div class="info"><div class="name">Burrata &amp; Tomato</div><div class="desc">Basil oil, sourdough toast</div></div>
+    <div class="right"><div class="price">$11.00</div><button class="add" data-price="11">+</button></div>
+  </div>
+  <div class="item glass" data-cat="mains">
+    <div class="thumb">🍝</div>
+    <div class="info"><div class="name">Cacio e Pepe</div><div class="desc">Tonnarelli, pecorino, cracked pepper</div></div>
+    <div class="right"><div class="price">$15.00</div><button class="add" data-price="15">+</button></div>
+  </div>
+  <div class="item glass" data-cat="mains">
+    <div class="thumb">🥩</div>
+    <div class="info"><div class="name">Ribeye 400g</div><div class="desc">Chimichurri, confit garlic</div></div>
+    <div class="right"><div class="price">$38.00</div><button class="add" data-price="38">+</button></div>
+  </div>
+  <div class="item glass" data-cat="mains">
+    <div class="thumb">🐟</div>
+    <div class="info"><div class="name">Roast Halibut</div><div class="desc">Brown butter, capers, potato</div></div>
+    <div class="right"><div class="price">$21.00</div><button class="add" data-price="21">+</button></div>
+  </div>
+  <div class="item glass" data-cat="desserts">
+    <div class="thumb">🍫</div>
+    <div class="info"><div class="name">Lava Fondant</div><div class="desc">70% chocolate, vanilla gelato</div></div>
+    <div class="right"><div class="price">$8.50</div><button class="add" data-price="8.50">+</button></div>
+  </div>
+  <div class="item glass" data-cat="desserts">
+    <div class="thumb">🍰</div>
+    <div class="info"><div class="name">Tiramisu</div><div class="desc">Espresso, mascarpone, cocoa</div></div>
+    <div class="right"><div class="price">$7.50</div><button class="add" data-price="7.50">+</button></div>
+  </div>
+  <div class="item glass" data-cat="drinks">
+    <div class="thumb">🍹</div>
+    <div class="info"><div class="name">Yuzu Spritz</div><div class="desc">Citrus, prosecco, soda</div></div>
+    <div class="right"><div class="price">$10.00</div><button class="add" data-price="10">+</button></div>
+  </div>
+  <div class="item glass" data-cat="drinks">
+    <div class="thumb">🍵</div>
+    <div class="info"><div class="name">Iced Matcha</div><div class="desc">Ceremonial grade, oat milk</div></div>
+    <div class="right"><div class="price">$5.50</div><button class="add" data-price="5.50">+</button></div>
+  </div>
+
+  <div class="banner glass">
+    <div><div class="t">Happy Hour</div><div class="s">Selected cocktails &amp; small plates</div></div>
+    <div class="pct">-20%</div>
+  </div>
+
+  <div class="cart" id="cart">
+    <div><div class="t">$<span id="tot">0.00</span></div><div class="l"><span id="cnt">0</span> items</div></div>
+    <button>Checkout →</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+const t=c.dataset.cat;
+document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=()=>{n++;s+=+b.dataset.price;
+document.getElementById('cnt').textContent=n;document.getElementById('tot').textContent=s.toFixed(2);
+document.getElementById('cart').classList.add('show');b.textContent='✓';setTimeout(()=>b.textContent='+',700);});
+</script>
+</body>
+</html>

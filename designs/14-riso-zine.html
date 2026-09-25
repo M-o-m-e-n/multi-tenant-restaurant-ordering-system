@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>14 — RISO Zine Duotone</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --news:#efe9d8; --ink:#1a1a17; --pink:#ff3d8b; --aqua:#00a3ae;
+    --overprint:#5c2f6b; --faded:#8a8574;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#c9c3b1;font-family:'DM Mono',ui-monospace,monospace;display:flex;justify-content:center}
+  .app{
+    width:100%;max-width:430px;min-height:100vh;background:var(--news);color:var(--ink);
+    position:relative;padding:0 0 106px;overflow:hidden;
+  }
+  /* paper grain + halftone */
+  .app::before{
+    content:'';position:absolute;inset:0;pointer-events:none;z-index:3;
+    background-image:radial-gradient(circle at 1px 1px, rgba(26,26,23,.07) 1px, transparent 1.4px);
+    background-size:4px 4px;
+  }
+
+  header{padding:22px 22px 0;position:relative;z-index:2}
+  .issue{
+    display:flex;justify-content:space-between;font-size:10px;letter-spacing:2px;
+    text-transform:uppercase;color:var(--faded);border-bottom:2px solid var(--ink);padding-bottom:8px;
+  }
+  .masthead{
+    font-family:Anton,Impact,sans-serif;font-size:66px;line-height:.82;letter-spacing:-1px;
+    text-transform:uppercase;margin:16px 0 0;color:var(--ink);
+    text-shadow:3px 3px 0 var(--pink), -2px -2px 0 var(--aqua);
+  }
+  .kicker{
+    font-size:11px;line-height:1.7;letter-spacing:.5px;margin-top:14px;max-width:32ch;color:var(--ink);
+  }
+  .kicker b{background:var(--pink);color:var(--news);padding:1px 5px;font-weight:500}
+
+  .band{
+    background:var(--aqua);color:var(--news);margin-top:18px;padding:7px 22px;
+    font-family:Anton,sans-serif;font-size:14px;letter-spacing:3px;text-transform:uppercase;
+    display:flex;justify-content:space-between;
+  }
+
+  nav{display:flex;gap:7px;flex-wrap:wrap;padding:16px 22px 4px;position:relative;z-index:2}
+  .chip{
+    background:transparent;border:2px solid var(--ink);color:var(--ink);
+    font-family:Anton,sans-serif;font-size:12px;letter-spacing:1.6px;text-transform:uppercase;
+    padding:5px 11px;cursor:pointer;transition:.12s;
+  }
+  .chip:hover{transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--aqua)}
+  .chip.on{background:var(--pink);border-color:var(--pink);color:var(--news);box-shadow:3px 3px 0 var(--ink)}
+
+  .sect{
+    font-family:Anton,sans-serif;font-size:15px;letter-spacing:3.5px;text-transform:uppercase;
+    padding:22px 22px 0;color:var(--aqua);position:relative;z-index:2;
+  }
+
+  .item{
+    display:flex;gap:12px;align-items:flex-start;margin:12px 22px 0;padding:13px 14px;
+    border:2px solid var(--ink);background:var(--news);position:relative;z-index:2;
+  }
+  .item:hover{box-shadow:4px 4px 0 var(--aqua)}
+  .em{
+    font-size:22px;width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;background:var(--pink);border:2px solid var(--ink);
+  }
+  .body{flex:1;min-width:0}
+  .name{
+    font-family:Anton,sans-serif;font-size:19px;line-height:1.05;letter-spacing:.3px;
+    text-transform:uppercase;text-shadow:1.5px 1.5px 0 rgba(0,163,174,.55);
+  }
+  .desc{font-size:10.5px;color:var(--faded);line-height:1.6;margin-top:6px;letter-spacing:.2px}
+  .right{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
+  .price{
+    font-family:Anton,sans-serif;font-size:17px;font-variant-numeric:tabular-nums;
+    letter-spacing:.5px;color:var(--overprint);
+  }
+  .add{
+    width:30px;height:30px;border:2px solid var(--ink);background:var(--aqua);color:var(--news);
+    font-family:Anton,sans-serif;font-size:17px;line-height:0;cursor:pointer;transition:.12s;
+  }
+  .add:hover{background:var(--ink)}
+
+  .pull{
+    margin:22px 22px 0;padding:18px 18px;background:var(--pink);color:var(--news);
+    border:2px solid var(--ink);position:relative;z-index:2;
+  }
+  .pull p{font-family:Anton,sans-serif;font-size:23px;line-height:1.12;text-transform:uppercase;letter-spacing:.4px}
+  .pull small{display:block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;margin-top:9px;opacity:.85}
+
+  .foot{
+    padding:22px 22px 10px;font-size:9.5px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--faded);position:relative;z-index:2;
+  }
+
+  .cart{
+    position:fixed;bottom:0;width:100%;max-width:430px;background:var(--ink);color:var(--news);
+    padding:13px 22px;display:none;justify-content:space-between;align-items:center;gap:12px;z-index:5;
+    border-top:3px solid var(--pink);
+  }
+  .cart.show{display:flex}
+  .cart .l{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--aqua)}
+  .cart .t{font-family:Anton,sans-serif;font-size:21px;margin-top:2px;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+  .cart button{
+    background:var(--pink);color:var(--news);border:2px solid var(--news);
+    font-family:Anton,sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;
+    padding:10px 16px;cursor:pointer;
+  }
+  .cart button:hover{background:var(--aqua)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="issue"><span>Issue 04</span><span>Printed in two inks</span></div>
+    <div class="masthead">Press<br>Room</div>
+    <div class="kicker">Nine dishes. No photographs, no filters — <b>we set the menu by hand</b> and run it off downstairs every Monday.</div>
+  </header>
+
+  <div class="band"><span>Table 12</span><span>Check A-1042</span></div>
+
+  <nav>
+    <button class="chip on" data-cat="all">Everything</button>
+    <button class="chip" data-cat="starters">Starters</button>
+    <button class="chip" data-cat="mains">Mains</button>
+    <button class="chip" data-cat="desserts">Sweet</button>
+    <button class="chip" data-cat="drinks">Drinks</button>
+  </nav>
+
+  <div class="sect" data-sect="starters">/// Starters</div>
+  <div class="item" data-cat="starters"><div class="em">🧆</div>
+    <div class="body"><div class="name">Truffle Arancini</div><div class="desc">Saffron risotto · black truffle · parmesan</div></div>
+    <div class="right"><div class="price">12.50</div><button class="add" data-price="12.50">+</button></div></div>
+  <div class="item" data-cat="starters"><div class="em">🥗</div>
+    <div class="body"><div class="name">Winter Caesar</div><div class="desc">Baby gem · anchovy cream · brioche crumb</div></div>
+    <div class="right"><div class="price">9.00</div><button class="add" data-price="9">+</button></div></div>
+
+  <div class="sect" data-sect="mains">/// Mains</div>
+  <div class="item" data-cat="mains"><div class="em">🍔</div>
+    <div class="body"><div class="name">Wagyu Burger</div><div class="desc">A5 blend · aged cheddar · house pickles</div></div>
+    <div class="right"><div class="price">18.50</div><button class="add" data-price="18.50">+</button></div></div>
+  <div class="item" data-cat="mains"><div class="em">🍕</div>
+    <div class="body"><div class="name">Margherita D.O.C.</div><div class="desc">San Marzano · fior di latte · basil</div></div>
+    <div class="right"><div class="price">14.00</div><button class="add" data-price="14">+</button></div></div>
+  <div class="item" data-cat="mains"><div class="em">🐟</div>
+    <div class="body"><div class="name">Roast Halibut</div><div class="desc">Brown butter · capers · confit potato</div></div>
+    <div class="right"><div class="price">21.00</div><button class="add" data-price="21">+</button></div></div>
+
+  <div class="pull">
+    <p>“The halibut is the only thing we won't run twice.”</p>
+    <small>— Chef, on the back page</small>
+  </div>
+
+  <div class="sect" data-sect="desserts">/// Sweet</div>
+  <div class="item" data-cat="desserts"><div class="em">🍫</div>
+    <div class="body"><div class="name">Lava Fondant</div><div class="desc">70% chocolate · vanilla bean gelato</div></div>
+    <div class="right"><div class="price">8.50</div><button class="add" data-price="8.50">+</button></div></div>
+  <div class="item" data-cat="desserts"><div class="em">🍰</div>
+    <div class="body"><div class="name">Tiramisu</div><div class="desc">Espresso-soaked savoiardi · mascarpone</div></div>
+    <div class="right"><div class="price">7.50</div><button class="add" data-price="7.50">+</button></div></div>
+
+  <div class="sect" data-sect="drinks">/// Drinks</div>
+  <div class="item" data-cat="drinks"><div class="em">🍵</div>
+    <div class="body"><div class="name">Iced Matcha</div><div class="desc">Ceremonial grade · oat milk</div></div>
+    <div class="right"><div class="price">5.50</div><button class="add" data-price="5.50">+</button></div></div>
+  <div class="item" data-cat="drinks"><div class="em">🥤</div>
+    <div class="body"><div class="name">Yuzu Lemonade</div><div class="desc">Fresh citrus · mint · sparkling water</div></div>
+    <div class="right"><div class="price">4.50</div><button class="add" data-price="4.50">+</button></div></div>
+
+  <div class="foot">Prices exclude tax · Service 10% dine-in · Set in Anton &amp; DM Mono</div>
+
+  <div class="cart" id="cart">
+    <div><div class="l">Your run</div><div class="t"><span id="cnt">0</span> items · $<span id="tot">0.00</span></div></div>
+    <button>Send it</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{
+  chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  const t=c.dataset.cat;
+  document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');
+  document.querySelectorAll('.sect').forEach(s=>s.style.display=(t==='all'||s.dataset.sect===t)?'':'none');
+});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=()=>{
+  n++;s+=+b.dataset.price;
+  document.getElementById('cnt').textContent=n;
+  document.getElementById('tot').textContent=s.toFixed(2);
+  document.getElementById('cart').classList.add('show');
+  b.textContent='✓';setTimeout(()=>b.textContent='+',700);
+});
+</script>
+</body>
+</html>

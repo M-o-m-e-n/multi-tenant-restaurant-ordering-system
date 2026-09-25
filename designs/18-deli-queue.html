@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>18 — QUEUE Deli Counter</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4f2ed; --ink:#141414; --board:#17171b; --flap:#232329;
+    --cream:#f0ece1; --red:#e4002b; --mut:#87837a; --line:#ddd8cc;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#cfcabd;font-family:Barlow,system-ui,sans-serif;display:flex;justify-content:center}
+  .app{
+    width:100%;max-width:430px;min-height:100vh;background:var(--paper);color:var(--ink);
+    position:relative;padding:0 0 104px;
+  }
+
+  .top{background:var(--ink);color:var(--paper);padding:13px 20px;display:flex;justify-content:space-between;align-items:center}
+  .brand{font-family:'Barlow Condensed',sans-serif;font-size:25px;font-weight:700;letter-spacing:2px;text-transform:uppercase;line-height:1}
+  .brand em{font-style:normal;color:var(--red)}
+  .hrs{font-size:10px;letter-spacing:1.5px;color:#9a968c;text-transform:uppercase;text-align:right;line-height:1.5}
+
+  .board{background:var(--board);padding:20px 20px 18px;display:flex;gap:16px;align-items:flex-end}
+  .col{flex:1;min-width:0}
+  .col.small{flex:0 0 auto}
+  .blab{
+    font-family:'Barlow Condensed',sans-serif;font-size:11.5px;font-weight:600;letter-spacing:3.5px;
+    text-transform:uppercase;color:#7b7768;margin-bottom:8px;
+  }
+  .col.you .blab{color:var(--red)}
+  .digits{display:flex;gap:4px}
+  .flap{
+    background:var(--flap);color:var(--cream);font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;font-variant-numeric:tabular-nums;line-height:1;position:relative;
+    border-radius:3px;box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  .big .flap{font-size:54px;padding:8px 10px 10px;min-width:40px;text-align:center}
+  .sm .flap{font-size:32px;padding:6px 7px 7px;min-width:26px;text-align:center}
+  .flap::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.45)}
+  .col.you .flap{background:var(--red);color:#fff}
+  .ahead{
+    font-size:11px;color:#8a8678;letter-spacing:1px;margin-top:10px;text-transform:uppercase;
+    font-family:'Barlow Condensed',sans-serif;font-weight:600;
+  }
+  .ahead b{color:var(--cream)}
+
+  .strip{
+    background:var(--red);color:#fff;padding:7px 20px;font-family:'Barlow Condensed',sans-serif;
+    font-size:12.5px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;
+    display:flex;justify-content:space-between;
+  }
+
+  nav{display:flex;gap:0;border-bottom:2px solid var(--ink);overflow-x:auto;scrollbar-width:none}
+  nav::-webkit-scrollbar{display:none}
+  .chip{
+    flex:1;background:none;border:0;border-right:1px solid var(--line);white-space:nowrap;
+    font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1.8px;
+    text-transform:uppercase;color:var(--mut);padding:13px 14px;cursor:pointer;transition:.15s;
+  }
+  .chip:last-child{border-right:0}
+  .chip:hover{background:#ebe7de;color:var(--ink)}
+  .chip.on{background:var(--ink);color:var(--paper)}
+
+  .item{display:flex;gap:13px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .em{font-size:23px;width:30px;text-align:center;flex-shrink:0}
+  .info{flex:1;min-width:0}
+  .name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;line-height:1.1}
+  .desc{font-size:11px;color:var(--mut);line-height:1.45;margin-top:3px}
+  .price{
+    font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;
+    font-variant-numeric:tabular-nums;flex-shrink:0;letter-spacing:.5px;
+  }
+  .add{
+    width:42px;height:42px;border:0;background:var(--ink);color:var(--paper);
+    font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:600;line-height:0;
+    cursor:pointer;flex-shrink:0;transition:.14s;border-radius:2px;
+  }
+  .add:hover{background:var(--red)}
+  .add:active{transform:scale(.93)}
+
+  .foot{padding:18px 20px 8px;font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;line-height:1.9}
+
+  .cart{
+    position:fixed;bottom:0;width:100%;max-width:430px;background:var(--ink);color:var(--paper);
+    padding:12px 20px;display:none;justify-content:space-between;align-items:center;gap:12px;
+  }
+  .cart.show{display:flex}
+  .cart .l{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2.5px;color:#908c82;text-transform:uppercase}
+  .cart .t{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+  .cart button{
+    background:var(--red);color:#fff;border:0;font-family:'Barlow Condensed',sans-serif;
+    font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:13px 18px;cursor:pointer;border-radius:2px;
+  }
+  .cart button:hover{background:var(--paper);color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">Counter<em>.</em>47</div>
+    <div class="hrs">Open till 22:00<br>Pick up at the hatch</div>
+  </div>
+
+  <div class="board">
+    <div class="col">
+      <div class="blab">Now serving</div>
+      <div class="digits big" id="serving"><span class="flap">0</span><span class="flap">4</span><span class="flap">1</span></div>
+      <div class="ahead"><b id="ahead">6</b> orders ahead of you</div>
+    </div>
+    <div class="col small you">
+      <div class="blab">You</div>
+      <div class="digits sm"><span class="flap">0</span><span class="flap">4</span><span class="flap">7</span></div>
+    </div>
+  </div>
+
+  <div class="strip"><span>Approx 11 min wait</span><span>Order A-1042</span></div>
+
+  <nav>
+    <button class="chip on" data-cat="all">All</button>
+    <button class="chip" data-cat="starters">Small</button>
+    <button class="chip" data-cat="mains">Mains</button>
+    <button class="chip" data-cat="desserts">Sweet</button>
+    <button class="chip" data-cat="drinks">Drinks</button>
+  </nav>
+
+  <div class="item" data-cat="starters"><div class="em">🧆</div>
+    <div class="info"><div class="name">Truffle Arancini</div><div class="desc">Saffron risotto · black truffle · parmesan</div></div>
+    <div class="price">12.50</div><button class="add" data-price="12.50" aria-label="Add">+</button></div>
+  <div class="item" data-cat="starters"><div class="em">🥗</div>
+    <div class="info"><div class="name">Winter Caesar</div><div class="desc">Baby gem · anchovy cream · brioche crumb</div></div>
+    <div class="price">9.00</div><button class="add" data-price="9" aria-label="Add">+</button></div>
+  <div class="item" data-cat="mains"><div class="em">🍔</div>
+    <div class="info"><div class="name">Wagyu Burger</div><div class="desc">A5 blend · aged cheddar · house pickles</div></div>
+    <div class="price">18.50</div><button class="add" data-price="18.50" aria-label="Add">+</button></div>
+  <div class="item" data-cat="mains"><div class="em">🍕</div>
+    <div class="info"><div class="name">Margherita D.O.C.</div><div class="desc">San Marzano · fior di latte · basil</div></div>
+    <div class="price">14.00</div><button class="add" data-price="14" aria-label="Add">+</button></div>
+  <div class="item" data-cat="mains"><div class="em">🐟</div>
+    <div class="info"><div class="name">Roast Halibut</div><div class="desc">Brown butter · capers · confit potato</div></div>
+    <div class="price">21.00</div><button class="add" data-price="21" aria-label="Add">+</button></div>
+  <div class="item" data-cat="desserts"><div class="em">🍫</div>
+    <div class="info"><div class="name">Lava Fondant</div><div class="desc">70% chocolate · vanilla bean gelato</div></div>
+    <div class="price">8.50</div><button class="add" data-price="8.50" aria-label="Add">+</button></div>
+  <div class="item" data-cat="desserts"><div class="em">🍰</div>
+    <div class="info"><div class="name">Tiramisu</div><div class="desc">Espresso-soaked savoiardi · mascarpone</div></div>
+    <div class="price">7.50</div><button class="add" data-price="7.50" aria-label="Add">+</button></div>
+  <div class="item" data-cat="drinks"><div class="em">🍵</div>
+    <div class="info"><div class="name">Iced Matcha</div><div class="desc">Ceremonial grade · oat milk</div></div>
+    <div class="price">5.50</div><button class="add" data-price="5.50" aria-label="Add">+</button></div>
+  <div class="item" data-cat="drinks"><div class="em">🥤</div>
+    <div class="info"><div class="name">Yuzu Lemonade</div><div class="desc">Fresh citrus · mint · sparkling water</div></div>
+    <div class="price">4.50</div><button class="add" data-price="4.50" aria-label="Add">+</button></div>
+
+  <div class="foot">Numbers called on the board — no table service<br>Prices exclude tax · No service charge</div>
+
+  <div class="cart" id="cart">
+    <div><div class="l">Your order</div><div class="t"><span id="cnt">0</span> items · $<span id="tot">0.00</span></div></div>
+    <button>Pay &amp; get number</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{
+  chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  const t=c.dataset.cat;
+  document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');
+});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=()=>{
+  n++;s+=+b.dataset.price;
+  document.getElementById('cnt').textContent=n;
+  document.getElementById('tot').textContent=s.toFixed(2);
+  document.getElementById('cart').classList.add('show');
+  b.textContent='✓';setTimeout(()=>b.textContent='+',650);
+});
+/* the board creeps toward your number */
+let serving=41;
+const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!reduce) setInterval(()=>{
+  if(serving>=46) return;
+  serving++;
+  document.getElementById('serving').innerHTML =
+    String(serving).padStart(3,'0').split('').map(d=>`<span class="flap">${d}</span>`).join('');
+  document.getElementById('ahead').textContent = 47-serving;
+},6500);
+</script>
+</body>
+</html>

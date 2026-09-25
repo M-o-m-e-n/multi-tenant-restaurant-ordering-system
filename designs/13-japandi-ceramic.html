@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>13 — KUMO Japandi Ceramic</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --porcelain:#e9e7e0; --glaze:#f4f2ed; --sumi:#24231f; --ash:#8d8a81;
+    --celadon:#7d9a8b; --indigo:#3f4a5a; --rim:#d4d0c6;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:#d8d5cc;font-family:'Zen Kaku Gothic New',system-ui,sans-serif;display:flex;justify-content:center}
+  .app{
+    width:100%;max-width:430px;min-height:100vh;background:var(--porcelain);color:var(--sumi);
+    position:relative;padding:0 0 108px;
+  }
+
+  header{padding:44px 30px 0;position:relative}
+  .vert{
+    position:absolute;top:44px;right:28px;writing-mode:vertical-rl;
+    font-family:'Shippori Mincho',serif;font-size:13px;letter-spacing:6px;color:var(--ash);
+  }
+  .mark{
+    width:34px;height:34px;border:1px solid var(--celadon);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Shippori Mincho',serif;font-size:15px;color:var(--celadon);
+  }
+  h1{
+    font-family:'Shippori Mincho',serif;font-weight:400;font-size:37px;letter-spacing:1px;
+    line-height:1.32;margin:24px 0 0;
+  }
+  .sub{font-size:12px;color:var(--ash);line-height:2;margin-top:16px;letter-spacing:1.4px}
+  .hair{height:1px;background:var(--rim);margin:30px 30px 0}
+
+  nav{display:flex;gap:26px;padding:20px 30px 0;overflow-x:auto;scrollbar-width:none}
+  nav::-webkit-scrollbar{display:none}
+  .chip{
+    background:none;border:0;padding:0 0 8px;cursor:pointer;white-space:nowrap;
+    font-family:'Zen Kaku Gothic New',sans-serif;font-size:12px;font-weight:400;
+    letter-spacing:2.5px;color:var(--ash);border-bottom:1px solid transparent;transition:.25s;
+  }
+  .chip.on{color:var(--sumi);border-color:var(--sumi);font-weight:500}
+  .chip small{display:block;font-family:'Shippori Mincho',serif;font-size:10px;letter-spacing:3px;opacity:.6;margin-top:3px}
+
+  .sect{
+    padding:34px 30px 0;font-family:'Shippori Mincho',serif;font-size:13px;
+    letter-spacing:5px;color:var(--celadon);
+  }
+
+  .item{display:flex;gap:18px;align-items:center;padding:22px 30px;position:relative}
+  .item+.item::before{content:'';position:absolute;top:0;left:30px;right:30px;height:1px;background:var(--rim)}
+  .plate{
+    width:62px;height:62px;flex-shrink:0;border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, var(--glaze) 0%, #e2dfd6 68%, #d6d2c8 100%);
+    box-shadow:inset 0 0 0 1px var(--rim), inset 0 0 0 7px rgba(255,255,255,.5), 0 2px 8px rgba(0,0,0,.055);
+    display:flex;align-items:center;justify-content:center;font-size:25px;
+  }
+  .body{flex:1;min-width:0}
+  .name{font-family:'Shippori Mincho',serif;font-size:17.5px;letter-spacing:.6px;line-height:1.35}
+  .desc{font-size:11.5px;color:var(--ash);line-height:1.85;margin-top:6px;letter-spacing:.4px}
+  .right{display:flex;flex-direction:column;align-items:flex-end;gap:11px;flex-shrink:0}
+  .price{font-family:'Shippori Mincho',serif;font-size:15px;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+  .add{
+    width:27px;height:27px;border-radius:50%;border:1px solid var(--rim);background:transparent;
+    color:var(--ash);font-size:15px;line-height:0;cursor:pointer;transition:.25s;
+  }
+  .add:hover{background:var(--sumi);border-color:var(--sumi);color:var(--porcelain)}
+
+  .note{
+    margin:34px 30px 0;padding:18px 20px;background:var(--glaze);
+    border-left:2px solid var(--celadon);
+  }
+  .note b{font-family:'Shippori Mincho',serif;font-weight:500;font-size:13px;letter-spacing:2px;color:var(--celadon);display:block;margin-bottom:7px}
+  .note p{font-size:11.5px;color:var(--ash);line-height:1.95;letter-spacing:.3px}
+
+  .foot{padding:26px 30px 10px;font-size:10.5px;color:var(--ash);letter-spacing:2.5px;line-height:2.2}
+
+  .cart{
+    position:fixed;bottom:0;width:100%;max-width:430px;background:var(--sumi);color:var(--porcelain);
+    padding:17px 30px;display:none;justify-content:space-between;align-items:center;gap:14px;
+  }
+  .cart.show{display:flex}
+  .cart .l{font-size:9.5px;letter-spacing:3px;color:#9b978c}
+  .cart .t{font-family:'Shippori Mincho',serif;font-size:17px;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+  .cart button{
+    background:none;border:1px solid rgba(233,231,224,.4);color:var(--porcelain);
+    font-family:'Zen Kaku Gothic New',sans-serif;font-size:11px;letter-spacing:2.5px;
+    padding:11px 19px;cursor:pointer;transition:.25s;
+  }
+  .cart button:hover{background:var(--porcelain);color:var(--sumi);border-color:var(--porcelain)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="vert">季節の献立</div>
+    <div class="mark">雲</div>
+    <h1>Kumo</h1>
+    <div class="sub">A small kitchen, nine dishes,<br>changed with the season.</div>
+  </header>
+  <div class="hair"></div>
+
+  <nav>
+    <button class="chip on" data-cat="all">ALL<small>全</small></button>
+    <button class="chip" data-cat="starters">TO BEGIN<small>前菜</small></button>
+    <button class="chip" data-cat="mains">MAINS<small>主菜</small></button>
+    <button class="chip" data-cat="desserts">SWEET<small>甘味</small></button>
+    <button class="chip" data-cat="drinks">DRINK<small>飲物</small></button>
+  </nav>
+
+  <div class="sect" data-sect="starters">前 菜</div>
+  <div class="item" data-cat="starters"><div class="plate">🧆</div>
+    <div class="body"><div class="name">Truffle Arancini</div><div class="desc">Saffron risotto · black truffle · parmesan</div></div>
+    <div class="right"><div class="price">12.50</div><button class="add" data-price="12.50">+</button></div></div>
+  <div class="item" data-cat="starters"><div class="plate">🥗</div>
+    <div class="body"><div class="name">Winter Caesar</div><div class="desc">Baby gem · anchovy cream · brioche crumb</div></div>
+    <div class="right"><div class="price">9.00</div><button class="add" data-price="9">+</button></div></div>
+
+  <div class="sect" data-sect="mains">主 菜</div>
+  <div class="item" data-cat="mains"><div class="plate">🍔</div>
+    <div class="body"><div class="name">Wagyu Burger</div><div class="desc">A5 blend · aged cheddar · house pickles</div></div>
+    <div class="right"><div class="price">18.50</div><button class="add" data-price="18.50">+</button></div></div>
+  <div class="item" data-cat="mains"><div class="plate">🍕</div>
+    <div class="body"><div class="name">Margherita D.O.C.</div><div class="desc">San Marzano · fior di latte · basil</div></div>
+    <div class="right"><div class="price">14.00</div><button class="add" data-price="14">+</button></div></div>
+  <div class="item" data-cat="mains"><div class="plate">🐟</div>
+    <div class="body"><div class="name">Roast Halibut</div><div class="desc">Brown butter · capers · confit potato</div></div>
+    <div class="right"><div class="price">21.00</div><button class="add" data-price="21">+</button></div></div>
+
+  <div class="sect" data-sect="desserts">甘 味</div>
+  <div class="item" data-cat="desserts"><div class="plate">🍫</div>
+    <div class="body"><div class="name">Lava Fondant</div><div class="desc">70% chocolate · vanilla bean gelato</div></div>
+    <div class="right"><div class="price">8.50</div><button class="add" data-price="8.50">+</button></div></div>
+  <div class="item" data-cat="desserts"><div class="plate">🍰</div>
+    <div class="body"><div class="name">Tiramisu</div><div class="desc">Espresso-soaked savoiardi · mascarpone</div></div>
+    <div class="right"><div class="price">7.50</div><button class="add" data-price="7.50">+</button></div></div>
+
+  <div class="sect" data-sect="drinks">飲 物</div>
+  <div class="item" data-cat="drinks"><div class="plate">🍵</div>
+    <div class="body"><div class="name">Iced Matcha</div><div class="desc">Ceremonial grade · oat milk</div></div>
+    <div class="right"><div class="price">5.50</div><button class="add" data-price="5.50">+</button></div></div>
+  <div class="item" data-cat="drinks"><div class="plate">🥤</div>
+    <div class="body"><div class="name">Yuzu Lemonade</div><div class="desc">Fresh citrus · mint · sparkling water</div></div>
+    <div class="right"><div class="price">4.50</div><button class="add" data-price="4.50">+</button></div></div>
+
+  <div class="note">
+    <b>おまかせ · OMAKASE</b>
+    <p>Let the kitchen choose five courses for the table. Twenty minutes to the first plate, about ninety to the last.</p>
+  </div>
+
+  <div class="foot">TABLE 12 · ORDER A-1042<br>SERVICE 10% · DINE IN</div>
+
+  <div class="cart" id="cart">
+    <div><div class="l">お会計 · YOUR TABLE</div><div class="t"><span id="cnt">0</span> dishes — $<span id="tot">0.00</span></div></div>
+    <button>PROCEED</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{
+  chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  const t=c.dataset.cat;
+  document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');
+  document.querySelectorAll('.sect').forEach(s=>s.style.display=(t==='all'||s.dataset.sect===t)?'':'none');
+});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=()=>{
+  n++;s+=+b.dataset.price;
+  document.getElementById('cnt').textContent=n;
+  document.getElementById('tot').textContent=s.toFixed(2);
+  document.getElementById('cart').classList.add('show');
+  b.textContent='✓';setTimeout(()=>b.textContent='+',700);
+});
+</script>
+</body>
+</html>

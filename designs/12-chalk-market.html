@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>12 — SLATE Chalkboard Market</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --slate:#25302c; --slate2:#1c2522; --chalk:#f2efe4; --dust:#a7b0a8;
+    --lemon:#f0c14b; --coral:#e8836b; --mint:#8fc4a8;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{
+    background:#151b19;font-family:Karla,system-ui,sans-serif;display:flex;justify-content:center;
+  }
+  .app{
+    width:100%;max-width:430px;min-height:100vh;position:relative;padding:0 0 112px;
+    color:var(--chalk);
+    background:
+      radial-gradient(ellipse 70% 40% at 20% 12%, rgba(255,255,255,.055), transparent 70%),
+      radial-gradient(ellipse 60% 30% at 85% 60%, rgba(255,255,255,.04), transparent 70%),
+      linear-gradient(175deg, var(--slate) 0%, var(--slate2) 100%);
+    box-shadow:inset 0 0 0 9px #4a3a28, inset 0 0 0 12px #2f2519, 0 0 40px rgba(0,0,0,.6);
+  }
+  .inner{padding:26px 24px 0}
+
+  .eyebrow{
+    font-size:10.5px;letter-spacing:3.5px;text-transform:uppercase;color:var(--dust);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .brand{
+    font-family:Caveat,cursive;font-size:52px;font-weight:700;line-height:.95;margin:10px 0 2px;
+    text-shadow:0 1px 0 rgba(255,255,255,.14);
+  }
+  .brand em{font-style:normal;color:var(--lemon)}
+  .tag{font-family:Caveat,cursive;font-size:20px;color:var(--dust);letter-spacing:.5px}
+
+  .swoosh{height:1px;background:linear-gradient(90deg,transparent,var(--dust),transparent);opacity:.45;margin:16px 0 4px}
+
+  nav{display:flex;gap:9px;flex-wrap:wrap;padding:12px 24px 4px}
+  .chip{
+    background:none;border:1.5px solid rgba(242,239,228,.28);color:var(--dust);
+    font-family:Caveat,cursive;font-size:19px;padding:2px 15px 4px;border-radius:22px 20px 24px 19px;
+    cursor:pointer;transition:.18s;
+  }
+  .chip:hover{color:var(--chalk);border-color:rgba(242,239,228,.55)}
+  .chip.on{color:var(--slate);background:var(--lemon);border-color:var(--lemon);font-weight:700}
+
+  .sect{
+    font-family:Caveat,cursive;font-size:26px;color:var(--mint);
+    padding:22px 24px 2px;display:flex;align-items:center;gap:10px;
+  }
+  .sect::after{content:'';flex:1;height:1px;background:rgba(143,196,168,.3)}
+
+  .item{
+    display:flex;gap:13px;align-items:flex-start;padding:13px 24px;
+    border-bottom:1px dashed rgba(242,239,228,.14);
+  }
+  .em{font-size:23px;width:30px;text-align:center;flex-shrink:0;opacity:.92;padding-top:2px}
+  .body{flex:1;min-width:0}
+  .name{font-family:Caveat,cursive;font-size:25px;line-height:1.05;letter-spacing:.3px}
+  .desc{font-size:11.5px;color:var(--dust);line-height:1.55;margin-top:4px}
+  .right{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
+  .price{
+    font-family:Caveat,cursive;font-size:27px;color:var(--lemon);line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .add{
+    background:none;border:1.5px solid rgba(242,239,228,.32);color:var(--chalk);
+    width:29px;height:29px;border-radius:50% 48% 52% 50%;font-size:17px;cursor:pointer;
+    font-family:Caveat,cursive;line-height:0;transition:.18s;
+  }
+  .add:hover{background:var(--chalk);color:var(--slate);border-color:var(--chalk)}
+
+  .special{
+    margin:20px 24px 0;padding:15px 17px;border:2px solid var(--coral);
+    border-radius:16px 13px 17px 14px;position:relative;
+  }
+  .special .lab{
+    position:absolute;top:-11px;left:14px;background:var(--slate);padding:0 8px;
+    font-family:Caveat,cursive;font-size:17px;color:var(--coral);letter-spacing:.5px;
+  }
+  .special p{font-family:Caveat,cursive;font-size:21px;line-height:1.35}
+  .special small{display:block;font-size:11px;color:var(--dust);margin-top:5px;font-family:Karla}
+
+  .foot{padding:22px 24px 8px;font-size:10.5px;color:var(--dust);letter-spacing:2px;text-transform:uppercase;text-align:center}
+
+  .cart{
+    position:fixed;bottom:0;width:100%;max-width:430px;background:var(--lemon);color:#202824;
+    padding:15px 24px;display:none;justify-content:space-between;align-items:center;gap:12px;
+    box-shadow:0 -8px 24px rgba(0,0,0,.35);
+  }
+  .cart.show{display:flex}
+  .cart .l{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;opacity:.65;font-weight:700}
+  .cart .t{font-family:Caveat,cursive;font-size:27px;line-height:1.05;margin-top:1px;font-variant-numeric:tabular-nums}
+  .cart button{
+    background:#202824;color:var(--lemon);border:0;font-family:Caveat,cursive;font-size:21px;
+    padding:8px 20px 10px;border-radius:22px 19px 23px 20px;cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="inner">
+    <div class="eyebrow"><span>Today's board</span><span>Wed 25 Sep</span></div>
+    <div class="brand">The <em>Market</em><br>Kitchen</div>
+    <div class="tag">everything written up fresh each morning</div>
+    <div class="swoosh"></div>
+  </div>
+
+  <nav>
+    <button class="chip on" data-cat="all">all of it</button>
+    <button class="chip" data-cat="starters">to start</button>
+    <button class="chip" data-cat="mains">mains</button>
+    <button class="chip" data-cat="desserts">sweet</button>
+    <button class="chip" data-cat="drinks">to drink</button>
+  </nav>
+
+  <div class="special">
+    <span class="lab">chef's shout</span>
+    <p>Halibut came in at 6am — only nine portions left.</p>
+    <small>Boat: Mary-Jane · Landed Newlyn</small>
+  </div>
+
+  <div class="sect" data-sect="starters">To start</div>
+  <div class="item" data-cat="starters"><div class="em">🧆</div>
+    <div class="body"><div class="name">Truffle Arancini</div><div class="desc">Saffron risotto · black truffle · parmesan</div></div>
+    <div class="right"><div class="price">12.50</div><button class="add" data-price="12.50">+</button></div></div>
+  <div class="item" data-cat="starters"><div class="em">🥗</div>
+    <div class="body"><div class="name">Winter Caesar</div><div class="desc">Baby gem · anchovy cream · brioche crumb</div></div>
+    <div class="right"><div class="price">9.00</div><button class="add" data-price="9">+</button></div></div>
+
+  <div class="sect" data-sect="mains">Mains</div>
+  <div class="item" data-cat="mains"><div class="em">🍔</div>
+    <div class="body"><div class="name">Wagyu Burger</div><div class="desc">A5 blend · aged cheddar · house pickles</div></div>
+    <div class="right"><div class="price">18.50</div><button class="add" data-price="18.50">+</button></div></div>
+  <div class="item" data-cat="mains"><div class="em">🍕</div>
+    <div class="body"><div class="name">Margherita D.O.C.</div><div class="desc">San Marzano · fior di latte · basil</div></div>
+    <div class="right"><div class="price">14.00</div><button class="add" data-price="14">+</button></div></div>
+  <div class="item" data-cat="mains"><div class="em">🐟</div>
+    <div class="body"><div class="name">Roast Halibut</div><div class="desc">Brown butter · capers · confit potato</div></div>
+    <div class="right"><div class="price">21.00</div><button class="add" data-price="21">+</button></div></div>
+
+  <div class="sect" data-sect="desserts">Sweet things</div>
+  <div class="item" data-cat="desserts"><div class="em">🍫</div>
+    <div class="body"><div class="name">Lava Fondant</div><div class="desc">70% chocolate · vanilla bean gelato</div></div>
+    <div class="right"><div class="price">8.50</div><button class="add" data-price="8.50">+</button></div></div>
+  <div class="item" data-cat="desserts"><div class="em">🍰</div>
+    <div class="body"><div class="name">Tiramisu</div><div class="desc">Espresso-soaked savoiardi · mascarpone</div></div>
+    <div class="right"><div class="price">7.50</div><button class="add" data-price="7.50">+</button></div></div>
+
+  <div class="sect" data-sect="drinks">To drink</div>
+  <div class="item" data-cat="drinks"><div class="em">🍵</div>
+    <div class="body"><div class="name">Iced Matcha</div><div class="desc">Ceremonial grade · oat milk</div></div>
+    <div class="right"><div class="price">5.50</div><button class="add" data-price="5.50">+</button></div></div>
+  <div class="item" data-cat="drinks"><div class="em">🥤</div>
+    <div class="body"><div class="name">Yuzu Lemonade</div><div class="desc">Fresh citrus · mint · sparkling water</div></div>
+    <div class="right"><div class="price">4.50</div><button class="add" data-price="4.50">+</button></div></div>
+
+  <div class="foot">Table 12 · Order A-1042 · Service 10% dine-in</div>
+
+  <div class="cart" id="cart">
+    <div><div class="l">Your order</div><div class="t"><span id="cnt">0</span> things — $<span id="tot">0.00</span></div></div>
+    <button>Order it →</button>
+  </div>
+</div>
+<script>
+const chips=document.querySelectorAll('.chip');
+chips.forEach(c=>c.onclick=()=>{
+  chips.forEach(x=>x.classList.remove('on'));c.classList.add('on');
+  const t=c.dataset.cat;
+  document.querySelectorAll('.item').forEach(i=>i.style.display=(t==='all'||i.dataset.cat===t)?'':'none');
+  document.querySelectorAll('.sect').forEach(s=>s.style.display=(t==='all'||s.dataset.sect===t)?'':'none');
+});
+let n=0,s=0;
+document.querySelectorAll('.add').forEach(b=>b.onclick=()=>{
+  n++;s+=+b.dataset.price;
+  document.getElementById('cnt').textContent=n;
+  document.getElementById('tot').textContent=s.toFixed(2);
+  document.getElementById('cart').classList.add('show');
+  b.textContent='✓';setTimeout(()=>b.textContent='+',700);
+});
+</script>
+</body>
+</html>
