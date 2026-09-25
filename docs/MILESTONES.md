@@ -151,15 +151,15 @@ here corrupts data everywhere downstream.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M1-S1** | `enums.ts` — `Role`, `OrderType`, `OrderStatus` (**no** `REFUNDED`), `PaymentStatus` (with `PARTIALLY_PAID`), `PaymentState`, `TableStatus`, `DiscountType`, `DeliveryStatus`, `ReservationStatus` | S | LLD §2.1 | Types compile; `OrderStatus` has exactly 7 members |
-| ☐ | **M1-S2** | `bps(amountCents, rateBps)` — multiply by basis points, round **half away from zero** | S | NFR-R2, LLD §3.2 | `bps(5,1000) === 1` and `bps(-5,1000) === -1`; plain `Math.round` fails this test |
-| ☐ | **M1-S3** | `computeTotals()` — steps 1–10 in order: lines → subtotal → discount → taxable → service charge → tax base → tax → delivery → tip → total | L | CART-04…06, BR-01, BR-03, BR-10, BR-13 · LLD §3.2 | Worked example: DINE_IN, `2×(1000+200−100)` + `1550`, 10% off, 12.5% service, 8.75% tax, 500 tip → **total 4592** |
-| ☐ | **M1-S4** | Pricing tests **P1–P12** | M | LLD §10.1 | All twelve green, including P9 (service-charge taxability delta) and P11 (negative-delta symmetry) |
-| ☐ | **M1-S5** | `ORDER_TRANSITIONS` as `(from, to, roles)` triples + `FORWARD_TRANSITION` map | M | ORD-02, ORD-03, BR-12 · LLD §3.1 | 10 edges exist; no edge leaves `COMPLETED` or `CANCELLED` |
-| ☐ | **M1-S6** | `canTransition(from,to,role)` and `nextStatuses(from,role)` | S | LLD §3.1 | `nextStatuses('PLACED','CUSTOMER')` returns `['CANCELLED']` only |
-| ☐ | **M1-S7** | State machine tests **S1–S8** | M | LLD §10.1 | All eight green, including S4 (skip-forward rejected) and S5 (per-edge role gate) |
-| ☐ | **M1-S8** | Discount rule evaluation — window, minimum, limit — as a pure function returning a typed error code | M | DISC-01…06 · LLD §3.3 | Each of the five `DISCOUNT_*` codes is reachable by a test |
-| ☐ | **M1-S9** | `shared/schemas` — Zod DTOs for auth, cart, order creation, amendment, payment | M | NFR-S5 · LLD §1 | Client and server both import them; `shared` has zod as its only runtime dependency |
+| ☑ | **M1-S1** | `enums.ts` — `Role`, `OrderType`, `OrderStatus` (**no** `REFUNDED`), `PaymentStatus` (with `PARTIALLY_PAID`), `PaymentState`, `TableStatus`, `DiscountType`, `DeliveryStatus`, `ReservationStatus` | S | LLD §2.1 | Types compile; `OrderStatus` has exactly 7 members |
+| ☑ | **M1-S2** | `bps(amountCents, rateBps)` — multiply by basis points, round **half away from zero** | S | NFR-R2, LLD §3.2 | `bps(5,1000) === 1` and `bps(-5,1000) === -1`; plain `Math.round` fails this test |
+| ☑ | **M1-S3** | `computeTotals()` — steps 1–10 in order: lines → subtotal → discount → taxable → service charge → tax base → tax → delivery → tip → total | L | CART-04…06, BR-01, BR-03, BR-10, BR-13 · LLD §3.2 | Worked example: DINE_IN, `2×(1000+200−100)` + `1550`, 10% off, 12.5% service, 8.75% tax, 500 tip → **total 4592** |
+| ☑ | **M1-S4** | Pricing tests **P1–P12** | M | LLD §10.1 | All twelve green, including P9 (service-charge taxability delta) and P11 (negative-delta symmetry) |
+| ☑ | **M1-S5** | `ORDER_TRANSITIONS` as `(from, to, roles)` triples + `FORWARD_TRANSITION` map | M | ORD-02, ORD-03, BR-12 · LLD §3.1 | 10 edges exist; no edge leaves `COMPLETED` or `CANCELLED` |
+| ☑ | **M1-S6** | `canTransition(from,to,role)` and `nextStatuses(from,role)` | S | LLD §3.1 | `nextStatuses('PLACED','CUSTOMER')` returns `['CANCELLED']` only |
+| ☑ | **M1-S7** | State machine tests **S1–S8** | M | LLD §10.1 | All eight green, including S4 (skip-forward rejected) and S5 (per-edge role gate) |
+| ☑ | **M1-S8** | Discount rule evaluation — window, minimum, limit — as a pure function returning a typed error code | M | DISC-01…06 · LLD §3.3 | Each of the five `DISCOUNT_*` codes is reachable by a test |
+| ☑ | **M1-S9** | `shared/schemas` — Zod DTOs for auth, cart, order creation, amendment, payment | M | NFR-S5 · LLD §1 | Client and server both import them; `shared` has zod as its only runtime dependency |
 
 **Traps.** M1-S2 is the slice people skip. `Math.round(-0.5)` is `-0`, not `-1`, and
 `ModifierItem.priceDelta` is allowed to be negative — so without the symmetric helper, the client
