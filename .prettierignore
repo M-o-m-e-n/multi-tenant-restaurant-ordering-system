@@ -6,3 +6,4 @@ docs
 server/prisma/migrations
 package-lock.json
 *.md
+.shots.mjs

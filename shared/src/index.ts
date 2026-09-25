@@ -7,6 +7,7 @@ export * from './domain/order-status';
 export * from './domain/pricing';
 export * from './schemas/auth';
 export * from './schemas/common';
+export * from './schemas/discounts';
 export * from './schemas/menu';
 export * from './schemas/orders';
 export * from './schemas/payments';

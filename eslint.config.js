@@ -15,6 +15,7 @@ export default tseslint.config(
       '**/dist/**',
       '**/coverage/**',
       'designs/**',
+      '.shots.mjs',
       'server/prisma/migrations/**',
     ],
   },
