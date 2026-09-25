@@ -353,19 +353,19 @@ take in Prisma's fluent API, and reaching for one wastes a day.
 
 | ☐ | ID | Slice | Size | Spec | Done when |
 |---|---|---|---|---|---|
-| ☐ | **M8-S1** | Socket.IO server with **optional** auth handshake — no token connects anonymously, a bad token is rejected | M | BROWSE-01, AC-7 · LLD §4.9 | A tokenless socket connects successfully |
-| ☐ | **M8-S2** | Room joins: `menu` for everyone; `kitchen`/`pos`/`admin` by role; `customer:{orderId}` by ownership | M | NFR-S4 · HLD §8.3 | A customer cannot join `kitchen`, even by emitting the join itself |
-| ☐ | **M8-S3** | `events.publish` façade, called as the **last** step after commit | M | HLD §8.2 | A rolled-back transaction emits nothing |
-| ☐ | **M8-S4** | Event catalog: `order:new`, `order:status`, `order:removed`, `menu:changed`, `table:changed`, `payment:changed` | M | LLD §6.2 | Names match the LLD exactly — `order:status`, not `order:updated` |
-| ☐ | **M8-S5** | Client socket singleton with reconnect and snapshot refetch on `connect` | M | HLD §8.3 | Events are treated as hints; REST remains the source of truth |
-| ☐ | **M8-S6** | KDS page: status columns, ticket cards, order number, table/type badge | L | KDS-01 · LLD §7.5 | Tickets land in the right column |
-| ☐ | **M8-S7** | New tickets appear live, with an audible and visual alert | M | KDS-02, KDS-06 | No manual refresh needed |
-| ☐ | **M8-S8** | Ticket aging: elapsed timer, colour band **and a text label** | M | KDS-03, NFR-U3 | State is readable without relying on colour (WCAG 1.4.1) |
-| ☐ | **M8-S9** | Bump via `FORWARD_TRANSITION[current]`, optimistic, rolling back on `409` | M | KDS-04, R9 · LLD §7.5 | Two staff bumping the same ticket: one wins, one silently refetches |
-| ☐ | **M8-S10** | Station filter | S | KDS-05 | Filters on the `station` snapshotted onto the order item |
-| ☐ | **M8-S11** | Completed tickets linger for `kdsCompletedGraceSec`, then auto-hide | S | KDS-07 | Configurable from settings, not hard-coded |
-| ☐ | **M8-S12** | 30 s safety poll regardless of socket state | S | HLD §8.4, R3 | Killing the socket still reconciles the board within 30 s |
-| ☐ | **M8-S13** | Tests: **I25** and the AC-7 anonymous broadcast path | M | AC-7 | An anonymous browser receives `menu:changed` |
+| ☑ | **M8-S1** | Socket.IO server with **optional** auth handshake — no token connects anonymously, a bad token is rejected | M | BROWSE-01, AC-7 · LLD §4.9 | A tokenless socket connects successfully |
+| ☑ | **M8-S2** | Room joins: `menu` for everyone; `kitchen`/`pos`/`admin` by role; `customer:{orderId}` by ownership | M | NFR-S4 · HLD §8.3 | A customer cannot join `kitchen`, even by emitting the join itself |
+| ☑ | **M8-S3** | `events.publish` façade, called as the **last** step after commit | M | HLD §8.2 | A rolled-back transaction emits nothing |
+| ☑ | **M8-S4** | Event catalog: `order:new`, `order:status`, `order:removed`, `menu:changed`, `table:changed`, `payment:changed` | M | LLD §6.2 | Names match the LLD exactly — `order:status`, not `order:updated` |
+| ☑ | **M8-S5** | Client socket singleton with reconnect and snapshot refetch on `connect` | M | HLD §8.3 | Events are treated as hints; REST remains the source of truth |
+| ☑ | **M8-S6** | KDS page: status columns, ticket cards, order number, table/type badge | L | KDS-01 · LLD §7.5 | Tickets land in the right column |
+| ☑ | **M8-S7** | New tickets appear live, with an audible and visual alert | M | KDS-02, KDS-06 | No manual refresh needed |
+| ☑ | **M8-S8** | Ticket aging: elapsed timer, colour band **and a text label** | M | KDS-03, NFR-U3 | State is readable without relying on colour (WCAG 1.4.1) |
+| ☑ | **M8-S9** | Bump via `FORWARD_TRANSITION[current]`, optimistic, rolling back on `409` | M | KDS-04, R9 · LLD §7.5 | Two staff bumping the same ticket: one wins, one silently refetches |
+| ☑ | **M8-S10** | Station filter | S | KDS-05 | Filters on the `station` snapshotted onto the order item |
+| ☑ | **M8-S11** | Completed tickets linger for `kdsCompletedGraceSec`, then auto-hide | S | KDS-07 | Configurable from settings, not hard-coded |
+| ☑ | **M8-S12** | 30 s safety poll regardless of socket state | S | HLD §8.4, R3 | Killing the socket still reconciles the board within 30 s |
+| ☑ | **M8-S13** | Tests: **I25** and the AC-7 anonymous broadcast path | M | AC-7 | An anonymous browser receives `menu:changed` |
 
 **Traps.** Never read `nextStatuses[0]` for the bump — array order is not meaning. And do not make
 socket auth mandatory: AC-7 requires an 86'd item to disappear from a *guest's* menu, and a guest
