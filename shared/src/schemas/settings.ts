@@ -95,3 +95,6 @@ export function decodeSettings(rows: readonly { key: string; value: string }[]):
   }
   return settingsSchema.parse(raw);
 }
+
+/** GET /settings/kds (staff). */
+export type KdsSettings = Pick<Settings, 'kdsGreenSec' | 'kdsAmberSec' | 'kdsCompletedGraceSec'>;

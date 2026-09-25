@@ -1,4 +1,4 @@
-export { publicSettingsRouter, staffSettingsRouter } from './settings.routes';
+export { kdsSettingsRouter, publicSettingsRouter, staffSettingsRouter } from './settings.routes';
 export {
   getSettings,
   invalidateSettingsCache,

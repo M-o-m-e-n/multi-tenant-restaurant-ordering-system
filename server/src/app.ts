@@ -9,7 +9,7 @@ import { authRouter } from './modules/auth';
 import { discountsRouter, staffDiscountsRouter } from './modules/discounts';
 import { publicMenuRouter, staffMenuRouter } from './modules/menu';
 import { ordersRouter } from './modules/orders';
-import { publicSettingsRouter, staffSettingsRouter } from './modules/settings';
+import { kdsSettingsRouter, publicSettingsRouter, staffSettingsRouter } from './modules/settings';
 import { tablesRouter } from './modules/tables';
 import { usersRouter } from './modules/users';
 
@@ -47,6 +47,7 @@ export function createApp(options: AppOptions = {}): Express {
   );
   api.use('/menu', publicMenuRouter());
   api.use('/staff/menu', staffMenuRouter());
+  api.use('/settings/kds', kdsSettingsRouter());
   api.use('/settings', publicSettingsRouter());
   api.use('/orders', ordersRouter({ placeLimiter: limiter(LIMITS.orders, limits) }));
   api.use('/discounts', discountsRouter());
