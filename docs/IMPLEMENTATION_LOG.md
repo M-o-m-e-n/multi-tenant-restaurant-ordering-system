@@ -26,6 +26,29 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M11 — Reports & dashboard
+
+**Slices:** M11-S1…S14 ☑
+**Done**
+- `reports` module: one BR-16 scope predicate used by every revenue query; summary, revenue by
+  business date, top items by id, local-time peak hours, by type, collected by method (payment
+  records), cancellations and refunds; quoted identifiers and bound values; 60 s cache;
+  `GET /dashboard/today`.
+- Client: `/admin` dashboard and `/admin/reports` (range presets and custom, tiles, Recharts bars,
+  tables, CSV export), admin section nav.
+**Verified**
+- 9 report tests seed a week of history into the test DB and compare every figure with the
+  generator's own fixture (AC-9 / I13), including a renamed dish staying one row. 155 server tests.
+- Browser: the reports page over the seeded 30 days (707 orders, $26,015.20 net sales).
+**Issues / surprises**
+- **LLD §4.8's collected-by-method formula subtracts REFUNDED amounts from SUCCEEDED ones.** But a
+  refund *moves* a record from SUCCEEDED to REFUNDED, so that would double-count the refund. The
+  query counts SUCCEEDED records only, which is already net of refunds, and matches the fixture.
+  LLD needs a fix.
+- The chart palette is a single flame series (3.1:1 against the panel, above the 3:1 needed for
+  graphics). The bundled validator prints nothing when run from a copy, so the check was done by hand.
+**Next:** frontend polish (real photography and the landing page), then M12.
+
 ### 2026-09-25 — M10 — Amendments, tips & receipts
 
 **Slices:** M10-S1…S13 ☑
