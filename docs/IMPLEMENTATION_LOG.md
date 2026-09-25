@@ -26,6 +26,41 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M2 — Database & seed
+
+**Slices:** M2-S1…S12 ☑
+**Done**
+- Prisma 6.19 schema covering every LLD §2.2 entity (except `RefreshToken`, which is M3-S2b).
+  Ids are Postgres `uuid` and money is `Int` cents (ADR-004).
+- First migration `20260925011512_init` with hand-written CHECK constraints (DEL-01, total ≥ 0,
+  qty > 0, modifier select range, percent ≤ 100%, usage within limit, positive payments,
+  non-negative prices) and `UNIQUE(businessDate, orderNumber)`.
+- Seed: three demo accounts, 4 categories, the 9 design-31 dishes with modifier groups (one with
+  a negative delta), 14 tables with QR tokens, `SAVE10`/`WELCOME5`, and settings in basis points.
+  Then 30 business days of deterministic history, with the fixture written to
+  `server/prisma/seed-fixture.json`.
+- `shared/schemas/settings.ts` types every setting and has `decodeSettings`/`encodeSetting`;
+  `server/src/lib/time.ts` handles business dates.
+- Enum parity test between `schema.prisma` and `shared` enums.
+**Verified**
+- `prisma migrate deploy` on the empty `ros_test` reproduces the schema; `migrate diff` shows no
+  drift.
+- `A-1001` inserts on two business dates; a second `A-1001` on one date is rejected; a TAKEAWAY
+  row without `customerName` fails the CHECK.
+- Seed: 785 orders, 744 in scope, net sales 2,757,905 cents. A SQL cross-check over the BR-16
+  scope gives the same figures, and every order has exactly one `(null → PLACED)` event.
+**Issues / surprises**
+- **Schema additions beyond LLD §2.2** (doc debt, LLD should be amended):
+  `Order.taxBps`, `serviceChargeBps`, `serviceChargeTaxable`, `discountType`, `discountValue`
+  snapshot the pricing inputs so an amendment can reprice "from the values snapshotted on the order"
+  (ORD-13). The LLD requires that but never lists the columns. `OrderItem.addedAt` lets the KDS
+  badge a later round (ORD-12, API-CONTRACT OrderDto `addedAt`). Also a `Payment(stripePaymentIntentId)`
+  index for webhook lookups and a `restaurantName` setting for receipts.
+- The ERD's partial index on `MenuItem(isAvailable)` is a plain index. A hand-written partial index
+  would be dropped by the next `migrate dev` because Prisma can't represent it.
+- Default timezone is `America/New_York`, the LLD's example.
+**Next:** M3-S1.
+
 ### 2026-09-25 — M1 — Shared domain core
 
 **Slices:** M1-S1…S9 ☑
