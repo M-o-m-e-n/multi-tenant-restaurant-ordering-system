@@ -11,6 +11,7 @@ import { MenuPage } from './pages/customer/MenuPage';
 import { MyOrdersPage } from './pages/customer/MyOrdersPage';
 import { OrderTrackerPage } from './pages/customer/OrderTrackerPage';
 import { TableLandingPage } from './pages/customer/TableLandingPage';
+import { KdsPage } from './pages/kitchen/KdsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { TableMapPage } from './pages/pos/TableMapPage';
 import { StaffPlaceholder } from './pages/StaffPlaceholder';
@@ -54,7 +55,7 @@ export const router = createBrowserRouter([
         path: '/kitchen',
         element: (
           <RequireRole roles={['STAFF', 'ADMIN']}>
-            <StaffPlaceholder title="Kitchen display" note="Live tickets arrive in M8." />
+            <KdsPage />
           </RequireRole>
         ),
       },

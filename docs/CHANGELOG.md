@@ -12,14 +12,39 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
 
 ## [Unreleased]
 
+Nothing yet.
+
+---
+
+## [0.4.0] — 2026-09-25 — First build: M0–M8
+
+The first runnable system: scan a table QR, order from the menu, and watch the ticket land on the
+kitchen display in real time.
+
 ### Added
-- Project-tracking files: `KICKOFF.md`, `PROJECT_STATE.md`, `PROJECT_STATE_ARCHIVED.md`,
-  `DECISIONS.md` (ADR-001…019), `IMPLEMENTATION_LOG.md`, `CHANGELOG.md`.
-- `CLAUDE.md`: project guide for Claude Code, covering doc precedence, the non-negotiable rules, the
-  per-slice workflow and which skill to use when.
-- Project skill `.claude/skills/fork-flame-ui`: the design-31 design system (tokens, type, components,
-  contrast rules, and how it applies to KDS/POS/admin).
-- `designs/reference/31-reference-landing.png`: the owner's reference screenshot for the frontend.
+- **Foundation (M0):** npm workspaces `shared` / `server` / `client`; strict TypeScript;
+  one ESLint + Prettier config; Vitest everywhere; Docker Postgres 15.8 with a test database;
+  fail-fast Zod env parsing; Express app factory with `/health`; Vite + React 18 + Tailwind shell
+  in the design-31 tokens; GitHub Actions CI; README.
+- **Shared domain (M1):** `bps()`, `computeTotals()` (the reference order totals 4592),
+  role-gated `ORDER_TRANSITIONS` with `FORWARD_TRANSITION`, `evaluateDiscount`, strict Zod
+  schemas — pricing P1–P12 and state machine S1–S8 tests.
+- **Database (M2):** Prisma 6 schema for every LLD entity, CHECK constraints, per-day order
+  numbers, indexes; a deterministic seed with 30 business days of history and a fixture file.
+- **Auth (M3):** 15-minute access tokens, rotating refresh tokens with reuse detection in an
+  httpOnly cookie, sessions, per-request role and status re-read, role guards, CORS allow-list,
+  rate limits, purge job; client auth store with single-flight refresh.
+- **Menu (M4):** public menu with schedule windows and sold-out items, audited admin CRUD, the 86
+  toggle, server-side modifier validation; customer menu and admin menu manager.
+- **Tables (M5):** QR tokens and SVG/PNG export, read-only resolve, FREE → SEATED → DIRTY → FREE
+  with the open-order guard; QR landing and staff table map; the `events.publish` façade.
+- **Cart & pricing (M6):** database-priced `/orders/preview`, public settings, discounts;
+  persisted cart, modifier dialog, tips, promo codes; a 36-case client/server parity matrix.
+- **Orders (M7):** single-transaction placement with idempotency keys, table binding from the QR
+  token, atomic discount redemption, business dates and daily numbers; race-safe state machine;
+  checkout, live tracker and history.
+- **Realtime & KDS (M8):** Socket.IO with optional auth and server-side rooms; live kitchen display
+  with ageing bands, bumps, station filter and alerts.
 
 ### Changed
 - ADR-019 accepted: the frontend direction is **design 31, "Fork & Flame"**.
@@ -27,6 +52,8 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
   `BIGINT` and not a decimal type. SRS 1.2.1, HLD 1.2.1 and LLD 1.2.1 (`BIGINT` → `INTEGER`), ERD 1.2
   (diagrams, Prisma skeleton and §11), CODING-STANDARDS 1.2 (why no BigDecimal; display-only
   formatting).
+- Build-time decisions recorded as ADR-020…023 (dependency versions, schema additions, API
+  additions, git workflow).
 
 ### Fixed
 - MILESTONES v1.2: slice counts recounted from the tables. M3 is 18 slices / ~19d (was listed as
@@ -34,6 +61,11 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
   162 / ~175); first end-to-end demo at ~day 110 (was ~100). "Derived from" now cites v1.2 docs.
 - ERD v1.1.1: Mermaid parse errors in diagrams 1 and 2 — multiple attribute keys must be
   comma-separated (`FK, UK`, `PK, FK`).
+
+### Docs
+- Project-tracking files: `KICKOFF.md`, `PROJECT_STATE.md`, `PROJECT_STATE_ARCHIVED.md`,
+  `DECISIONS.md`, `IMPLEMENTATION_LOG.md`, `CHANGELOG.md`; `CLAUDE.md`; the `fork-flame-ui`
+  project skill; the owner's reference screenshot in `designs/reference/`.
 
 ---
 

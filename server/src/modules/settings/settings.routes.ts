@@ -17,6 +17,25 @@ export function publicSettingsRouter(): Router {
   return router;
 }
 
+/** GET /api/v1/settings/kds — the ageing thresholds and grace period the KDS needs (KDS-03, KDS-07). */
+export function kdsSettingsRouter(): Router {
+  const router = Router();
+  router.get(
+    '/',
+    authenticate,
+    requireRole('STAFF', 'ADMIN'),
+    h(async (_req, res) => {
+      const s = await service.getSettings();
+      res.json({
+        kdsGreenSec: s.kdsGreenSec,
+        kdsAmberSec: s.kdsAmberSec,
+        kdsCompletedGraceSec: s.kdsCompletedGraceSec,
+      });
+    }),
+  );
+  return router;
+}
+
 /** /api/v1/staff/settings — the full set, admin only (ADM-03). */
 export function staffSettingsRouter(): Router {
   const router = Router();

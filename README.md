@@ -4,6 +4,12 @@ A full-stack ordering system for a single restaurant. Guests scan a table QR cod
 menu and track their order live. The kitchen works from a realtime display, staff run tables and
 take payments, and the owner gets reports they can trust.
 
+**What works today (M0–M8):** register and sign in (rotating refresh tokens), browse the menu,
+scan a table QR code to order dine-in, build a cart with modifiers, tips and promo codes priced
+identically on client and server, check out, follow the order live, and run the kitchen from a
+real-time display. Admins manage the menu (including 86ing a dish), tables and staff. Payments,
+amendments, receipts, reports, delivery tracking and reservations come in M9–M12.
+
 The design lives in [`docs/`](docs/KICKOFF.md): requirements (SRS), architecture (HLD), detailed
 design (LLD), ERD, API contract, coding standards and the milestone plan.
 
@@ -29,7 +35,8 @@ npm run db:seed
 npm run dev
 ```
 
-Open <http://localhost:5173>. The API health check is at <http://localhost:4000/health>.
+Open <http://localhost:5173>. The API health check is at <http://localhost:4000/health>. Staff
+screens: `/kitchen` (KDS), `/pos/tables` (table map), `/admin/menu`.
 
 ## Demo data
 
@@ -59,7 +66,7 @@ Run from the repository root.
 |---|---|
 | `npm run dev` | API and web app with reload |
 | `npm run check` | format check, lint, typecheck and every test — the gate before a commit |
-| `npm test` | all unit and integration tests (Postgres must be running) |
+| `npm test` | all unit and integration tests (Postgres must be running; server tests use `TEST_DATABASE_URL`) |
 | `npm run lint` / `npm run typecheck` | the individual gates |
 | `npm run build` | production build of server and client |
 | `npm run db:migrate` | apply Prisma migrations to the dev database |

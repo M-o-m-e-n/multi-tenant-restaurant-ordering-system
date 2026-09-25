@@ -35,6 +35,10 @@ supersedes the old one.
 | [017](#adr-017--qr-resolve-is-read-only-session-open-is-a-post) | QR resolve is read-only; session open is a POST | Accepted | LLD §3.5 |
 | [018](#adr-018--redis-only-above-one-instance) | Redis only above one instance | Accepted | HLD §5, §6.4 |
 | [019](#adr-019--frontend-design-direction) | Frontend design direction | Accepted — design 31 | MILESTONES M0-S10 |
+| [020](#adr-020--dependency-versions-for-the-build) | Dependency versions for the build | Accepted | Build, M0 |
+| [021](#adr-021--schema-additions-made-during-the-build) | Schema additions made during the build | Accepted | Build, M2/M7 |
+| [022](#adr-022--api-additions-made-during-the-build) | API additions made during the build | Accepted | Build, M3–M8 |
+| [023](#adr-023--git-workflow-one-branch-per-milestone) | Git workflow: one branch per milestone | Accepted | Build, M0 |
 
 ---
 
@@ -221,6 +225,58 @@ scale, component specs, and how the style extends to KDS, POS, admin and receipt
 - The look depends on good cut-out food photography. Every `MenuItem` needs an image, or it gets a
   neutral plate placeholder.
 - M0-S10's remaining work is to put the skill's tokens into `client/tailwind.config.ts`.
+
+### ADR-020 — Dependency versions for the build
+**Status:** Accepted · 2026-09-25
+**Context.** By the time the build started, most libraries had moved a major version past what the
+design assumed: React 19, Express 5, Tailwind 4, Vite 8, Prisma 7, Zod 4, TypeScript 7, ESLint 10.
+The machine runs Node 20.17.
+**Decision.** Keep the majors the HLD names, and elsewhere use the last proven major that supports
+Node 20.17: React 18.3, React Router 6.30, Express 4.22, Tailwind 3.4, Vite 5.4, Vitest 2.1,
+Prisma 6.19, Zod 3.25, TypeScript 5.9, ESLint 9, jose 5, Socket.IO 4.8, TanStack Query 5,
+Zustand 5.
+**Consequences.** Everything is well documented and stable. Upgrading to the newer majors is a
+deliberate later task; Prisma 7 in particular wants a `prisma.config.ts` (it already warns about
+`package.json#prisma`).
+
+### ADR-021 — Schema additions made during the build
+**Status:** Accepted · 2026-09-25
+**Context.** The LLD requires things its column list doesn't provide for.
+**Decision.**
+- `Order.taxBps`, `serviceChargeBps`, `serviceChargeTaxable`, `discountType`,
+  `discountValue`: the pricing inputs an order was placed under, so an amendment reprices with them
+  rather than with current settings (ORD-13, BR-14).
+- `OrderItem.addedAt`: when a line joined the order, so the KDS can badge a later round (ORD-12,
+  API-CONTRACT `addedAt`).
+- `OrderItem.lineNo`: the guest's line order. Lines placed together share `addedAt`, so without it
+  receipts and tickets came back shuffled.
+- `Payment(stripePaymentIntentId)` index for webhook lookups; `restaurantName` setting for receipts.
+**Consequences.** LLD §2.2 and ERD §10 need amending to match (doc debt in PROJECT_STATE).
+
+### ADR-022 — API additions made during the build
+**Status:** Accepted · 2026-09-25
+**Decision.** Additive, non-breaking under API-CONTRACT §19:
+- `POST /orders/preview` returns `discount: {code, type, value} | null`, so the client can price
+  with the code and agree with the server to the cent. The cart applies codes through preview (which
+  is public), so guests can use one before signing in.
+- `MenuItemDto.modifierGroupCount`; `GET /settings/kds` for staff; `/staff/users` for ADM-02.
+- Error codes `TABLE_NOT_SEATED`, `TABLE_NOT_DIRTY`, `USER_NOT_FOUND`, `SESSION_NOT_FOUND`,
+  `DISCOUNT_CODE_TAKEN`, `ROUTE_NOT_FOUND`, `PAYLOAD_TOO_LARGE`; response header
+  `Idempotent-Replayed: true`.
+- Order socket events carry a per-audience view: staff actions to staff rooms, the owner's to the
+  owner.
+**Consequences.** API-CONTRACT needs a 1.2 listing these (doc debt).
+
+### ADR-023 — Git workflow: one branch per milestone
+**Status:** Accepted · 2026-09-25
+**Context.** CODING-STANDARDS §18 asks for one branch per slice. With 169 slices, that's a great
+many short-lived branches for one developer.
+**Decision.** One `feat/mN-<slug>` branch per milestone, one conventional commit per slice (or per
+tightly coupled group of slices, named in the commit), merged into `main` with `--no-ff` once the
+milestone's gates pass and its tracking docs are updated. Every commit on a branch passes
+`npm run check`.
+**Consequences.** `git log --first-parent main` reads as the milestone list; the slice history
+stays in each branch. CODING-STANDARDS §18 should be relaxed to match.
 
 ---
 

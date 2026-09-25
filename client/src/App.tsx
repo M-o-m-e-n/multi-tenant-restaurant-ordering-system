@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router-dom';
 
 import { useAuth } from './features/auth/authStore';
 import { router } from './router';
+import { RealtimeBridge } from './shared/realtime/RealtimeBridge';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +23,7 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <RealtimeBridge />
       <RouterProvider router={router} />
     </QueryClientProvider>
   );

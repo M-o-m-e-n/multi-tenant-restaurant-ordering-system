@@ -7,12 +7,14 @@ import { EnvError, getEnv } from './config/env';
 import { startJobs } from './jobs';
 import { logger } from './lib/logger';
 import { disconnectPrisma } from './lib/prisma';
+import { createRealtime } from './realtime';
 
-/** Bootstrap order: env → http → jobs (sockets join in M8). */
+/** Bootstrap order: env → http → sockets → jobs (CODING-STANDARDS §4). */
 function main(): void {
   const env = getEnv();
   const app = createApp();
   const server = createServer(app);
+  const realtime = createRealtime(server);
 
   server.listen(env.PORT, () => {
     logger().info({ port: env.PORT }, 'api listening');
@@ -23,8 +25,10 @@ function main(): void {
   const shutdown = (signal: string): void => {
     logger().info({ signal }, 'shutting down');
     stopJobs();
-    server.close(() => {
-      void disconnectPrisma().finally(() => process.exit(0));
+    void realtime.close().then(() => {
+      server.close(() => {
+        void disconnectPrisma().finally(() => process.exit(0));
+      });
     });
   };
   process.on('SIGINT', () => shutdown('SIGINT'));

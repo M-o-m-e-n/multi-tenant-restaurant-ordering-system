@@ -26,6 +26,40 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M8 — Realtime & KDS
+
+**Slices:** M8-S1…S13 ☑
+**Done**
+- Socket.IO on the API server: optional auth (no token → anonymous in `menu` only; a bad or
+  disabled token is rejected); server-side joins to kitchen/pos/admin by role; `customer:watch`
+  honoured for the owner or staff only. It's the transport behind `events.publish`, so events stay
+  post-commit. Order events carry a staff view to staff rooms and the owner's view to the owner.
+- `GET /settings/kds` for the ageing thresholds and grace period.
+- Client socket singleton (token read at every connect, refresh on an expired token, re-handshake
+  on login/logout); `RealtimeBridge` turns events into query invalidations and refetches on connect;
+  `useWatchOrder` for the tracker; polling cut to a 30 s safety net.
+- KDS at `/kitchen`: five columns plus "Done"; tickets with number, table/type, a live timer and an
+  ageing band in colour, icon and word; modifiers, notes and later rounds highlighted; optimistic
+  one-tap bump via `FORWARD_TRANSITION` with rollback and toast on 409; new-ticket flash and an
+  optional chime; station filter; completed tickets linger for the grace period; Live/Reconnecting
+  badge.
+**Verified**
+- Integration: I25 (an anonymous socket gets `menu:changed`), invalid token rejected, `order:new`
+  on the kitchen room in under 500 ms, a customer can't reach the kitchen room by emitting joins,
+  only the owner can watch an order, and a rolled-back write broadcasts nothing. 123 server, 23
+  client and 47 shared tests.
+- **Browsers (Playwright), end to end:** a phone scanned the table QR, built a burger with
+  modifiers and a note, signed in and placed the order. The ticket was on the KDS **105 ms** after
+  the tap (placement included). Five KDS bumps each updated the phone tracker live through to
+  Completed. An anonymous guest's menu showed an 86'd dessert as sold out **52 ms** after the admin
+  flipped it.
+**Issues / surprises**
+- `order:new` carries the full staff-view `OrderDto` rather than a slimmer summary DTO. The KDS
+  refetches anyway; the payload is a hint.
+- A browser-test locator bug ("Live" is rendered as "●Live") looked like a socket failure at first.
+  A direct probe showed the socket fine both directly and through the Vite proxy.
+**Next:** M9-S1 — needs Stripe test keys (see PROJECT_STATE §4).
+
 ### 2026-09-25 — M7 — Order placement & lifecycle
 
 **Slices:** M7-S1…S13 ☑

@@ -22,6 +22,7 @@ import { getSettings } from '../settings';
 import { seatByToken, tableSeated } from '../tables';
 import { toOrderDto } from './orders.dto';
 import { priceCart } from './orders.pricing';
+import type { OrderWithRelations } from './orders.repo';
 import * as repo from './orders.repo';
 
 /**
@@ -41,21 +42,37 @@ export async function previewCart(dto: PreviewOrderDto): Promise<PreviewResponse
 
 const notFound = () => new NotFoundError('ORDER_NOT_FOUND', 'No such order.');
 
-/** Announce a committed order to the kitchen, the tills, admin and its owner (LLD §6.2). */
-function announceNew(order: OrderDto): void {
-  publish('order:new', order, { rooms: ['kitchen', 'pos', 'admin'] });
-  publish(
-    'order:status',
-    {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      from: null,
-      to: order.status,
-      at: order.placedAt,
-      order,
-    },
-    { rooms: [`customer:${order.id}`] },
-  );
+/** How staff screens see an order: staff actions and contact details. */
+const STAFF_VIEW: AuthUser = { id: 'staff-view', role: 'STAFF', name: 'staff', sessionId: '' };
+
+/** How the owner sees it; a counter order has no owner to tell. */
+function ownerView(order: OrderWithRelations): AuthUser | null {
+  return order.userId ? { id: order.userId, role: 'CUSTOMER', name: '', sessionId: '' } : null;
+}
+
+/**
+ * Tell every audience about a committed change, each with its own view of the
+ * order (LLD §6.2): staff rooms get staff actions, the owner gets theirs.
+ */
+function announceStatus(order: OrderWithRelations, from: OrderStatus | null, isNew: boolean): void {
+  const staff = toOrderDto(order, STAFF_VIEW);
+  const base = {
+    orderId: order.id,
+    orderNumber: order.orderNumber,
+    from,
+    to: order.status,
+    at: new Date().toISOString(),
+  };
+  if (isNew) publish('order:new', staff, { rooms: ['kitchen', 'pos', 'admin'] });
+  else publish('order:status', { ...base, order: staff }, { rooms: ['kitchen', 'pos', 'admin'] });
+  const owner = ownerView(order);
+  if (owner) {
+    publish(
+      'order:status',
+      { ...base, order: toOrderDto(order, owner) },
+      { rooms: [`customer:${order.id}`] },
+    );
+  }
 }
 
 /**
@@ -76,6 +93,7 @@ export async function createOrder(
   const now = opts.now ?? new Date();
   const isStaff = actor.role !== 'CUSTOMER';
   let seatedTable: Parameters<typeof tableSeated>[0] | null = null;
+  let committed: OrderWithRelations | null = null;
 
   // (1) Claim the Idempotency-Key; a repeat replays the stored response (NFR-R5).
   const idem: IdempotencyContext | null = opts.idempotencyKey
@@ -173,13 +191,14 @@ export async function createOrder(
     // (10) The response the idempotency layer stores with the key.
     const full = await repo.findOrder(order.id, tx);
     if (!full) throw new Error('order vanished inside its own transaction');
+    committed = full;
     return { status: 201, body: toOrderDto(full, actor) };
   });
 
   // After commit only (HLD §8.2). A replay announces nothing: it already happened.
   if (!result.replayed) {
     if (seatedTable) tableSeated(seatedTable);
-    announceNew(result.body);
+    if (committed) announceStatus(committed, null, true);
   }
   return result;
 }
@@ -281,19 +300,7 @@ export async function transitionStatus(
     return { from: current, after: updated };
   });
 
-  const dto = toOrderDto(after, actor);
-  publish(
-    'order:status',
-    {
-      orderId: id,
-      orderNumber: after.orderNumber,
-      from,
-      to,
-      at: new Date().toISOString(),
-      order: dto,
-    },
-    { rooms: ['kitchen', 'pos', 'admin', `customer:${id}`] },
-  );
+  announceStatus(after, from, false);
   if (to === 'CANCELLED') {
     publish(
       'order:removed',
@@ -301,7 +308,7 @@ export async function transitionStatus(
       { rooms: ['kitchen', 'pos'] },
     );
   }
-  return dto;
+  return toOrderDto(after, actor);
 }
 
 /**

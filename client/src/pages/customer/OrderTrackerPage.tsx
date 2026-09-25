@@ -4,6 +4,7 @@ import { useCancelOrder, useOrder, useOrderEvents } from '../../features/orders/
 import { paymentLabel, statusLabel, TRACKER_STEPS } from '../../features/orders/status';
 import { ApiError } from '../../shared/api/client';
 import { formatMoney } from '../../shared/money';
+import { useWatchOrder } from '../../shared/realtime/useWatchOrder';
 import { buttonClass } from '../../shared/ui/buttonClass';
 
 const time = (iso: string) =>
@@ -16,6 +17,7 @@ const time = (iso: string) =>
 export function OrderTrackerPage() {
   const { id = '' } = useParams();
   const { data: order, isLoading, error } = useOrder(id);
+  useWatchOrder(order ? id : undefined);
   const { data: events } = useOrderEvents(id, order?.status);
   const cancel = useCancelOrder(id);
 
