@@ -6,6 +6,27 @@ export const uuid = z.string().uuid();
 export const idParamSchema = z.object({ id: uuid }).strict();
 export type IdParam = z.infer<typeof idParamSchema>;
 
+/**
+ * A phone number as people type it, stored in one international form
+ * (M14-S9). Spaces, dashes, dots and brackets are dropped; a `00` prefix
+ * becomes `+`; an Egyptian mobile written locally (`010 1362 2622`) becomes
+ * `+201013622622`. Anything else must already be E.164-like (`+` and 8–15
+ * digits), so any tenant's customers can still be reached.
+ */
+export function normalizePhone(raw: string): string {
+  const s = raw.replace(/[\s\-().]/g, '');
+  if (/^01[0125]\d{8}$/.test(s)) return `+2${s}`;
+  if (/^00\d+$/.test(s)) return `+${s.slice(2)}`;
+  return s;
+}
+
+export const phoneNumber = z
+  .string()
+  .trim()
+  .max(30)
+  .transform(normalizePhone)
+  .refine((s) => /^\+\d{8,15}$/.test(s), 'Enter a phone number we can reach you on.');
+
 /** Integer minor units. Money is never a float or a string (API-CONTRACT §1). */
 export const cents = z.number().int().safe();
 export const nonNegativeCents = cents.nonnegative();

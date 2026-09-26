@@ -5,12 +5,14 @@ import { chime, enableChime } from '../../features/kds/chime';
 import { useBump, useKdsBoard, useKdsSettings } from '../../features/kds/kdsApi';
 import {
   bumpTarget,
+  columnTitle,
   forStation,
   KDS_COLUMNS,
   stationsOf,
   stillLingering,
 } from '../../features/kds/kdsLogic';
 import { TicketCard } from '../../features/kds/TicketCard';
+import { useT } from '../../i18n';
 import { getSocket } from '../../shared/realtime/socket';
 
 function useNow(intervalMs: number): number {
@@ -36,6 +38,7 @@ export function KdsPage() {
   const [fresh, setFresh] = useState<Set<string>>(new Set());
   const [connected, setConnected] = useState(() => getSocket().connected);
   const soundRef = useRef(sound);
+  const t = useT();
   soundRef.current = sound;
 
   const bump = useBump((message) => {
@@ -87,7 +90,7 @@ export function KdsPage() {
   if (board.isLoading || !settings) {
     return (
       <p role="status" className="p-10 text-center text-ink-muted">
-        Loading the board…
+        {t.kds.loading}
       </p>
     );
   }
@@ -96,15 +99,15 @@ export function KdsPage() {
     <main className="flex min-h-[calc(100vh-88px)] flex-col gap-4 px-4 pb-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl font-bold">Kitchen</h1>
+          <h1 className="font-display text-3xl font-bold">{t.kds.title}</h1>
           <span
             className={`inline-flex items-center gap-1.5 rounded-btn border px-3 py-1 text-xs font-semibold ${connected ? 'border-ok/50 text-ok' : 'border-flame text-flame-text'}`}
           >
             <span aria-hidden="true">{connected ? '●' : '○'}</span>
-            {connected ? 'Live' : 'Reconnecting — refreshing every 30 s'}
+            {connected ? t.kds.live : t.kds.reconnecting}
           </span>
         </div>
-        <div role="group" aria-label="Station" className="flex flex-wrap gap-2">
+        <div role="group" aria-label={t.kds.station} className="flex flex-wrap gap-2">
           {[null, ...stations].map((s) => (
             <button
               key={s ?? 'all'}
@@ -113,7 +116,7 @@ export function KdsPage() {
               onClick={() => setStation(s)}
               className={`min-h-11 rounded-btn border px-4 text-sm font-semibold capitalize ${station === s ? 'border-flame bg-flame text-white' : 'border-line-strong bg-surface-raised'}`}
             >
-              {s ?? 'All stations'}
+              {s ?? t.kds.allStations}
             </button>
           ))}
           <button
@@ -125,7 +128,7 @@ export function KdsPage() {
             }}
             className="min-h-11 rounded-btn border border-line-strong bg-surface-raised px-4 text-sm font-semibold"
           >
-            {sound ? '🔔 Sound on' : '🔕 Sound off'}
+            {sound ? t.kds.soundOn : t.kds.soundOff}
           </button>
         </div>
       </div>
@@ -133,7 +136,7 @@ export function KdsPage() {
       {toast && (
         <p
           role="status"
-          className="fixed left-1/2 top-4 z-20 -translate-x-1/2 rounded-btn bg-white px-5 py-3 text-sm font-semibold text-ink-inverse shadow-plate"
+          className="fixed inset-x-0 top-4 z-20 mx-auto w-fit rounded-btn bg-white px-5 py-3 text-sm font-semibold text-ink-inverse shadow-plate"
         >
           {toast}
         </p>
@@ -143,22 +146,22 @@ export function KdsPage() {
       <div
         tabIndex={0}
         role="region"
-        aria-label="Ticket board"
+        aria-label={t.kds.board}
         className="grid flex-1 grid-flow-col auto-cols-[minmax(260px,1fr)] gap-4 overflow-x-auto"
       >
         {KDS_COLUMNS.map((col) => {
-          const tickets = visible.filter((o) => o.status === col.status);
+          const tickets = visible.filter((o) => o.status === col);
           return (
             <section
-              key={col.status}
-              aria-labelledby={`col-${col.status}`}
+              key={col}
+              aria-labelledby={`col-${col}`}
               className="flex flex-col gap-3 rounded-card bg-bg-deep/60 p-3"
             >
               <h2
-                id={`col-${col.status}`}
+                id={`col-${col}`}
                 className="flex items-center justify-between px-1 text-sm font-bold uppercase tracking-wider text-ink-muted"
               >
-                {col.title}
+                {columnTitle(col)}
                 <span className="tabular rounded-btn bg-surface-raised px-2 py-0.5 text-ink">
                   {tickets.length}
                 </span>
@@ -188,7 +191,7 @@ export function KdsPage() {
             id="col-done"
             className="px-1 text-sm font-bold uppercase tracking-wider text-ink-muted"
           >
-            Done
+            {t.kds.done}
           </h2>
           {lingering.map((o) => (
             <TicketCard

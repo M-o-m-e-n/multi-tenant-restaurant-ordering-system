@@ -6,7 +6,14 @@ import {
   ORDER_STATUSES,
   ORDER_TYPES,
 } from '../domain/enums';
-import { businessDate, nonNegativeCents, paginationShape, repeatable, uuid } from './common';
+import {
+  businessDate,
+  nonNegativeCents,
+  paginationShape,
+  phoneNumber,
+  repeatable,
+  uuid,
+} from './common';
 
 /** One requested line: ids only. The server re-resolves every price (PAY-07, AC-17). */
 export const cartLineSchema = z
@@ -37,7 +44,7 @@ export type PreviewOrderDto = z.infer<typeof previewOrderSchema>;
 const customer = z
   .object({
     name: z.string().trim().min(1, 'Enter your name.').max(120),
-    phone: z.string().trim().min(5, 'Enter a phone number we can reach you on.').max(30),
+    phone: phoneNumber,
   })
   .strict();
 

@@ -1,11 +1,13 @@
 import { lineTotal, type MenuItemDto } from '@ros/shared';
 import { useEffect, useMemo, useState } from 'react';
 
+import { useT } from '../../i18n';
 import { formatDelta, formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { Modal } from '../../shared/ui/Modal';
 import { flyToCart } from '../../shared/ui/motionUtils';
 import { toast } from '../../shared/ui/toastStore';
+import { allergenList } from '../menu/allergens';
 import { DishImage } from '../menu/DishImage';
 import { useMenuItem } from '../menu/menuApi';
 import { type CartLine, lineKey, useCart } from './cartStore';
@@ -33,6 +35,7 @@ interface Props {
  */
 export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Props) {
   const detail = useMenuItem(item?.id ?? null);
+  const t = useT();
   const full = detail.data;
   const groups = useMemo(() => full?.modifierGroups ?? [], [full]);
   const add = useCart((s) => s.add);
@@ -90,11 +93,11 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
       add(line);
       const added = qty;
       toast({
-        title: `${added > 1 ? `${added} × ` : ''}${full.name} added`,
-        detail: 'In your order · review it in the cart',
+        title: t.dish.added(added, full.name),
+        detail: t.dish.addedDetail,
         imageUrl: full.imageUrl,
         action: {
-          label: 'Undo',
+          label: t.common.undo,
           run: () => {
             const key = lineKey(line);
             for (let i = 0; i < added; i++) useCart.getState().decrement(key);
@@ -110,7 +113,7 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
     <Modal open={item !== null} onClose={onClose} title={item?.name ?? ''}>
       {!full ? (
         <p role="status" className="text-sm text-ink-muted">
-          Loading…
+          {t.common.loading}
         </p>
       ) : (
         <div className="flex flex-col gap-5">
@@ -125,7 +128,9 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
             <div>
               <p className="text-sm text-ink-muted">{full.description}</p>
               {full.allergens.length > 0 && (
-                <p className="mt-1 text-xs text-ink-muted">Contains: {full.allergens.join(', ')}</p>
+                <p className="mt-1 text-xs text-ink-muted">
+                  {t.dish.contains(allergenList(t, full.allergens))}
+                </p>
               )}
             </div>
           </div>
@@ -135,8 +140,8 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
             const single = g.maxSelect === 1;
             const rule =
               g.minSelect > 0
-                ? `Required · choose ${g.minSelect === g.maxSelect ? g.minSelect : `${g.minSelect}–${g.maxSelect}`}`
-                : `Optional · up to ${g.maxSelect}`;
+                ? t.dish.required(g.minSelect, g.maxSelect)
+                : t.dish.optional(g.maxSelect);
             return (
               <fieldset key={g.id}>
                 <legend className="text-xs font-medium uppercase tracking-wider text-ink-muted">
@@ -169,7 +174,7 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
                             {formatDelta(o.priceDelta)}
                           </span>
                         )}
-                        {!o.isAvailable && <span className="text-xs">(unavailable)</span>}
+                        {!o.isAvailable && <span className="text-xs">{t.dish.unavailable}</span>}
                       </label>
                     );
                   })}
@@ -180,22 +185,22 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
 
           <label className="flex flex-col gap-1.5">
             <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
-              Note for the kitchen
+              {t.dish.note}
             </span>
             <input
               value={notes}
               maxLength={300}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="No onions, extra crispy…"
+              placeholder={t.dish.notePlaceholder}
               className="min-h-11 rounded-icon border border-line-strong bg-bg px-3 text-sm"
             />
           </label>
 
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2" aria-label="Quantity">
+            <div className="flex items-center gap-2" aria-label={t.dish.quantity}>
               <button
                 type="button"
-                aria-label="One fewer"
+                aria-label={t.dish.fewer}
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 className="grid size-11 place-items-center rounded-full border border-line-strong text-lg"
               >
@@ -206,7 +211,7 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
               </span>
               <button
                 type="button"
-                aria-label="One more"
+                aria-label={t.dish.more}
                 onClick={() => setQty((q) => Math.min(99, q + 1))}
                 className="grid size-11 place-items-center rounded-full border border-line-strong text-lg"
               >
@@ -224,12 +229,12 @@ export function ModifierDialog({ item, category, onClose, onAdded, onPick }: Pro
                 addToCart();
               }}
             >
-              {soldOut ? 'Sold out' : `Add · ${formatMoney(price)}`}
+              {soldOut ? t.menu.soldOut : t.dish.addPrice(formatMoney(price))}
             </button>
           </div>
           {unmet.length > 0 && !soldOut && (
             <p className="text-xs text-ink-muted" aria-live="polite">
-              Choose {unmet.map((g) => g.name.toLowerCase()).join(' and ')} to continue.
+              {t.dish.choose(unmet.map((g) => g.name.toLowerCase()))}
             </p>
           )}
         </div>

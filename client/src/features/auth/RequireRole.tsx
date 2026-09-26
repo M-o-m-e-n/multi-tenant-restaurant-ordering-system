@@ -2,6 +2,7 @@ import type { Role } from '@ros/shared';
 import type { ReactNode } from 'react';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 
+import { useT } from '../../i18n';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { useAuth } from './authStore';
 
@@ -12,11 +13,12 @@ import { useAuth } from './authStore';
 export function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }) {
   const { status, user } = useAuth();
   const location = useLocation();
+  const t = useT();
 
   if (status === 'unknown') {
     return (
       <p role="status" className="p-10 text-center text-ink-muted">
-        Checking your session…
+        {t.auth.guardChecking}
       </p>
     );
   }
@@ -27,12 +29,10 @@ export function RequireRole({ roles, children }: { roles: Role[]; children: Reac
   if (!roles.includes(user.role)) {
     return (
       <main className="mx-auto max-w-content px-5 py-16 text-center">
-        <h1 className="font-display text-3xl font-bold">This area is for staff</h1>
-        <p className="mt-3 text-ink-muted">
-          You are signed in as {user.name}, who cannot open this page.
-        </p>
+        <h1 className="font-display text-3xl font-bold">{t.auth.staffOnly}</h1>
+        <p className="mt-3 text-ink-muted">{t.auth.signedInAs(user.name)}</p>
         <Link to="/" className={`${buttonClass('ghost')} mt-6`}>
-          Back to the menu
+          {t.auth.backToMenu}
         </Link>
       </main>
     );

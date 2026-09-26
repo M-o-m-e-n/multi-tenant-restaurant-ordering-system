@@ -63,7 +63,7 @@ export function ScrollProgress() {
     >
       <div
         ref={ref}
-        className="h-full origin-left bg-flame shadow-glow"
+        className="h-full origin-left bg-flame shadow-glow rtl:origin-right"
         style={{ transform: 'scaleX(0)' }}
       />
     </div>

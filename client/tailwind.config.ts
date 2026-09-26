@@ -20,8 +20,9 @@ export default {
         warn: '#f5a623',
       },
       fontFamily: {
-        display: ['Philosopher', '"Playfair Display"', 'serif'],
-        sans: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+        // Latin faces first; Arabic glyphs fall through to El Messiri / Cairo (M14-S6).
+        display: ['Philosopher', '"El Messiri"', '"Playfair Display"', 'serif'],
+        sans: ['Poppins', 'Cairo', 'Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         hero: ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.01em' }],

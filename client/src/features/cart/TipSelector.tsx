@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { useT } from '../../i18n';
 import { formatMoney, parseMoneyInput } from '../../shared/money';
 import type { TipChoice } from './cartStore';
 
@@ -16,6 +17,7 @@ const chip = (on: boolean) =>
 
 /** Tip presets, a custom amount, or none (TIP-01, TIP-05). Never taxed or discounted (BR-13). */
 export function TipSelector({ presetsBps, value, presetAmount, onChange }: Props) {
+  const t = useT();
   const [custom, setCustom] = useState(
     value.kind === 'custom' ? (value.cents / 100).toFixed(2) : '',
   );
@@ -24,7 +26,7 @@ export function TipSelector({ presetsBps, value, presetAmount, onChange }: Props
   return (
     <fieldset>
       <legend className="text-xs font-medium uppercase tracking-wider text-ink-muted">
-        Add a tip
+        {t.tip.legend}
       </legend>
       <div className="mt-2 flex flex-wrap gap-2">
         <button
@@ -33,7 +35,7 @@ export function TipSelector({ presetsBps, value, presetAmount, onChange }: Props
           className={chip(value.kind === 'none')}
           onClick={() => onChange({ kind: 'none' })}
         >
-          No tip
+          {t.tip.none}
         </button>
         {presetsBps.map((bps) => {
           const on = value.kind === 'preset' && value.bps === bps;
@@ -56,7 +58,7 @@ export function TipSelector({ presetsBps, value, presetAmount, onChange }: Props
             e.preventDefault();
             const cents = parseMoneyInput(custom);
             if (cents === null) {
-              setError('Enter an amount such as 5 or 5.50.');
+              setError(t.tip.invalid);
               return;
             }
             setError(null);
@@ -64,18 +66,18 @@ export function TipSelector({ presetsBps, value, presetAmount, onChange }: Props
           }}
         >
           <label className="sr-only" htmlFor="custom-tip">
-            Custom tip in dollars
+            {t.tip.customLabel}
           </label>
           <input
             id="custom-tip"
             inputMode="decimal"
             value={custom}
             onChange={(e) => setCustom(e.target.value)}
-            placeholder="Custom $"
+            placeholder={t.tip.customPlaceholder}
             className={`min-h-11 w-28 rounded-btn border bg-bg px-4 text-sm ${value.kind === 'custom' ? 'border-flame' : 'border-line-strong'}`}
           />
           <button type="submit" className="min-h-11 px-2 text-sm font-semibold text-flame-text">
-            Set
+            {t.tip.set}
           </button>
         </form>
       </div>

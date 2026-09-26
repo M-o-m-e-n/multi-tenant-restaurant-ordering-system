@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { ROLES } from '../domain/enums';
+import { phoneNumber } from './common';
 
 const email = z
   .string()
@@ -66,7 +67,7 @@ export const createStaffUserSchema = z
     email,
     password: z.string().min(8).max(128),
     role: userRoleSchema,
-    phone: z.string().trim().min(5).max(30).optional(),
+    phone: phoneNumber.optional(),
   })
   .strict();
 export type CreateStaffUserDto = z.infer<typeof createStaffUserSchema>;

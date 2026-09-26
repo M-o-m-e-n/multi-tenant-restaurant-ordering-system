@@ -1,6 +1,7 @@
 import type { MenuItemDto } from '@ros/shared';
 import { type MouseEvent, type PointerEvent, type ReactNode, useRef } from 'react';
 
+import { useT } from '../../i18n';
 import { DishCard } from './DishCard';
 
 interface Props {
@@ -17,7 +18,12 @@ interface Props {
  */
 export function SignatureRail({ id, title, items, categoryName, onOpen }: Props) {
   const rail = useRef<HTMLDivElement>(null);
-  const scroll = (left: number) => rail.current?.scrollBy({ left, behavior: 'smooth' });
+  const t = useT();
+  // "Back" and "forward" follow reading order, so RTL flips the physical direction.
+  const scroll = (step: number) => {
+    const flow = document.documentElement.dir === 'rtl' ? -1 : 1;
+    rail.current?.scrollBy({ left: step * flow, behavior: 'smooth' });
+  };
   // Mouse drag-to-scroll (touch keeps native scrolling). A drag suppresses the
   // click that would otherwise open the dish dialog on release.
   const drag = useRef({ down: false, startX: 0, startLeft: 0, moved: false });
@@ -54,19 +60,19 @@ export function SignatureRail({ id, title, items, categoryName, onOpen }: Props)
         <div className="hidden gap-2 md:flex">
           <button
             type="button"
-            aria-label="Scroll back"
+            aria-label={t.menu.scrollBack}
             onClick={() => scroll(-240)}
             className="grid size-11 place-items-center rounded-full bg-line-strong text-white"
           >
-            ←
+            <span className="inline-block rtl:-scale-x-100">←</span>
           </button>
           <button
             type="button"
-            aria-label="Scroll forward"
+            aria-label={t.menu.scrollForward}
             onClick={() => scroll(240)}
             className="grid size-11 place-items-center rounded-full bg-flame text-white shadow-glow"
           >
-            →
+            <span className="inline-block rtl:-scale-x-100">→</span>
           </button>
         </div>
       </div>

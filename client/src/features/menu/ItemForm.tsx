@@ -1,7 +1,8 @@
 import type { AdminMenuDto, CreateItemDto } from '@ros/shared';
 import { type FormEvent, useState } from 'react';
 
-import { ApiError } from '../../shared/api/client';
+import { useT } from '../../i18n';
+import { errorMessage } from '../../shared/api/errorMessage';
 import { parseMoneyInput } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { Field } from '../../shared/ui/Field';
@@ -20,13 +21,14 @@ interface Props {
 export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const t = useT();
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     const price = parseMoneyInput(formValue(form, 'price'));
     if (price === null) {
-      setError('Enter a price such as 12.50.');
+      setError(t.itemForm.badPrice);
       return;
     }
     const allergens = formValue(form, 'allergens')
@@ -50,7 +52,7 @@ export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
       });
       onDone();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Saving failed. Try again.');
+      setError(errorMessage(err, t.itemForm.failed));
     } finally {
       setBusy(false);
     }
@@ -59,7 +61,7 @@ export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
   return (
     <form className="grid gap-4 sm:grid-cols-2" onSubmit={(e) => void submit(e)}>
       <Field
-        label="Name"
+        label={t.itemForm.name}
         name="name"
         defaultValue={initial?.name}
         required
@@ -70,7 +72,7 @@ export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
           htmlFor="item-category"
           className="text-xs font-medium uppercase tracking-wider text-ink-muted"
         >
-          Category
+          {t.itemForm.category}
         </label>
         <select
           id="item-category"
@@ -86,44 +88,44 @@ export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
         </select>
       </div>
       <Field
-        label="Price ($)"
+        label={t.itemForm.price}
         name="price"
         inputMode="decimal"
         defaultValue={initial ? (initial.price / 100).toFixed(2) : ''}
         required
       />
       <Field
-        label="Description"
+        label={t.itemForm.description}
         name="description"
         defaultValue={initial?.description ?? ''}
         className="sm:col-span-2"
       />
       <Field
-        label="Station"
+        label={t.itemForm.station}
         name="station"
         defaultValue={initial?.station ?? ''}
-        placeholder="grill, cold, bar…"
+        placeholder={t.itemForm.stationPlaceholder}
       />
       <Field
-        label="Allergens"
+        label={t.itemForm.allergens}
         name="allergens"
         defaultValue={initial?.allergens.join(', ')}
-        placeholder="dairy, gluten"
+        placeholder={t.itemForm.allergensPlaceholder}
       />
       <Field
-        label="Available from"
+        label={t.itemForm.from}
         name="availableFrom"
         type="time"
         defaultValue={initial?.availableFrom ?? ''}
       />
       <Field
-        label="Available to"
+        label={t.itemForm.to}
         name="availableTo"
         type="time"
         defaultValue={initial?.availableTo ?? ''}
       />
       <Field
-        label="Image URL or /images/… path"
+        label={t.itemForm.image}
         name="imageUrl"
         type="text"
         defaultValue={initial?.imageUrl ?? ''}
@@ -135,7 +137,7 @@ export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
         </p>
       )}
       <button type="submit" disabled={busy} className={`${buttonClass('primary')} sm:col-span-2`}>
-        {busy ? 'Saving…' : initial ? 'Save changes' : 'Add dish'}
+        {busy ? t.itemForm.saving : initial ? t.itemForm.save : t.itemForm.add}
       </button>
     </form>
   );

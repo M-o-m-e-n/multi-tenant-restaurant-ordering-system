@@ -7,6 +7,7 @@ import {
 } from '@ros/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { tNow } from '../../i18n';
 import { api } from '../../shared/api/client';
 
 export const kdsKey = ['kds'] as const;
@@ -74,7 +75,7 @@ export function useBump(onConflict: (message: string) => void) {
     },
     onError: (_err, _vars, ctx) => {
       if (ctx?.previous) qc.setQueryData(kdsKey, ctx.previous);
-      onConflict('Ticket was updated elsewhere — refreshing…');
+      onConflict(tNow().kds.updatedElsewhere);
     },
     onSettled: () => qc.invalidateQueries({ queryKey: kdsKey }),
   });

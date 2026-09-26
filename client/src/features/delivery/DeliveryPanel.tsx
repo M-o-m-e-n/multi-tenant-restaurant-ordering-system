@@ -1,22 +1,17 @@
 import {
   canAssignDriver,
   DELIVERY_STATUSES,
-  type DeliveryStatus,
   NEXT_DELIVERY_STATUS,
   type OrderDto,
 } from '@ros/shared';
 import { type FormEvent, useState } from 'react';
 
-import { ApiError } from '../../shared/api/client';
+import { useT } from '../../i18n';
+import { errorMessage } from '../../shared/api/errorMessage';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { formValue } from '../../shared/ui/formValue';
 import { useUpdateDelivery } from './deliveryApi';
-import { DELIVERY_LABEL } from './labels';
-
-const ADVANCE: Partial<Record<DeliveryStatus, string>> = {
-  PICKED_UP: 'Mark picked up',
-  DELIVERED: 'Mark delivered',
-};
+import { deliveryLabel } from './labels';
 
 type Delivery = NonNullable<OrderDto['delivery']>;
 
@@ -24,9 +19,10 @@ type Delivery = NonNullable<OrderDto['delivery']>;
 export function DeliveryPanel({ orderId, delivery }: { orderId: string; delivery: Delivery }) {
   const update = useUpdateDelivery();
   const [message, setMessage] = useState<string | null>(null);
+  const t = useT();
   const next = NEXT_DELIVERY_STATUS[delivery.status];
-  const onError = (err: unknown) =>
-    setMessage(err instanceof ApiError ? err.message : 'That did not work.');
+  const advance = next === 'PICKED_UP' || next === 'DELIVERED' ? t.deliveryStaff[next] : null;
+  const onError = (err: unknown) => setMessage(errorMessage(err));
 
   function assign(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,8 +35,10 @@ export function DeliveryPanel({ orderId, delivery }: { orderId: string; delivery
   return (
     <div className="flex flex-col gap-3 rounded-icon border border-line-strong p-4 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-semibold">Delivery · {DELIVERY_LABEL[delivery.status]}</p>
-        {delivery.driverName && <p className="text-ink-muted">Driver: {delivery.driverName}</p>}
+        <p className="font-semibold">{t.deliveryStaff.heading(deliveryLabel(delivery.status))}</p>
+        {delivery.driverName && (
+          <p className="text-ink-muted">{t.deliveryStaff.driver(delivery.driverName)}</p>
+        )}
       </div>
       <p>
         {delivery.address}
@@ -49,22 +47,22 @@ export function DeliveryPanel({ orderId, delivery }: { orderId: string; delivery
       {canAssignDriver(delivery.status) && (
         <form className="flex flex-wrap gap-2" onSubmit={assign}>
           <label className="flex-1">
-            <span className="sr-only">Driver name</span>
+            <span className="sr-only">{t.deliveryStaff.driverName}</span>
             <input
               name="driver"
               required
               maxLength={80}
               defaultValue={delivery.driverName ?? ''}
-              placeholder="Driver name"
+              placeholder={t.deliveryStaff.driverName}
               className="min-h-11 w-full rounded-btn border border-line-strong bg-bg px-4"
             />
           </label>
           <button type="submit" className={buttonClass('ghost')} disabled={update.isPending}>
-            {delivery.driverName ? 'Reassign' : 'Assign driver'}
+            {delivery.driverName ? t.deliveryStaff.reassign : t.deliveryStaff.assign}
           </button>
         </form>
       )}
-      {next && ADVANCE[next] && (
+      {next && advance && (
         <button
           type="button"
           className={buttonClass('primary')}
@@ -74,7 +72,7 @@ export function DeliveryPanel({ orderId, delivery }: { orderId: string; delivery
             update.mutate({ orderId, body: { status: next } }, { onError });
           }}
         >
-          {ADVANCE[next]}
+          {advance}
         </button>
       )}
       {message && (
@@ -89,10 +87,11 @@ export function DeliveryPanel({ orderId, delivery }: { orderId: string; delivery
 /** Guest view: the four delivery steps, each labelled in text (NFR-U3). */
 export function DeliveryProgress({ delivery }: { delivery: Delivery }) {
   const current = DELIVERY_STATUSES.indexOf(delivery.status);
+  const t = useT();
   return (
-    <section aria-label="Delivery progress" className="mt-6 rounded-card border border-line p-4">
+    <section aria-label={t.delivery.progress} className="mt-6 rounded-card border border-line p-4">
       <p className="text-sm font-semibold">
-        {DELIVERY_LABEL[delivery.status]}
+        {deliveryLabel(delivery.status)}
         {delivery.driverName && delivery.status !== 'PENDING' && (
           <span className="font-normal text-ink-muted"> · {delivery.driverName}</span>
         )}
@@ -107,7 +106,7 @@ export function DeliveryProgress({ delivery }: { delivery: Delivery }) {
             <span
               className={`mt-1.5 block text-xs ${i === current ? 'font-semibold text-ink' : 'text-ink-muted'}`}
             >
-              {DELIVERY_LABEL[s]}
+              {deliveryLabel(s)}
             </span>
           </li>
         ))}

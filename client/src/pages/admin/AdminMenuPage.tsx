@@ -13,6 +13,7 @@ import {
 } from '../../features/menu/adminMenuApi';
 import { AvailabilityToggle } from '../../features/menu/AvailabilityToggle';
 import { ItemForm } from '../../features/menu/ItemForm';
+import { useT } from '../../i18n';
 import { formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { Modal } from '../../shared/ui/Modal';
@@ -33,11 +34,12 @@ export function AdminMenuPage() {
   const deleteCategory = useDeleteCategory();
   const [editing, setEditing] = useState<Item | 'new' | null>(null);
   const [newCategory, setNewCategory] = useState('');
+  const t = useT();
 
   if (isLoading || !data) {
     return (
       <p role="status" className="p-10 text-center text-ink-muted">
-        Loading the menu…
+        {t.menuAdmin.loading}
       </p>
     );
   }
@@ -50,13 +52,11 @@ export function AdminMenuPage() {
       </div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold">Menu</h1>
-          <p className="text-sm text-ink-muted">
-            Flip a dish to 86 and guests see it sold out at once.
-          </p>
+          <h1 className="font-display text-3xl font-bold">{t.menuAdmin.title}</h1>
+          <p className="text-sm text-ink-muted">{t.menuAdmin.hint}</p>
         </div>
         <button type="button" className={buttonClass('primary')} onClick={() => setEditing('new')}>
-          Add dish
+          {t.menuAdmin.addDish}
         </button>
       </div>
 
@@ -68,11 +68,10 @@ export function AdminMenuPage() {
               type="button"
               className="text-xs font-semibold text-ink-muted hover:text-flame-text"
               onClick={() => {
-                if (window.confirm(`Hide the ${c.name} category and all its dishes?`))
-                  deleteCategory.mutate(c.id);
+                if (window.confirm(t.menuAdmin.hideCategory(c.name))) deleteCategory.mutate(c.id);
               }}
             >
-              Remove category
+              {t.menuAdmin.removeCategory}
             </button>
           </div>
           <ul className="mt-3 divide-y divide-line">
@@ -90,7 +89,7 @@ export function AdminMenuPage() {
                       {item.availableFrom && ` · ${item.availableFrom}–${item.availableTo}`}
                     </p>
                   </div>
-                  <span className="tabular w-20 text-right text-sm font-semibold text-flame-text">
+                  <span className="tabular w-20 text-end text-sm font-semibold text-flame-text">
                     {formatMoney(item.price)}
                   </span>
                   <AvailabilityToggle
@@ -103,17 +102,17 @@ export function AdminMenuPage() {
                     className={buttonClass('ghost', 'sm')}
                     onClick={() => setEditing(item)}
                   >
-                    Edit
+                    {t.menuAdmin.edit}
                   </button>
                   <button
                     type="button"
                     className="min-h-11 px-2 text-xs font-semibold text-ink-muted hover:text-flame-text"
                     onClick={() => {
-                      if (window.confirm(`Remove ${item.name} from the menu?`))
+                      if (window.confirm(t.menuAdmin.removeConfirm(item.name)))
                         deleteItem.mutate(item.id);
                     }}
                   >
-                    Remove
+                    {t.menuAdmin.remove}
                   </button>
                 </li>
               ))}
@@ -134,7 +133,7 @@ export function AdminMenuPage() {
       >
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-medium uppercase tracking-wider text-ink-muted">
-            New category
+            {t.menuAdmin.newCategory}
           </span>
           <input
             value={newCategory}
@@ -143,14 +142,16 @@ export function AdminMenuPage() {
           />
         </label>
         <button type="submit" className={buttonClass('ghost')}>
-          Add category
+          {t.menuAdmin.addCategory}
         </button>
       </form>
 
       <Modal
         open={editing !== null}
         onClose={() => setEditing(null)}
-        title={editing === 'new' ? 'Add a dish' : `Edit ${editing?.name ?? ''}`}
+        title={
+          editing === 'new' ? t.menuAdmin.addADish : t.menuAdmin.editTitle(editing?.name ?? '')
+        }
         wide
       >
         {editing !== null && (

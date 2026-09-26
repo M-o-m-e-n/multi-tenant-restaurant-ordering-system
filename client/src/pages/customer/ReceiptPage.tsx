@@ -2,12 +2,11 @@ import type { ReceiptDto } from '@ros/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 
+import { useT } from '../../i18n';
 import { api } from '../../shared/api/client';
+import { formatDateTime } from '../../shared/format';
 import { formatDelta, formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
-
-const when = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 
 /**
  * A printable receipt (PRINT-01): every total component on its own line, the
@@ -16,6 +15,7 @@ const when = (iso: string) =>
  */
 export function ReceiptPage() {
   const { id = '' } = useParams();
+  const t = useT();
   const { data: r, isLoading } = useQuery({
     queryKey: ['order', id, 'receipt'],
     queryFn: () => api<ReceiptDto>(`/orders/${id}/receipt`),
@@ -23,7 +23,7 @@ export function ReceiptPage() {
   if (isLoading || !r)
     return (
       <p role="status" className="p-10 text-center text-ink-muted">
-        Loading receipt…
+        {t.receipt.loading}
       </p>
     );
 
@@ -38,25 +38,31 @@ export function ReceiptPage() {
     <main className="mx-auto w-full max-w-md px-5 pb-16 print:max-w-none print:p-0">
       <div className="mb-4 flex justify-between gap-3 print:hidden">
         <Link to={`/orders/${r.orderId}`} className={buttonClass('ghost', 'sm')}>
-          ← Back
+          {t.receipt.back}
         </Link>
         <button
           type="button"
           className={buttonClass('primary', 'sm')}
           onClick={() => window.print()}
         >
-          Print receipt
+          {t.receipt.print}
         </button>
       </div>
       <article className="rounded-card border border-line bg-white p-6 font-sans text-sm text-ink-inverse print:border-0 print:p-0">
         <header className="text-center">
           <h1 className="font-display text-2xl font-bold">{r.restaurant.name}</h1>
-          <p className="mt-1">Order {r.orderNumber}</p>
+          <p className="mt-1">{t.receipt.order(r.orderNumber)}</p>
           <p className="text-xs">
-            {r.table ? `Table ${r.table}` : r.type === 'DELIVERY' ? 'Delivery' : 'Takeaway'} ·
-            business date {r.businessDate}
+            {t.receipt.businessDate(
+              r.table
+                ? t.common.table(r.table)
+                : r.type === 'DELIVERY'
+                  ? t.cart.delivery
+                  : t.cart.takeaway,
+              r.businessDate,
+            )}
           </p>
-          <p className="text-xs">Placed {when(r.placedAt)}</p>
+          <p className="text-xs">{t.receipt.placed(formatDateTime(r.placedAt))}</p>
         </header>
         <hr className="my-4 border-dashed border-ink-inverse/30" />
         <ul className="flex flex-col gap-2">
@@ -69,27 +75,24 @@ export function ReceiptPage() {
                 <span className="tabular">{formatMoney(l.lineTotal)}</span>
               </div>
               {l.modifiers.map((m) => (
-                <p key={m.name} className="pl-4 text-xs">
+                <p key={m.name} className="ps-4 text-xs">
                   + {m.name} {formatDelta(m.priceDelta)}
                 </p>
               ))}
-              {l.notes && <p className="pl-4 text-xs italic">“{l.notes}”</p>}
+              {l.notes && <p className="ps-4 text-xs italic">“{l.notes}”</p>}
             </li>
           ))}
         </ul>
         <hr className="my-4 border-dashed border-ink-inverse/30" />
         <dl className="flex flex-col gap-1">
-          {row('Subtotal', r.totals.subtotal)}
+          {row(t.totals.subtotal, r.totals.subtotal)}
           {r.totals.discountAmount > 0 &&
-            row(
-              `Discount${r.discountCode ? ` (${r.discountCode})` : ''}`,
-              -r.totals.discountAmount,
-            )}
-          {r.totals.serviceCharge > 0 && row('Service charge', r.totals.serviceCharge)}
-          {row('Tax', r.totals.taxAmount)}
-          {r.totals.deliveryFee > 0 && row('Delivery fee', r.totals.deliveryFee)}
-          {r.totals.tipAmount > 0 && row('Tip', r.totals.tipAmount)}
-          {row('Total', r.totals.total, true)}
+            row(t.receipt.discount(r.discountCode), -r.totals.discountAmount)}
+          {r.totals.serviceCharge > 0 && row(t.totals.serviceCharge, r.totals.serviceCharge)}
+          {row(t.totals.tax, r.totals.taxAmount)}
+          {r.totals.deliveryFee > 0 && row(t.receipt.deliveryFee, r.totals.deliveryFee)}
+          {r.totals.tipAmount > 0 && row(t.totals.tip, r.totals.tipAmount)}
+          {row(t.totals.total, r.totals.total, true)}
         </dl>
         {r.payments.length > 0 && (
           <>
@@ -98,9 +101,9 @@ export function ReceiptPage() {
               {r.payments.map((p, i) => (
                 <li key={i} className="flex justify-between">
                   <span>
-                    {p.method === 'CASH' ? 'Cash' : 'Card'} · {when(p.at)}
-                    {p.state === 'REFUNDED' && ' · refunded'}
-                    {p.tipAmount > 0 && ` · cash tip ${formatMoney(p.tipAmount)}`}
+                    {p.method === 'CASH' ? t.receipt.cash : t.receipt.card} · {formatDateTime(p.at)}
+                    {p.state === 'REFUNDED' && t.receipt.refunded}
+                    {p.tipAmount > 0 && t.receipt.cashTip(formatMoney(p.tipAmount))}
                   </span>
                   <span className="tabular">{formatMoney(p.amount)}</span>
                 </li>
@@ -110,10 +113,10 @@ export function ReceiptPage() {
         )}
         <p className="mt-4 text-center text-xs">
           {r.paymentStatus === 'PAID'
-            ? 'Paid in full — thank you!'
+            ? t.receipt.paidInFull
             : r.paymentStatus === 'REFUNDED'
-              ? 'Refunded'
-              : `Balance due ${formatMoney(r.balanceDue)}`}
+              ? t.receipt.refundedAll
+              : t.receipt.balanceDue(formatMoney(r.balanceDue))}
         </p>
       </article>
     </main>

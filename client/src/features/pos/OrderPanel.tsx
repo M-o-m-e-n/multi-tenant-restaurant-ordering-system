@@ -2,7 +2,8 @@ import type { OrderDto, OrderStatus } from '@ros/shared';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { ApiError } from '../../shared/api/client';
+import { useT } from '../../i18n';
+import { errorMessage } from '../../shared/api/errorMessage';
 import { formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { useAuth } from '../auth/authStore';
@@ -11,15 +12,6 @@ import { AddToOrderDialog } from '../orders/AddToOrderDialog';
 import { paymentLabel, statusLabel } from '../orders/status';
 import { useOrderPayments, useRefund } from '../payments/paymentsApi';
 import { useTransition } from './posApi';
-
-const ACTION: Partial<Record<OrderStatus, string>> = {
-  CONFIRMED: 'Confirm',
-  PREPARING: 'Start cooking',
-  READY: 'Mark ready',
-  SERVED: 'Mark served',
-  COMPLETED: 'Complete',
-  CANCELLED: 'Cancel order',
-};
 
 /** One order at the till: its lines, money, payments and the actions allowed now. */
 export function OrderPanel({
@@ -35,9 +27,10 @@ export function OrderPanel({
   const refund = useRefund();
   const [message, setMessage] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const t = useT();
+  const action: Readonly<Partial<Record<OrderStatus, string>>> = t.pos.action;
 
-  const report = (err: unknown) =>
-    setMessage(err instanceof ApiError ? err.message : 'That did not work.');
+  const report = (err: unknown) => setMessage(errorMessage(err));
   const refundable =
     isAdmin &&
     (order.status === 'COMPLETED' || order.status === 'CANCELLED') &&
@@ -45,7 +38,7 @@ export function OrderPanel({
 
   return (
     <section
-      aria-label={`Order ${order.orderNumber}`}
+      aria-label={t.tracker.title(order.orderNumber)}
       className="flex flex-col gap-4 rounded-card border border-line bg-surface p-5"
     >
       <header className="flex flex-wrap items-start justify-between gap-3">
@@ -53,10 +46,10 @@ export function OrderPanel({
           <h2 className="font-display text-3xl font-bold">{order.orderNumber}</h2>
           <p className="text-sm text-ink-muted">
             {order.table
-              ? `Table ${order.table.number}`
+              ? t.common.table(order.table.number)
               : order.type === 'DELIVERY'
-                ? 'Delivery'
-                : 'Takeaway'}
+                ? t.cart.delivery
+                : t.cart.takeaway}
             {order.customer?.name && ` · ${order.customer.name}`}
             {order.customer?.phone && ` · ${order.customer.phone}`}
           </p>
@@ -74,7 +67,7 @@ export function OrderPanel({
               {i.qty} × {i.nameSnapshot}
               {i.modifiers.length > 0 && (
                 <span className="block text-xs text-ink-muted">
-                  {i.modifiers.flatMap((g) => g.items.map((m) => m.name)).join(', ')}
+                  {i.modifiers.flatMap((g) => g.items.map((m) => m.name)).join(t.common.listSep)}
                 </span>
               )}
             </span>
@@ -84,14 +77,12 @@ export function OrderPanel({
       </ul>
 
       <dl className="tabular grid grid-cols-2 gap-1 border-t border-line pt-3 text-sm">
-        <dt className="text-ink-muted">Total</dt>
-        <dd className="text-right font-bold">{formatMoney(order.totals.total)}</dd>
-        <dt className="text-ink-muted">Paid</dt>
-        <dd className="text-right">{formatMoney(order.amountPaid)}</dd>
-        <dt className="text-ink-muted">Still owed</dt>
-        <dd className="text-right font-semibold text-flame-text">
-          {formatMoney(order.balanceDue)}
-        </dd>
+        <dt className="text-ink-muted">{t.totals.total}</dt>
+        <dd className="text-end font-bold">{formatMoney(order.totals.total)}</dd>
+        <dt className="text-ink-muted">{t.totals.paid}</dt>
+        <dd className="text-end">{formatMoney(order.amountPaid)}</dd>
+        <dt className="text-ink-muted">{t.totals.stillOwed}</dt>
+        <dd className="text-end font-semibold text-flame-text">{formatMoney(order.balanceDue)}</dd>
       </dl>
 
       {order.delivery && <DeliveryPanel orderId={order.id} delivery={order.delivery} />}
@@ -101,9 +92,9 @@ export function OrderPanel({
           {payments.data.data.map((p) => (
             <li key={p.id} className="flex justify-between">
               <span>
-                {p.method === 'CASH' ? 'Cash' : 'Card'} · {p.state.toLowerCase()}
+                {p.method === 'CASH' ? t.pos.cash : t.pos.card} · {t.pos.state[p.state]}
                 {p.actor && ` · ${p.actor.name}`}
-                {p.tipAmount > 0 && ` · tip ${formatMoney(p.tipAmount)}`}
+                {p.tipAmount > 0 && ` · ${t.pos.tip(formatMoney(p.tipAmount))}`}
               </span>
               <span className="tabular">{formatMoney(p.amount)}</span>
             </li>
@@ -124,7 +115,7 @@ export function OrderPanel({
             className={buttonClass('primary')}
             onClick={() => onTakeCash(order)}
           >
-            Take cash
+            {t.pos.takeCash}
           </button>
         )}
         {order.nextStatuses.map((to) => (
@@ -134,21 +125,22 @@ export function OrderPanel({
             className={buttonClass(to === 'CANCELLED' ? 'danger' : 'ghost')}
             disabled={transition.isPending}
             onClick={() => {
-              if (to === 'CANCELLED' && !window.confirm(`Cancel ${order.orderNumber}?`)) return;
+              if (to === 'CANCELLED' && !window.confirm(t.pos.cancelConfirm(order.orderNumber)))
+                return;
               setMessage(null);
               transition.mutate({ id: order.id, to }, { onError: report });
             }}
           >
-            {ACTION[to] ?? to}
+            {action[to] ?? to}
           </button>
         ))}
         {order.isAmendable && (
           <button type="button" className={buttonClass('ghost')} onClick={() => setAdding(true)}>
-            Add items
+            {t.pos.addItems}
           </button>
         )}
         <Link to={`/orders/${order.id}/receipt`} className={buttonClass('ghost')}>
-          Receipt
+          {t.pos.receipt}
         </Link>
         {refundable && (
           <button
@@ -156,11 +148,11 @@ export function OrderPanel({
             className={buttonClass('danger')}
             disabled={refund.isPending}
             onClick={() => {
-              const reason = window.prompt('Reason for the refund');
+              const reason = window.prompt(t.pos.refundReason);
               if (reason) refund.mutate({ orderId: order.id, reason }, { onError: report });
             }}
           >
-            Refund
+            {t.pos.refund}
           </button>
         )}
       </div>

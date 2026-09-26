@@ -1,44 +1,14 @@
 import type { OrderDto, OrderStatus } from '@ros/shared';
 
-/** What each status means to a guest. */
+import { tNow } from '../../i18n';
+
+/** What each status means to a guest, in the reader's language. */
 export function statusLabel(status: OrderStatus): string {
-  switch (status) {
-    case 'PLACED':
-      return 'Order received';
-    case 'CONFIRMED':
-      return 'Confirmed';
-    case 'PREPARING':
-      return 'Being prepared';
-    case 'READY':
-      return 'Ready';
-    case 'SERVED':
-      return 'Served';
-    case 'COMPLETED':
-      return 'Completed';
-    case 'CANCELLED':
-      return 'Cancelled';
-    default: {
-      const exhaustive: never = status;
-      return exhaustive;
-    }
-  }
+  return tNow().status[status];
 }
 
 export function paymentLabel(status: OrderDto['paymentStatus']): string {
-  switch (status) {
-    case 'UNPAID':
-      return 'Not paid yet';
-    case 'PARTIALLY_PAID':
-      return 'Partly paid';
-    case 'PAID':
-      return 'Paid';
-    case 'REFUNDED':
-      return 'Refunded';
-    default: {
-      const exhaustive: never = status;
-      return exhaustive;
-    }
-  }
+  return tNow().payment[status];
 }
 
 /** The happy path the tracker draws as steps (ORD-03). */

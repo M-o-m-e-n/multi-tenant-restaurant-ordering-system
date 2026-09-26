@@ -1,3 +1,5 @@
+import { useT } from '../../i18n';
+
 interface Props {
   name: string;
   isAvailable: boolean;
@@ -10,12 +12,13 @@ interface Props {
  * "86'd") so it reads without colour vision (NFR-U3). One tap flips it.
  */
 export function AvailabilityToggle({ name, isAvailable, disabled, onChange }: Props) {
+  const t = useT();
   return (
     <button
       type="button"
       role="switch"
       aria-checked={isAvailable}
-      aria-label={`${name} available`}
+      aria-label={t.menuAdmin.available(name)}
       disabled={disabled}
       onClick={() => onChange(!isAvailable)}
       className={`inline-flex min-h-11 min-w-28 items-center justify-center gap-2 rounded-btn border px-3 text-xs font-semibold transition ${
@@ -23,7 +26,7 @@ export function AvailabilityToggle({ name, isAvailable, disabled, onChange }: Pr
       }`}
     >
       <span aria-hidden="true">{isAvailable ? '●' : '⊘'}</span>
-      {isAvailable ? 'On menu' : '86’d'}
+      {isAvailable ? t.menuAdmin.onMenu : t.menuAdmin.eightySixed}
     </button>
   );
 }

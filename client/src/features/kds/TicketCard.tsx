@@ -1,5 +1,7 @@
 import type { KdsSettings, OrderDto } from '@ros/shared';
 
+import { type Messages, useT } from '../../i18n';
+import { formatTime } from '../../shared/format';
 import { ageBand, bumpLabel, bumpTarget, formatElapsed, isLaterRound } from './kdsLogic';
 
 interface Props {
@@ -12,14 +14,14 @@ interface Props {
 }
 
 const BAND_STYLES = {
-  ok: { edge: 'border-l-ok', chip: 'bg-ok/15 text-ok', icon: '●' },
-  warn: { edge: 'border-l-warn', chip: 'bg-warn/15 text-warn', icon: '▲' },
-  late: { edge: 'border-l-flame', chip: 'bg-flame text-white', icon: '■' },
+  ok: { edge: 'border-s-ok', chip: 'bg-ok/15 text-ok', icon: '●' },
+  warn: { edge: 'border-s-warn', chip: 'bg-warn/15 text-warn', icon: '▲' },
+  late: { edge: 'border-s-flame', chip: 'bg-flame text-white', icon: '■' },
 } as const;
 
-function badge(order: OrderDto): string {
-  if (order.table) return `Table ${order.table.number}`;
-  return order.type === 'DELIVERY' ? 'Delivery' : 'Takeaway';
+function badge(t: Messages, order: OrderDto): string {
+  if (order.table) return t.common.table(order.table.number);
+  return order.type === 'DELIVERY' ? t.cart.delivery : t.cart.takeaway;
 }
 
 /**
@@ -33,29 +35,30 @@ export function TicketCard({ order, nowMs, settings, station, fresh, onBump }: P
   const style = BAND_STYLES[age.band];
   const next = bumpTarget(order.status);
   const done = order.status === 'COMPLETED';
+  const t = useT();
 
   return (
     <article
-      aria-label={`Order ${order.orderNumber}, ${badge(order)}, ${age.label}`}
-      className={`flex flex-col gap-3 rounded-icon border border-line border-l-8 bg-surface p-4 motion-safe:animate-drop-in ${done ? 'border-l-line opacity-60' : style.edge} ${fresh ? 'ring-4 ring-flame-light motion-safe:animate-pulse' : ''}`}
+      aria-label={`${t.tracker.title(order.orderNumber)}, ${badge(t, order)}, ${age.label}`}
+      className={`flex flex-col gap-3 rounded-icon border border-line border-s-8 bg-surface p-4 motion-safe:animate-drop-in ${done ? 'border-s-line opacity-60' : style.edge} ${fresh ? 'ring-4 ring-flame-light motion-safe:animate-pulse' : ''}`}
     >
       <header className="flex items-start justify-between gap-2">
         <div>
           <p className="font-display text-3xl font-bold leading-none">{order.orderNumber}</p>
           <p className="mt-1 text-sm font-semibold text-ink-muted">
-            {badge(order)}
+            {badge(t, order)}
             <a
               href={`/kitchen/tickets/${order.id}/print`}
               target="_blank"
               rel="noreferrer"
-              className="ml-3 text-xs underline hover:text-ink"
+              className="ms-3 text-xs underline hover:text-ink"
             >
-              Print
+              {t.kds.print}
             </a>
           </p>
         </div>
         {!done && (
-          <div className="text-right">
+          <div className="text-end">
             <p className="tabular text-xl font-bold">{formatElapsed(elapsed)}</p>
             <span
               className={`mt-1 inline-flex items-center gap-1 rounded-btn px-2 py-0.5 text-xs font-bold ${style.chip}`}
@@ -76,12 +79,8 @@ export function TicketCard({ order, nowMs, settings, station, fresh, onBump }: P
               <p className="text-lg font-semibold leading-snug">
                 <span className="tabular">{item.qty}×</span> {item.nameSnapshot}
                 {later && (
-                  <span className="ml-2 rounded-btn bg-warn/20 px-2 py-0.5 align-middle text-xs font-bold text-warn">
-                    Later round ·{' '}
-                    {new Date(item.addedAt).toLocaleTimeString(undefined, {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                  <span className="ms-2 rounded-btn bg-warn/20 px-2 py-0.5 align-middle text-xs font-bold text-warn">
+                    {t.kds.laterRound} · {formatTime(item.addedAt)}
                   </span>
                 )}
               </p>

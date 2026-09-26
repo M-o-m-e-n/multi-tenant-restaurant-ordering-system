@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 
+import { useLang } from '../../i18n';
 import { ScrollProgress } from './interactive';
 import { NavBar } from './NavBar';
 import { useSpotlight } from './pointerFx';
@@ -9,6 +10,7 @@ import { Toaster } from './Toaster';
 
 export function AppShell() {
   const { pathname } = useLocation();
+  const lang = useLang();
   const [scrolled, setScrolled] = useState(false);
   useSpotlight();
 
@@ -39,8 +41,9 @@ export function AppShell() {
       >
         <NavBar compact={scrolled} />
       </div>
-      {/* Keyed by path so each page plays its entrance once. */}
-      <div key={pathname} className="route-enter flex-1">
+      {/* Keyed by path (each page plays its entrance once) and by language, so
+          every label and price re-renders in the new language at once. */}
+      <div key={`${pathname}:${lang}`} className="route-enter flex-1">
         <Outlet />
       </div>
       <Toaster />

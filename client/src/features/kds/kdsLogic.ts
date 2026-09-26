@@ -1,5 +1,7 @@
 import { FORWARD_TRANSITION, type KdsSettings, type OrderDto, type OrderStatus } from '@ros/shared';
 
+import { tNow } from '../../i18n';
+
 export type AgeBand = 'ok' | 'warn' | 'late';
 
 /**
@@ -13,9 +15,10 @@ export function ageBand(
   band: AgeBand;
   label: string;
 } {
-  if (elapsedSec < s.kdsGreenSec) return { band: 'ok', label: 'On time' };
-  if (elapsedSec < s.kdsAmberSec) return { band: 'warn', label: 'Slow' };
-  return { band: 'late', label: 'Late' };
+  const t = tNow().kds;
+  if (elapsedSec < s.kdsGreenSec) return { band: 'ok', label: t.onTime };
+  if (elapsedSec < s.kdsAmberSec) return { band: 'warn', label: t.slow };
+  return { band: 'late', label: t.late };
 }
 
 /** `m:ss`, or `h:mm:ss` past an hour. */
@@ -73,33 +76,14 @@ export function stillLingering(
   );
 }
 
-/** Board columns, left to right (LLD §7.5). */
-export const KDS_COLUMNS: { status: OrderStatus; title: string }[] = [
-  { status: 'PLACED', title: 'New' },
-  { status: 'CONFIRMED', title: 'Confirmed' },
-  { status: 'PREPARING', title: 'Cooking' },
-  { status: 'READY', title: 'Ready' },
-  { status: 'SERVED', title: 'Served' },
-];
+/** Board columns in reading order (LLD §7.5); titles come from the dictionary. */
+export const KDS_COLUMNS = ['PLACED', 'CONFIRMED', 'PREPARING', 'READY', 'SERVED'] as const;
+export type KdsColumn = (typeof KDS_COLUMNS)[number];
 
+export const columnTitle = (status: KdsColumn): string => tNow().kds.columns[status];
+
+/** The bump button's words for moving a ticket to `to`. */
 export function bumpLabel(to: OrderStatus): string {
-  switch (to) {
-    case 'CONFIRMED':
-      return 'Confirm';
-    case 'PREPARING':
-      return 'Start cooking';
-    case 'READY':
-      return 'Mark ready';
-    case 'SERVED':
-      return 'Served';
-    case 'COMPLETED':
-      return 'Complete';
-    case 'PLACED':
-    case 'CANCELLED':
-      return to;
-    default: {
-      const exhaustive: never = to;
-      return exhaustive;
-    }
-  }
+  const bump: Readonly<Partial<Record<OrderStatus, string>>> = tNow().kds.bump;
+  return bump[to] ?? to;
 }

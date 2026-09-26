@@ -2,7 +2,9 @@ import type { MenuItemDto, OrderDto } from '@ros/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
-import { api, ApiError } from '../../shared/api/client';
+import { useT } from '../../i18n';
+import { api } from '../../shared/api/client';
+import { errorMessage } from '../../shared/api/errorMessage';
 import { formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { Modal } from '../../shared/ui/Modal';
@@ -31,6 +33,7 @@ export function AddToOrderDialog({
   const [pending, setPending] = useState<Pending[]>([]);
   const [query, setQuery] = useState('');
   const [busy, setBusy] = useState(false);
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
 
   const items = useMemo(() => {
@@ -62,7 +65,7 @@ export function AddToOrderDialog({
       await qc.invalidateQueries({ queryKey: ['orders'] });
       close();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'The items were not added. Try again.');
+      setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -73,7 +76,7 @@ export function AddToOrderDialog({
       <Modal
         open={order !== null && picking === null}
         onClose={close}
-        title={`Add to ${order?.orderNumber ?? ''}`}
+        title={t.addToOrder.title(order?.orderNumber ?? '')}
         wide
       >
         <div className="flex flex-col gap-4">
@@ -81,8 +84,8 @@ export function AddToOrderDialog({
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search dishes"
-            aria-label="Search dishes"
+            placeholder={t.addToOrder.search}
+            aria-label={t.addToOrder.search}
             className="min-h-11 rounded-btn border border-line-strong bg-bg px-4 text-sm"
           />
           <ul className="flex max-h-64 flex-col divide-y divide-line overflow-y-auto">
@@ -92,12 +95,12 @@ export function AddToOrderDialog({
                   type="button"
                   disabled={!item.isAvailable}
                   onClick={() => setPicking({ item, category })}
-                  className="flex min-h-12 w-full items-center justify-between gap-3 px-1 text-left text-sm disabled:opacity-50"
+                  className="flex min-h-12 w-full items-center justify-between gap-3 px-1 text-start text-sm disabled:opacity-50"
                 >
                   <span>
                     {item.name}
                     {!item.isAvailable && (
-                      <span className="ml-2 text-xs text-ink-muted">Sold out</span>
+                      <span className="ms-2 text-xs text-ink-muted">{t.menu.soldOut}</span>
                     )}
                   </span>
                   <span className="tabular text-flame-text">{formatMoney(item.price)}</span>
@@ -107,7 +110,9 @@ export function AddToOrderDialog({
           </ul>
           {pending.length > 0 && (
             <div className="rounded-icon border border-line-strong p-3">
-              <p className="text-xs font-medium uppercase tracking-wider text-ink-muted">Adding</p>
+              <p className="text-xs font-medium uppercase tracking-wider text-ink-muted">
+                {t.addToOrder.adding}
+              </p>
               <ul className="mt-1 flex flex-col gap-1 text-sm">
                 {pending.map((l) => (
                   <li key={l.key} className="flex justify-between gap-2">
@@ -116,7 +121,10 @@ export function AddToOrderDialog({
                       {l.modifiers.length > 0 && (
                         <span className="text-xs text-ink-muted">
                           {' '}
-                          · {l.modifiers.flatMap((g) => g.items.map((i) => i.name)).join(', ')}
+                          ·{' '}
+                          {l.modifiers
+                            .flatMap((g) => g.items.map((i) => i.name))
+                            .join(t.common.listSep)}
                         </span>
                       )}
                     </span>
@@ -125,7 +133,7 @@ export function AddToOrderDialog({
                       className="text-xs text-ink-muted hover:text-flame-text"
                       onClick={() => setPending((p) => p.filter((x) => x.key !== l.key))}
                     >
-                      Remove
+                      {t.addToOrder.remove}
                     </button>
                   </li>
                 ))}
@@ -143,7 +151,7 @@ export function AddToOrderDialog({
             disabled={pending.length === 0 || busy}
             onClick={() => void submit()}
           >
-            {busy ? 'Adding…' : `Add ${pending.length || ''} to the order`.replace('  ', ' ')}
+            {busy ? t.addToOrder.busy : t.addToOrder.add(pending.length)}
           </button>
         </div>
       </Modal>

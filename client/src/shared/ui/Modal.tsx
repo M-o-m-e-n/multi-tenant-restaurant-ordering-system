@@ -1,5 +1,7 @@
 import { type ReactNode, useEffect, useRef } from 'react';
 
+import { useT } from '../../i18n';
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -15,6 +17,7 @@ interface Props {
  */
 export function Modal({ open, onClose, title, children, wide = false }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
+  const t = useT();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -43,11 +46,13 @@ export function Modal({ open, onClose, title, children, wide = false }: Props) {
       {open && (
         <div className="p-6">
           <div className="mb-4 flex items-start justify-between gap-4">
-            <h2 className="font-display text-2xl font-bold">{title}</h2>
+            <h2 dir="auto" className="font-display text-2xl font-bold">
+              {title}
+            </h2>
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close"
+              aria-label={t.common.close}
               className="grid size-11 shrink-0 place-items-center rounded-full text-ink-muted hover:bg-surface-raised hover:text-ink"
             >
               ✕
