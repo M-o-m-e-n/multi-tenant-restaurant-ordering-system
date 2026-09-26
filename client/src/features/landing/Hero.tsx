@@ -1,13 +1,15 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useLang, useT } from '../../i18n';
+import { useL } from '../../i18n/localized';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { KineticText, Magnetic } from '../../shared/ui/interactive';
 import { usePointerParallax } from '../../shared/ui/pointerFx';
 import { useSettings } from '../cart/cartApi';
-import { GUESTS } from './content';
+import { GUESTS, HERO } from './content';
 import { EmberField } from './EmberField';
-import { openStatus } from './openHours';
+import { hourLabel, openStatus } from './openHours';
 
 /** A layer that drifts `px` pixels with the pointer (negative = against it). */
 const depth = (px: number): CSSProperties => ({
@@ -24,6 +26,15 @@ function OpenChip() {
     return () => clearInterval(t);
   }, []);
   const status = openStatus(now, tz);
+  const t = useT();
+  const lang = useLang();
+  const label = status.open
+    ? (status.closingSoon ? t.landing.closingSoon : t.landing.openNow)(
+        hourLabel(status.closesAt, lang),
+      )
+    : (status.opens === 'today' ? t.landing.opensToday : t.landing.opensTomorrow)(
+        hourLabel(status.opensAt, lang),
+      );
   return (
     <p className="inline-flex items-center gap-2 rounded-btn border border-line-strong bg-surface/80 px-4 py-1.5 text-xs font-medium text-ink-muted backdrop-blur">
       <span className="relative flex size-2" aria-hidden="true">
@@ -34,7 +45,7 @@ function OpenChip() {
           className={`relative inline-flex size-2 rounded-full ${status.open ? 'bg-ok' : 'bg-ink-muted'}`}
         />
       </span>
-      {status.label}
+      {label}
     </p>
   );
 }
@@ -50,6 +61,8 @@ function OpenChip() {
 export function Hero() {
   const stage = useRef<HTMLElement>(null);
   usePointerParallax(stage);
+  const t = useT();
+  const l = useL();
 
   return (
     <section
@@ -58,24 +71,23 @@ export function Hero() {
     >
       <EmberField className="-z-10 opacity-80" />
 
-      <div className="text-center md:text-left">
+      <div className="text-center md:text-start">
         <div className="motion-safe:animate-rise">
           <OpenChip />
         </div>
         <h1 className="mt-6 font-display text-hero-sm font-bold md:text-hero">
-          <KineticText text="it’s not just Food, It’s an Experience." highlight="Experience." />
+          <KineticText text={l(HERO.headline)} highlight={l(HERO.highlight)} />
         </h1>
         <p className="mx-auto mt-5 max-w-md text-ink-muted motion-safe:animate-rise motion-safe:[animation-delay:.5s] md:mx-0">
-          Seasonal plates cooked over open flame. Order from your table, watch it move through the
-          kitchen live, and pay in a tap.
+          {l(HERO.body)}
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3 motion-safe:animate-rise motion-safe:[animation-delay:.65s] md:justify-start">
           <Magnetic>
             <Link to="/menu" className={`${buttonClass('primary', 'lg')} group`}>
-              View Menu
+              {t.landing.viewMenu}
               <span
                 aria-hidden="true"
-                className="transition-transform duration-300 group-hover:translate-x-1"
+                className="transition-transform duration-300 group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1"
               >
                 →
               </span>
@@ -83,12 +95,12 @@ export function Hero() {
           </Magnetic>
           <Magnetic strength={6}>
             <Link to="/reserve" className={buttonClass('secondary', 'lg')}>
-              Book A Table
+              {t.landing.bookTable}
             </Link>
           </Magnetic>
         </div>
         <div className="mt-10 flex items-center justify-center gap-4 motion-safe:animate-rise motion-safe:[animation-delay:.8s] md:justify-start">
-          <div className="flex -space-x-3">
+          <div className="flex -space-x-3 rtl:space-x-reverse">
             {GUESTS.slice(0, 3).map((g) => (
               <img
                 key={g.photo}
@@ -101,12 +113,12 @@ export function Hero() {
               1.2k+
             </span>
           </div>
-          <div className="text-left">
+          <div className="text-start">
             <p className="text-sm tracking-widest text-star" aria-hidden="true">
               ★★★★★
             </p>
             <p className="text-xs text-ink-muted">
-              <span className="font-semibold text-ink">4.9</span> from 1,200+ guest reviews
+              <span className="font-semibold text-ink">4.9</span> {l(HERO.reviews)}
             </p>
           </div>
         </div>
@@ -134,7 +146,7 @@ export function Hero() {
           />
           <img
             src="/images/hero-plate.jpg"
-            alt="A harvest bowl of greens, feta and pickled onion on a dark plate"
+            alt={l(HERO.plateAlt)}
             loading="eager"
             className="absolute inset-[9%] size-[82%] animate-spin-slow rounded-full object-cover shadow-plate"
           />
@@ -142,39 +154,39 @@ export function Hero() {
           <div aria-hidden="true" className="plate-sheen absolute inset-[9%] rounded-full" />
         </div>
 
-        <div className="absolute -right-1 top-[4%]" style={depth(28)} aria-hidden="true">
+        <div className="absolute -end-1 top-[4%]" style={depth(28)} aria-hidden="true">
           <img
             src="/images/tomatoes.jpg"
             alt=""
             className="size-20 animate-bob rounded-full border-4 border-card-top object-cover shadow-dish md:size-24"
           />
         </div>
-        <span aria-hidden="true" className="absolute left-[2%] top-[30%]" style={depth(36)}>
+        <span aria-hidden="true" className="absolute start-[2%] top-[30%]" style={depth(36)}>
           <span className="inline-block animate-bob text-4xl [animation-delay:.8s]">🌿</span>
         </span>
-        <span aria-hidden="true" className="absolute bottom-[12%] right-[4%]" style={depth(22)}>
+        <span aria-hidden="true" className="absolute bottom-[12%] end-[4%]" style={depth(22)}>
           <span className="inline-block animate-bob text-3xl [animation-delay:1.6s]">🌶️</span>
         </span>
 
-        <div className="absolute -left-2 bottom-[8%] md:-left-6" style={depth(18)}>
+        <div className="absolute -start-2 bottom-[8%] md:-start-6" style={depth(18)}>
           <div className="animate-float rounded-card border border-line bg-surface/90 px-4 py-3 shadow-dish backdrop-blur">
             <p className="text-[0.7rem] font-medium uppercase tracking-wider text-ink-muted">
-              Chef&rsquo;s pick
+              {l(HERO.pickLabel)}
             </p>
-            <p className="font-display text-lg font-bold">Harvest Bowl</p>
+            <p className="font-display text-lg font-bold">{l(HERO.pickName)}</p>
             <p className="text-xs text-star">
-              ★ 4.9 <span className="text-ink-muted">· 320 orders</span>
+              ★ 4.9 <span className="text-ink-muted">· {l(HERO.pickOrders)}</span>
             </p>
           </div>
         </div>
-        <div className="absolute right-0 top-[48%] hidden sm:block" style={depth(12)}>
+        <div className="absolute end-0 top-[48%] hidden sm:block" style={depth(12)}>
           <div className="flex animate-float items-center gap-3 rounded-card border border-line bg-surface/90 px-4 py-3 shadow-dish backdrop-blur [animation-delay:1.2s]">
             <span className="grid size-9 place-items-center rounded-icon bg-flame text-white shadow-glow">
               ⏱
             </span>
             <div>
-              <p className="text-sm font-semibold">~18 min</p>
-              <p className="text-xs text-ink-muted">avg. to your table</p>
+              <p className="text-sm font-semibold">{l(HERO.eta)}</p>
+              <p className="text-xs text-ink-muted">{l(HERO.etaLabel)}</p>
             </div>
           </div>
         </div>

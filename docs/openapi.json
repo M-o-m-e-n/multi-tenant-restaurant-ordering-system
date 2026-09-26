@@ -308,7 +308,6 @@
                   },
                   "phone": {
                     "type": "string",
-                    "minLength": 5,
                     "maxLength": 30
                   }
                 },
@@ -1332,7 +1331,6 @@
                       },
                       "phone": {
                         "type": "string",
-                        "minLength": 5,
                         "maxLength": 30
                       }
                     },
@@ -2402,7 +2400,6 @@
                   },
                   "guestPhone": {
                     "type": "string",
-                    "minLength": 5,
                     "maxLength": 30
                   },
                   "partySize": {

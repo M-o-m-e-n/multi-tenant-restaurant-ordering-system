@@ -56,7 +56,15 @@ backgroundImage: {
 },
 ```
 
-Fonts come from Google Fonts: `Philosopher:wght@400;700` and `Poppins:wght@400;500;600;700`.
+Fonts come from Google Fonts: `Philosopher:wght@400;700` and `Poppins:wght@400;500;600;700`, plus
+`El+Messiri:wght@500;700` (display) and `Cairo:wght@400;500;600;700` (body) for Arabic. The Latin face
+comes first in each stack and Arabic glyphs fall through to the Arabic face, so one class serves both
+languages.
+
+**Arabic and RTL (ADR-030).** No UI string is written in a component: use `useT()` for UI and
+`useL()` for tenant copy. Use logical classes (`ms-`, `pe-`, `start-`, `end-`, `border-s`,
+`text-start`), never `ml-`/`left-`/`text-left`. Mirror direction-bearing glyphs with
+`rtl:-scale-x-100`. Put `dir="auto"` on menu data (dish names).
 Philosopher is the closest free match for the screenshot's headline serif. If it doesn't render well
 at a given size, fall back to Playfair Display, which the prototype uses.
 

@@ -6,11 +6,11 @@
 
 | | |
 |---|---|
-| **Last updated** | 2026-09-25 |
-| **Phase** | Feature-complete · verified locally · not yet deployed |
-| **Current milestone** | M13 — the only open items are the staging deploy (S11) and a live Stripe webhook (S12) |
-| **Next slice** | **M13-S11**: deploy to a host with TLS (checklist in [OPERATIONS.md](OPERATIONS.md) §3) |
-| **Overall progress** | 165 / 169 slices. Open: M0-S1 (folder rename) and M13-S11/S12. Skipped: M13-S9 (single instance) |
+| **Last updated** | 2026-09-26 |
+| **Phase** | Phase 2 — El Demeshki (first customer, private demo) |
+| **Current milestone** | M14 done. Next: the El Demeshki website (tenant pack and branches pulled forward from M17/M15) |
+| **Next slice** | Tenant selection (`VITE_TENANT`, `--tenant`) and the El Demeshki menu and photo import |
+| **Overall progress** | Phase 1: 165 / 169 slices. Phase 2: M14 10 / 10. Open: M0-S1 (folder rename) and M13-S11/S12. Skipped: M13-S9 (single instance) |
 | **Health** | 🟢 `npm run check` green (351 tests); `npm run e2e` 15 / 15; 21/22 AC pass, AC-5 with a named exception |
 
 ---
@@ -33,6 +33,8 @@
 | M11 | Reports & dashboard | ✅ Done | 14 / 14 |
 | M12 | Delivery, takeaway & reservations | ✅ Done | 7 / 7 |
 | M13 | Hardening & deploy | ◐ Local part done | 11 / 14 (S9 skipped, S11/S12 need a host) |
+| M14 | Arabic and Egypt localisation | ✅ Done | 10 / 10 |
+| M15–M18 | Branches, Egyptian ordering, tenant pack, demo | ☐ Outlined | — |
 
 ## 2. What exists
 
@@ -41,10 +43,10 @@
 | Repo | Git on `main`; one `feat/*` branch per milestone, merged `--no-ff` |
 | `shared/` | Pricing, the order and delivery state machines, discount rules, time helpers, and strict Zod schemas with DTO types. 58 tests |
 | `server/` | Express 4, Prisma 6 and Socket.IO. Modules: auth, users, menu, settings, discounts, tables, orders (with delivery), payments (Stripe test mode and cash), reports, reservations. Jobs: purges, reconciliation, reservation alerts. Helmet and request logs; OpenAPI generated from Zod. 268 integration tests |
-| `client/` | React 18 SPA in the Fork & Flame design with real food photography. Screens: landing page, menu, cart, checkout, tracker, pay, receipt, booking, KDS, POS, table map, bookings, and admin dashboard, reports and menu. Staff and admin routes lazy-load. 25 tests |
-| E2E | 15 Playwright tests on the production builds: LLD §10.3 scenarios 1–6, AC-1/2/22, and axe on 17 screens (`npm run e2e`) |
+| `client/` | React 18 SPA in the Fork & Flame design with real food photography. Screens: landing page, menu, cart, checkout, tracker, pay, receipt, booking, KDS, POS, table map, bookings, and admin dashboard, reports and menu. Staff and admin routes lazy-load. Arabic RTL with an English toggle (M14). 46 tests |
+| E2E | Playwright on the production builds: LLD §10.3 scenarios 1–6, AC-1/2/22, and axe on 17 screens in English and Arabic (`npm run e2e`) |
 | Database | 4 migrations; a deterministic seed with 30 days of history; backup and restore scripts with a recorded drill |
-| Docs | SRS 1.2.1, HLD 1.2.1, LLD 1.3.2, API contract 1.2 + `openapi.json`, SECURITY, ACCEPTANCE, OPERATIONS, ADR-001…027 |
+| Docs | SRS 1.2.1, HLD 1.2.1, LLD 1.3.2, API contract 1.2 + `openapi.json`, SECURITY, ACCEPTANCE, OPERATIONS, ADR-001…031 |
 | Measured | KDS gets a new order 63 ms after commit (target 500). `GET /menu` p95 ≈ 69 ms at 100 concurrent (target 300). Guest JS bundle 444 kB |
 
 ## 3. Open decisions
@@ -69,6 +71,9 @@ None blocking. Build-time decisions are ADR-020…027 in [DECISIONS.md](DECISION
 - LLD revision-table order: 1.1.1 appears after 1.2.
 
 ## 6. Next three actions
+
+0. **El Demeshki website** (plan approved 2026-09-26): tenant pack, their menu and photos, two
+   branches with maps, About and Contact pages, and a feedback inbox. Private demo only.
 
 1. **Rename the folder, push to GitHub** so CI runs.
 2. **Deploy** following OPERATIONS.md §3. Add Stripe **test** keys and the webhook secret.

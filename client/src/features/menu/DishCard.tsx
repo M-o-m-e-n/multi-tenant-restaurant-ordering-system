@@ -1,5 +1,6 @@
 import type { MenuItemDto } from '@ros/shared';
 
+import { useT } from '../../i18n';
 import { formatMoney } from '../../shared/money';
 import { DishImage } from './DishImage';
 
@@ -14,6 +15,7 @@ interface Props {
  * top edge; price bottom-left, red cart tile bottom-right (fork-flame-ui §4).
  */
 export function DishCard({ item, category, onOpen }: Props) {
+  const t = useT();
   const soldOut = !item.isAvailable;
   return (
     <article className="group relative flex w-52 shrink-0 snap-start flex-col items-center rounded-card border border-line bg-card px-4 pb-4 text-center shadow-dish transition duration-300 hover:-translate-y-1.5 hover:border-line-strong">
@@ -26,7 +28,9 @@ export function DishCard({ item, category, onOpen }: Props) {
           soldOut={soldOut}
         />
       </div>
-      <h3 className="mt-3 text-base font-medium">{item.name}</h3>
+      <h3 dir="auto" className="mt-3 text-base font-medium">
+        {item.name}
+      </h3>
       <p className="mt-0.5 line-clamp-1 text-xs text-ink-muted">{item.description}</p>
       <div className="mt-4 flex w-full items-center justify-between">
         <span className="tabular text-[0.95rem] font-semibold text-flame-text">
@@ -34,13 +38,13 @@ export function DishCard({ item, category, onOpen }: Props) {
         </span>
         {soldOut ? (
           <span className="rounded-btn border border-line-strong px-3 py-1.5 text-xs font-semibold text-ink-muted">
-            Sold out
+            {t.menu.soldOut}
           </span>
         ) : (
           <button
             type="button"
             onClick={() => onOpen(item)}
-            aria-label={`Add ${item.name}`}
+            aria-label={t.menu.add(item.name)}
             className="grid size-11 place-items-center rounded-icon bg-flame text-white shadow-glow hover:brightness-110"
           >
             <CartIcon />

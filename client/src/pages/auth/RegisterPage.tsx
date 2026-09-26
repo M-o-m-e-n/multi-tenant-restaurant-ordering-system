@@ -3,7 +3,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { homeFor, useAuth } from '../../features/auth/authStore';
 import { safeReturnTo } from '../../features/auth/returnTo';
+import { useLang, useT } from '../../i18n';
 import { ApiError } from '../../shared/api/client';
+import { errorMessage } from '../../shared/api/errorMessage';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { Field } from '../../shared/ui/Field';
 import { formValue } from '../../shared/ui/formValue';
@@ -16,6 +18,8 @@ export function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const t = useT();
+  const lang = useLang();
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -33,9 +37,18 @@ export function RegisterPage() {
     } catch (err) {
       if (err instanceof ApiError && err.code === 'VALIDATION_ERROR') {
         const fields = (err.details?.fieldErrors ?? {}) as Record<string, string[]>;
-        setErrors(Object.fromEntries(Object.entries(fields).map(([k, v]) => [k, v[0] ?? ''])));
+        // English keeps the server's own wording; other languages get the field's line.
+        const localized = t.auth.field as Readonly<Record<string, string>>;
+        setErrors(
+          Object.fromEntries(
+            Object.entries(fields).map(([k, v]) => [
+              k,
+              lang === 'en' ? (v[0] ?? '') : (localized[k] ?? t.errors.VALIDATION_ERROR),
+            ]),
+          ),
+        );
       } else {
-        setFormError(err instanceof ApiError ? err.message : 'Sign-up failed. Try again.');
+        setFormError(errorMessage(err));
       }
     } finally {
       setBusy(false);
@@ -45,12 +58,12 @@ export function RegisterPage() {
   return (
     <main className="mx-auto flex w-full max-w-md flex-col px-5 py-12">
       <div className="rounded-card border border-line bg-surface p-7 shadow-dish">
-        <h1 className="font-display text-3xl font-bold">Create your account</h1>
-        <p className="mt-1 text-sm text-ink-muted">Order from any table and track it live.</p>
+        <h1 className="font-display text-3xl font-bold">{t.auth.registerTitle}</h1>
+        <p className="mt-1 text-sm text-ink-muted">{t.auth.registerHint}</p>
         <form className="mt-6 flex flex-col gap-4" onSubmit={(e) => void onSubmit(e)}>
-          <Field label="Name" name="name" autoComplete="name" required error={errors.name} />
+          <Field label={t.auth.name} name="name" autoComplete="name" required error={errors.name} />
           <Field
-            label="Email"
+            label={t.auth.email}
             name="email"
             type="email"
             autoComplete="email"
@@ -58,7 +71,7 @@ export function RegisterPage() {
             error={errors.email}
           />
           <Field
-            label="Password"
+            label={t.auth.password}
             name="password"
             type="password"
             autoComplete="new-password"
@@ -72,13 +85,13 @@ export function RegisterPage() {
             </p>
           )}
           <button type="submit" className={buttonClass('primary', 'lg')} disabled={busy}>
-            {busy ? 'Creating account…' : 'Create account'}
+            {busy ? t.auth.creating : t.auth.create}
           </button>
         </form>
         <p className="mt-5 text-center text-sm text-ink-muted">
-          Already have an account?{' '}
+          {t.auth.haveAccount}{' '}
           <Link to="/login" className="font-semibold text-flame-text hover:underline">
-            Sign in
+            {t.auth.signIn}
           </Link>
         </p>
       </div>

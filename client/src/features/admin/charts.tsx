@@ -1,5 +1,6 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
+import { useT } from '../../i18n';
 import { formatMoney } from '../../shared/money';
 import { chartTheme } from '../../shared/theme';
 
@@ -27,6 +28,7 @@ const fmt = (kind: Props['kind']) => (v: number) =>
  */
 export function BarChartCard({ data, kind, title, height = 240 }: Props) {
   const format = fmt(kind);
+  const t = useT();
   return (
     <figure aria-label={title} className="w-full">
       <ResponsiveContainer width="100%" height={height}>
@@ -61,7 +63,10 @@ export function BarChartCard({ data, kind, title, height = 240 }: Props) {
             }}
             labelStyle={{ color: chartTheme.axis }}
             itemStyle={{ color: chartTheme.text }}
-            formatter={(v: number) => [format(v), kind === 'money' ? 'Net sales' : 'Orders']}
+            formatter={(v: number) => [
+              format(v),
+              kind === 'money' ? t.admin.netSales : t.admin.orders,
+            ]}
           />
           <Bar
             dataKey="value"

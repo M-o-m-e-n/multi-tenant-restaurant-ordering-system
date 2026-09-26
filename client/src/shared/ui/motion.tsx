@@ -1,5 +1,6 @@
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';
 
+import { formatNumber } from '../format';
 import { prefersReducedMotion } from './motionUtils';
 
 type RevealProps = {
@@ -58,10 +59,7 @@ type CountUpProps = {
 };
 
 function formatCount(value: number, decimals: number, suffix: string): string {
-  return `${value.toLocaleString('en-US', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  })}${suffix}`;
+  return `${formatNumber(value, decimals)}${suffix}`;
 }
 
 /** Animates a stat from zero to `value` the first time it scrolls into view. */

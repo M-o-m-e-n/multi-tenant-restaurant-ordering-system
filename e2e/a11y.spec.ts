@@ -27,11 +27,27 @@ async function audit(page: Page, path: string) {
   expect(summary, `axe on ${path}`).toEqual([]);
 }
 
-for (const { role, paths } of PAGES) {
-  test(`axe: ${role ?? 'anonymous'} screens`, async ({ page }) => {
-    if (role) await signIn(page, role);
-    for (const path of paths) await audit(page, path);
-  });
+/** Switch the persisted language (as the nav toggle does); the next load uses it. */
+async function useLanguage(page: Page, lang: 'en' | 'ar') {
+  await page.evaluate((l) => {
+    localStorage.setItem('ros-lang', JSON.stringify({ state: { lang: l }, version: 1 }));
+  }, lang);
+}
+
+// Every screen, in English and in Arabic RTL (M14-S10).
+for (const lang of ['en', 'ar'] as const) {
+  for (const { role, paths } of PAGES) {
+    test(`axe (${lang}): ${role ?? 'anonymous'} screens`, async ({ page }) => {
+      // Sign in through the English form, then switch: the audit is of the screens.
+      await page.goto('/');
+      if (role) await signIn(page, role);
+      await useLanguage(page, lang);
+      for (const path of paths) await audit(page, path);
+      if (lang === 'ar') {
+        expect(await page.evaluate(() => document.documentElement.dir)).toBe('rtl');
+      }
+    });
+  }
 }
 
 test('keyboard: the landing CTA and menu are reachable and operable without a mouse', async ({

@@ -8,16 +8,10 @@ import { TipSelector } from '../../features/cart/TipSelector';
 import { useCartPricing } from '../../features/cart/useCartPricing';
 import { DishImage } from '../../features/menu/DishImage';
 import { TableBanner } from '../../features/table/TableBanner';
+import { useT } from '../../i18n';
+import { errorMessage } from '../../shared/api/errorMessage';
 import { formatDelta, formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
-
-const DISCOUNT_MESSAGES: Record<string, string> = {
-  DISCOUNT_NOT_FOUND: 'We don’t recognise that code.',
-  DISCOUNT_INACTIVE: 'That code isn’t active right now.',
-  DISCOUNT_EXPIRED: 'That code has expired.',
-  DISCOUNT_MIN_NOT_MET: 'Your order is below that code’s minimum.',
-  DISCOUNT_LIMIT_REACHED: 'That code has been fully redeemed.',
-};
 
 /** Cart and pricing (CART-01…08, TIP-01): client totals live, confirmed by the server preview. */
 export function CartPage() {
@@ -32,6 +26,7 @@ export function CartPage() {
     error: previewError,
     clearDiscount,
   } = useCartPricing();
+  const t = useT();
   const [codeInput, setCodeInput] = useState(cart.discountCode ?? '');
   const [codeError, setCodeError] = useState<string | null>(null);
 
@@ -39,18 +34,22 @@ export function CartPage() {
   const { discountCode, setDiscountCode } = cart;
   useEffect(() => {
     if (previewError?.code.startsWith('DISCOUNT_') && discountCode) {
-      setCodeError(DISCOUNT_MESSAGES[previewError.code] ?? previewError.message);
+      // The friendly per-code line, in the reader's language (DISC-02).
+      setCodeError(
+        (t.errors as Readonly<Record<string, string>>)[previewError.code] ??
+          errorMessage(previewError),
+      );
       setDiscountCode(null);
     }
-  }, [previewError, discountCode, setDiscountCode]);
+  }, [previewError, discountCode, setDiscountCode, t]);
 
   if (cart.lines.length === 0) {
     return (
       <main className="mx-auto max-w-md px-5 py-16 text-center">
-        <h1 className="font-display text-3xl font-bold">Your cart is empty</h1>
-        <p className="mt-2 text-ink-muted">Pick something from the menu to get started.</p>
+        <h1 className="font-display text-3xl font-bold">{t.cart.emptyTitle}</h1>
+        <p className="mt-2 text-ink-muted">{t.cart.emptyBody}</p>
         <Link to="/menu" className={`${buttonClass('primary')} mt-6`}>
-          View menu
+          {t.cart.viewMenu}
         </Link>
       </main>
     );
@@ -61,27 +60,27 @@ export function CartPage() {
       <section aria-labelledby="cart-title">
         <TableBanner />
         <h1 id="cart-title" className="font-display text-3xl font-bold">
-          Your order
+          {t.cart.title}
         </h1>
         {orderType !== 'DINE_IN' && (
-          <div role="radiogroup" aria-label="How would you like it?" className="mt-4 flex gap-2">
-            {(['TAKEAWAY', 'DELIVERY'] as OffsiteType[]).map((t) => (
+          <div role="radiogroup" aria-label={t.cart.howLabel} className="mt-4 flex gap-2">
+            {(['TAKEAWAY', 'DELIVERY'] as OffsiteType[]).map((type) => (
               <button
-                key={t}
+                key={type}
                 type="button"
                 role="radio"
-                aria-checked={cart.offsiteType === t}
-                onClick={() => cart.setOffsiteType(t)}
-                className={`min-h-11 rounded-btn border px-5 text-sm font-semibold ${cart.offsiteType === t ? 'border-flame bg-flame text-white' : 'border-line-strong bg-surface-raised'}`}
+                aria-checked={cart.offsiteType === type}
+                onClick={() => cart.setOffsiteType(type)}
+                className={`min-h-11 rounded-btn border px-5 text-sm font-semibold ${cart.offsiteType === type ? 'border-flame bg-flame text-white' : 'border-line-strong bg-surface-raised'}`}
               >
-                {t === 'TAKEAWAY' ? 'Takeaway' : 'Delivery'}
+                {type === 'TAKEAWAY' ? t.cart.takeaway : t.cart.delivery}
               </button>
             ))}
           </div>
         )}
         {previewError?.code === 'ITEM_UNAVAILABLE' && (
           <p role="alert" className="mt-4 rounded-icon border border-flame p-3 text-sm">
-            {previewError.message}
+            {errorMessage(previewError)}
           </p>
         )}
         <ul className="mt-4 divide-y divide-line">
@@ -108,7 +107,9 @@ export function CartPage() {
                   <p className="font-semibold">
                     {l.name}
                     {unavailable && (
-                      <span className="ml-2 text-xs font-semibold text-flame-text">Sold out</span>
+                      <span className="ms-2 text-xs font-semibold text-flame-text">
+                        {t.menu.soldOut}
+                      </span>
                     )}
                   </p>
                   {l.modifiers.length > 0 && (
@@ -124,12 +125,12 @@ export function CartPage() {
                     </p>
                   )}
                   <label className="mt-2 block">
-                    <span className="sr-only">Note for {l.name}</span>
+                    <span className="sr-only">{t.cart.noteFor(l.name)}</span>
                     <input
                       value={l.notes}
                       maxLength={300}
                       onChange={(e) => cart.setNotes(l.key, e.target.value)}
-                      placeholder="Add a note"
+                      placeholder={t.cart.addNote}
                       className="min-h-9 w-full rounded-icon border border-line bg-bg px-3 text-xs"
                     />
                   </label>
@@ -146,10 +147,10 @@ export function CartPage() {
                       }),
                     )}
                   </span>
-                  <div className="flex items-center gap-1" aria-label={`Quantity of ${l.name}`}>
+                  <div className="flex items-center gap-1" aria-label={t.cart.quantityOf(l.name)}>
                     <button
                       type="button"
-                      aria-label={`One fewer ${l.name}`}
+                      aria-label={t.cart.fewer(l.name)}
                       onClick={() => cart.decrement(l.key)}
                       className="grid size-11 place-items-center rounded-full border border-line-strong"
                     >
@@ -158,7 +159,7 @@ export function CartPage() {
                     <span className="tabular w-6 text-center text-sm font-semibold">{l.qty}</span>
                     <button
                       type="button"
-                      aria-label={`One more ${l.name}`}
+                      aria-label={t.cart.more(l.name)}
                       onClick={() => cart.increment(l.key)}
                       className="grid size-11 place-items-center rounded-full border border-line-strong"
                     >
@@ -174,7 +175,7 @@ export function CartPage() {
           to="/menu"
           className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-flame-text"
         >
-          + Add more dishes
+          {t.cart.addMore}
         </Link>
       </section>
 
@@ -191,7 +192,7 @@ export function CartPage() {
             htmlFor="promo"
             className="text-xs font-medium uppercase tracking-wider text-ink-muted"
           >
-            Promo code
+            {t.cart.promo}
           </label>
           <div className="flex gap-2">
             <input
@@ -204,7 +205,7 @@ export function CartPage() {
               className="min-h-11 min-w-0 flex-1 rounded-icon border border-line-strong bg-bg px-3 text-sm uppercase"
             />
             <button type="submit" className={buttonClass('ghost')}>
-              Apply
+              {t.cart.apply}
             </button>
           </div>
           {codeError && (
@@ -214,7 +215,7 @@ export function CartPage() {
           )}
           {preview.data?.discount && (
             <p className="text-xs text-ok">
-              {preview.data.discount.code} applied{' '}
+              {t.cart.applied(preview.data.discount.code)}{' '}
               <button
                 type="button"
                 className="ml-1 font-semibold text-ink-muted underline"
@@ -224,7 +225,7 @@ export function CartPage() {
                   setCodeInput('');
                 }}
               >
-                remove
+                {t.cart.remove}
               </button>
             </p>
           )}
@@ -243,25 +244,29 @@ export function CartPage() {
 
         {local && (
           <dl className="tabular flex flex-col gap-1.5 text-sm">
-            <Row label="Subtotal" cents={local.subtotal} />
-            {local.discountAmount > 0 && <Row label="Discount" cents={-local.discountAmount} />}
-            {local.serviceCharge > 0 && <Row label="Service charge" cents={local.serviceCharge} />}
-            <Row label="Tax" cents={local.taxAmount} />
-            {local.deliveryFee > 0 && <Row label="Delivery" cents={local.deliveryFee} />}
-            {local.tipAmount > 0 && <Row label="Tip" cents={local.tipAmount} />}
+            <Row label={t.totals.subtotal} cents={local.subtotal} />
+            {local.discountAmount > 0 && (
+              <Row label={t.totals.discount} cents={-local.discountAmount} />
+            )}
+            {local.serviceCharge > 0 && (
+              <Row label={t.totals.serviceCharge} cents={local.serviceCharge} />
+            )}
+            <Row label={t.totals.tax} cents={local.taxAmount} />
+            {local.deliveryFee > 0 && <Row label={t.totals.delivery} cents={local.deliveryFee} />}
+            {local.tipAmount > 0 && <Row label={t.totals.tip} cents={local.tipAmount} />}
             <div className="mt-2 flex justify-between border-t border-line pt-3 text-base font-bold">
-              <dt>Total</dt>
+              <dt>{t.totals.total}</dt>
               <dd>{formatMoney(local.total)}</dd>
             </div>
           </dl>
         )}
         <p className="text-xs text-ink-muted" aria-live="polite">
           {preview.isFetching
-            ? 'Checking prices with the kitchen…'
+            ? t.cart.checking
             : agrees
-              ? '✓ Prices confirmed'
+              ? t.cart.confirmed
               : server
-                ? 'Prices updated — please review.'
+                ? t.cart.updated
                 : ''}
         </p>
         <Link
@@ -269,7 +274,7 @@ export function CartPage() {
           aria-disabled={!agrees}
           className={`${buttonClass('primary', 'lg')} ${agrees ? '' : 'pointer-events-none opacity-50'}`}
         >
-          Checkout
+          {t.cart.checkout}
         </Link>
       </aside>
     </main>

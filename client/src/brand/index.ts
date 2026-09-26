@@ -9,10 +9,13 @@ export interface Brand {
   id: string;
   name: { en: string; ar: string };
   defaultLang: Lang;
+  /** ISO 4217, lower case, matching the server's `currency` setting. */
+  currency: string;
 }
 
 export const brand: Brand = {
   id: 'forkandflame',
   name: { en: 'Fork & Flame', ar: 'فورك آند فليم' },
   defaultLang: 'en',
+  currency: 'usd',
 };

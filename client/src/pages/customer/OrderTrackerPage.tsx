@@ -6,13 +6,13 @@ import { AddToOrderDialog } from '../../features/orders/AddToOrderDialog';
 import { useCancelOrder, useOrder, useOrderEvents } from '../../features/orders/ordersApi';
 import { paymentLabel, statusLabel, TRACKER_STEPS } from '../../features/orders/status';
 import { usePaymentsConfig } from '../../features/payments/paymentsApi';
+import { useT } from '../../i18n';
 import { ApiError } from '../../shared/api/client';
+import { errorMessage } from '../../shared/api/errorMessage';
+import { formatTime } from '../../shared/format';
 import { formatMoney } from '../../shared/money';
 import { useWatchOrder } from '../../shared/realtime/useWatchOrder';
 import { buttonClass } from '../../shared/ui/buttonClass';
-
-const time = (iso: string) =>
-  new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 
 /**
  * Live order tracker (ORD-07): a step for every status, each labelled in text,
@@ -26,11 +26,12 @@ export function OrderTrackerPage() {
   const cancel = useCancelOrder(id);
   const { data: payConfig } = usePaymentsConfig();
   const [adding, setAdding] = useState(false);
+  const t = useT();
 
   if (isLoading)
     return (
       <p role="status" className="p-10 text-center text-ink-muted">
-        Loading your order…
+        {t.tracker.loading}
       </p>
     );
   if (error || !order) {
@@ -38,10 +39,10 @@ export function OrderTrackerPage() {
     return (
       <main className="mx-auto max-w-md px-5 py-16 text-center">
         <h1 className="font-display text-3xl font-bold">
-          {missing ? 'Order not found' : 'This order did not load'}
+          {missing ? t.tracker.notFound : t.tracker.notLoaded}
         </h1>
         <Link to="/orders" className={`${buttonClass('ghost')} mt-6`}>
-          Your orders
+          {t.tracker.yourOrders}
         </Link>
       </main>
     );
@@ -54,15 +55,17 @@ export function OrderTrackerPage() {
     <main className="mx-auto grid w-full max-w-content gap-8 px-5 pb-16 md:grid-cols-[1.3fr_1fr] md:px-10">
       <section aria-labelledby="order-title">
         <p className="text-sm text-ink-muted">
-          {order.table
-            ? `Table ${order.table.number}`
-            : order.type === 'DELIVERY'
-              ? 'Delivery'
-              : 'Takeaway'}{' '}
-          · placed {time(order.placedAt)}
+          {t.tracker.placedAt(
+            order.table
+              ? t.common.table(order.table.number)
+              : order.type === 'DELIVERY'
+                ? t.cart.delivery
+                : t.cart.takeaway,
+            formatTime(order.placedAt),
+          )}
         </p>
         <h1 id="order-title" className="font-display text-4xl font-bold">
-          Order {order.orderNumber}
+          {t.tracker.title(order.orderNumber)}
         </h1>
         <p className="mt-2 text-lg" aria-live="polite">
           {statusLabel(order.status)}
@@ -72,11 +75,11 @@ export function OrderTrackerPage() {
 
         {cancelled ? (
           <p className="mt-6 rounded-icon border border-flame p-4 text-sm">
-            This order was cancelled.
-            {order.paymentStatus === 'PAID' && ' Any payment will be refunded by the restaurant.'}
+            {t.tracker.cancelled}
+            {order.paymentStatus === 'PAID' && t.tracker.refundNote}
           </p>
         ) : (
-          <ol className="mt-6 flex flex-col gap-0" aria-label="Order progress">
+          <ol className="mt-6 flex flex-col gap-0" aria-label={t.tracker.progress}>
             {TRACKER_STEPS.map((step, i) => {
               const done = i < currentIndex;
               const now = i === currentIndex;
@@ -108,10 +111,10 @@ export function OrderTrackerPage() {
                     >
                       {statusLabel(step)}
                       <span className="sr-only">
-                        {done ? ' — done' : now ? ' — current' : ' — to come'}
+                        {done ? t.tracker.done : now ? t.tracker.current : t.tracker.toCome}
                       </span>
                     </p>
-                    {at && <p className="text-xs text-ink-muted">{time(at)}</p>}
+                    {at && <p className="text-xs text-ink-muted">{formatTime(at)}</p>}
                   </div>
                 </li>
               );
@@ -122,11 +125,11 @@ export function OrderTrackerPage() {
         <div className="mb-4 flex flex-wrap gap-2">
           {order.isAmendable && (
             <button type="button" className={buttonClass('ghost')} onClick={() => setAdding(true)}>
-              + Add to this order
+              {t.tracker.addMore}
             </button>
           )}
           <Link to={`/orders/${order.id}/receipt`} className={buttonClass('ghost')}>
-            Receipt
+            {t.tracker.receipt}
           </Link>
         </div>
         <AddToOrderDialog order={adding ? order : null} onClose={() => setAdding(false)} />
@@ -137,22 +140,22 @@ export function OrderTrackerPage() {
             className={buttonClass('danger')}
             disabled={cancel.isPending}
             onClick={() => {
-              if (window.confirm('Cancel this order?')) cancel.mutate('Cancelled by guest');
+              if (window.confirm(t.tracker.cancelConfirm)) cancel.mutate(t.tracker.cancelReason);
             }}
           >
-            {cancel.isPending ? 'Cancelling…' : 'Cancel order'}
+            {cancel.isPending ? t.tracker.cancelling : t.tracker.cancel}
           </button>
         )}
         {cancel.error instanceof ApiError && (
           <p role="alert" className="mt-2 text-sm text-flame-text">
-            {cancel.error.message}
+            {errorMessage(cancel.error)}
           </p>
         )}
       </section>
 
       <aside className="flex h-fit flex-col gap-3 rounded-card border border-line bg-surface p-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl font-bold">Your order</h2>
+          <h2 className="font-display text-xl font-bold">{t.tracker.yourOrder}</h2>
           <span className="rounded-btn border border-line-strong px-3 py-1 text-xs font-semibold">
             {paymentLabel(order.paymentStatus)}
           </span>
@@ -164,7 +167,7 @@ export function OrderTrackerPage() {
                 {i.qty} × {i.nameSnapshot}
                 {i.modifiers.length > 0 && (
                   <span className="block text-xs text-ink-muted">
-                    {i.modifiers.flatMap((g) => g.items.map((m) => m.name)).join(', ')}
+                    {i.modifiers.flatMap((g) => g.items.map((m) => m.name)).join(t.common.listSep)}
                   </span>
                 )}
               </span>
@@ -174,12 +177,12 @@ export function OrderTrackerPage() {
         </ul>
         <dl className="tabular flex flex-col gap-1 border-t border-line pt-3 text-sm">
           <div className="flex justify-between font-bold">
-            <dt>Total</dt>
+            <dt>{t.totals.total}</dt>
             <dd>{formatMoney(order.totals.total)}</dd>
           </div>
           {order.balanceDue > 0 && !cancelled && (
             <div className="flex justify-between text-ink-muted">
-              <dt>Still to pay</dt>
+              <dt>{t.totals.stillToPay}</dt>
               <dd>{formatMoney(order.balanceDue)}</dd>
             </div>
           )}
@@ -188,12 +191,10 @@ export function OrderTrackerPage() {
           !cancelled &&
           (payConfig?.cardEnabled ? (
             <Link to={`/orders/${order.id}/pay`} className={buttonClass('primary', 'lg')}>
-              Pay {formatMoney(order.balanceDue)} by card
+              {t.tracker.payByCard(formatMoney(order.balanceDue))}
             </Link>
           ) : (
-            <p className="text-xs text-ink-muted">
-              Pay with our staff — cash or card at the counter.
-            </p>
+            <p className="text-xs text-ink-muted">{t.tracker.payStaff}</p>
           ))}
       </aside>
     </main>

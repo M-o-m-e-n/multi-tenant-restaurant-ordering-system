@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
+import { useLangStore } from '../i18n';
 import { formatDelta, formatMoney, parseMoneyInput } from './money';
 
 describe('money', () => {
@@ -22,5 +23,36 @@ describe('money', () => {
     expect(parseMoneyInput('12.345')).toBeNull();
     expect(parseMoneyInput('abc')).toBeNull();
     expect(parseMoneyInput('-3')).toBeNull();
+  });
+});
+
+describe('money in Arabic and EGP', () => {
+  afterEach(() => useLangStore.getState().setLang('en'));
+
+  it('shows whole pounds without decimals, in both languages', () => {
+    // en-US joins the code and amount with a no-break space.
+    expect(formatMoney(9000, 'egp')).toBe('EGP\u00a090');
+    expect(formatMoney(9050, 'egp')).toBe('EGP\u00a090.50');
+    useLangStore.getState().setLang('ar');
+    expect(formatMoney(9000, 'egp')).toBe('90 ج.م');
+    expect(formatMoney(145500, 'egp')).toBe('1,455 ج.م');
+    expect(formatDelta(-2000, 'egp')).toBe('−20 ج.م');
+  });
+
+  it('keeps a foreign currency in its international form inside Arabic text', () => {
+    useLangStore.getState().setLang('ar');
+    // ar-EG would give "14.00 US$", which RTL layout scrambles into "$US 14.00".
+    expect(formatMoney(1400, 'usd')).toBe('$14.00');
+  });
+
+  it('keeps Latin digits in Arabic', () => {
+    useLangStore.getState().setLang('ar');
+    expect(formatMoney(12345, 'egp')).toMatch(/^123\.45 ج\.م$/);
+  });
+
+  it('parses Egyptian amounts', () => {
+    expect(parseMoneyInput('90 ج.م')).toBe(9000);
+    expect(parseMoneyInput('EGP 145')).toBe(14500);
+    expect(parseMoneyInput('20 جنيه')).toBe(2000);
   });
 });

@@ -10,14 +10,17 @@ import {
   useSetTableStatus,
   useTables,
 } from '../../features/table/tablesApi';
-import { API_BASE, ApiError, getAccessToken } from '../../shared/api/client';
+import { useT } from '../../i18n';
+import { API_BASE, getAccessToken } from '../../shared/api/client';
+import { errorMessage } from '../../shared/api/errorMessage';
 import { buttonClass } from '../../shared/ui/buttonClass';
 
 /** Each status carries an icon and a word as well as a colour (NFR-U3, WCAG 1.4.1). */
-const STATUS: Record<TableStatus, { label: string; icon: string; tile: string; chip: string }> = {
-  FREE: { label: 'Free', icon: '○', tile: 'border-ok/50', chip: 'text-ok' },
-  SEATED: { label: 'Seated', icon: '●', tile: 'border-warn/60', chip: 'text-warn' },
-  DIRTY: { label: 'Needs clearing', icon: '⊘', tile: 'border-flame', chip: 'text-flame-text' },
+// The status word comes from the dictionary; icon and colour travel with it (NFR-U3).
+const STATUS: Record<TableStatus, { icon: string; tile: string; chip: string }> = {
+  FREE: { icon: '○', tile: 'border-ok/50', chip: 'text-ok' },
+  SEATED: { icon: '●', tile: 'border-warn/60', chip: 'text-warn' },
+  DIRTY: { icon: '⊘', tile: 'border-flame', chip: 'text-flame-text' },
 };
 
 /** Staff table map (TABLE-04): status at a glance, with close and clean actions. */
@@ -29,21 +32,21 @@ export function TableMapPage() {
   const setStatus = useSetTableStatus();
   const create = useCreateTable();
   const [message, setMessage] = useState<string | null>(null);
+  const t = useT();
   const isAdmin = user?.role === 'ADMIN';
 
-  const report = (err: unknown) =>
-    setMessage(err instanceof ApiError ? err.message : 'That did not work. Try again.');
+  const report = (err: unknown) => setMessage(errorMessage(err));
 
   if (isLoading || !data) {
     return (
       <p role="status" className="p-10 text-center text-ink-muted">
-        Loading tables…
+        {t.tables.loading}
       </p>
     );
   }
 
   const counts = data.reduce<Record<TableStatus, number>>(
-    (acc, t) => ({ ...acc, [t.status]: acc[t.status] + 1 }),
+    (acc, table) => ({ ...acc, [table.status]: acc[table.status] + 1 }),
     { FREE: 0, SEATED: 0, DIRTY: 0 },
   );
 
@@ -51,9 +54,9 @@ export function TableMapPage() {
     <main className="mx-auto w-full max-w-content px-5 pb-16 md:px-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold">Tables</h1>
+          <h1 className="font-display text-3xl font-bold">{t.tables.title}</h1>
           <p className="text-sm text-ink-muted">
-            {counts.FREE} free · {counts.SEATED} seated · {counts.DIRTY} need clearing
+            {t.tables.summary(counts.FREE, counts.SEATED, counts.DIRTY)}
           </p>
         </div>
         {isAdmin && (
@@ -61,11 +64,11 @@ export function TableMapPage() {
             type="button"
             className={buttonClass('ghost')}
             onClick={() => {
-              const number = window.prompt('New table number');
+              const number = window.prompt(t.tables.newNumber);
               if (number) create.mutate({ number, seats: 4 }, { onError: report });
             }}
           >
-            Add table
+            {t.tables.add}
           </button>
         )}
       </div>
@@ -81,69 +84,69 @@ export function TableMapPage() {
             className="font-semibold text-flame-text"
             onClick={() => setMessage(null)}
           >
-            Dismiss
+            {t.common.dismiss}
           </button>
         </p>
       )}
 
       <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {data
-          .filter((t) => t.isActive)
-          .map((t: MapTable, i: number) => {
-            const s = STATUS[t.status];
+          .filter((table) => table.isActive)
+          .map((table: MapTable, i: number) => {
+            const s = STATUS[table.status];
             return (
               <li
-                key={t.id}
+                key={table.id}
                 style={{ animationDelay: `${Math.min(i, 7) * 45}ms` }}
                 className={`flex flex-col gap-3 rounded-card border-2 bg-card p-4 motion-safe:animate-rise ${s.tile}`}
               >
                 <div className="flex items-start justify-between">
-                  <p className="font-display text-3xl font-bold">{t.number}</p>
+                  <p className="font-display text-3xl font-bold">{table.number}</p>
                   <span className={`text-xs font-semibold ${s.chip}`}>
                     <span aria-hidden="true">{s.icon} </span>
-                    {s.label}
+                    {t.tables.status[table.status]}
                   </span>
                 </div>
                 <p className="text-xs text-ink-muted">
-                  {t.seats} seats · {t.openOrders} open order{t.openOrders === 1 ? '' : 's'}
+                  {t.tables.seats(table.seats)} · {t.tables.openOrders(table.openOrders)}
                 </p>
                 <div className="mt-auto flex flex-wrap gap-2">
-                  {t.status === 'FREE' && (
+                  {table.status === 'FREE' && (
                     <button
                       type="button"
                       className={buttonClass('ghost', 'sm')}
                       onClick={() =>
-                        setStatus.mutate({ id: t.id, status: 'SEATED' }, { onError: report })
+                        setStatus.mutate({ id: table.id, status: 'SEATED' }, { onError: report })
                       }
                     >
-                      Seat
+                      {t.tables.seat}
                     </button>
                   )}
-                  {t.status === 'SEATED' && (
+                  {table.status === 'SEATED' && (
                     <button
                       type="button"
                       className={buttonClass('ghost', 'sm')}
-                      onClick={() => close.mutate(t.id, { onError: report })}
+                      onClick={() => close.mutate(table.id, { onError: report })}
                     >
-                      Close
+                      {t.tables.close}
                     </button>
                   )}
-                  {t.status === 'DIRTY' && (
+                  {table.status === 'DIRTY' && (
                     <button
                       type="button"
                       className={buttonClass('primary', 'sm')}
-                      onClick={() => clean.mutate(t.id, { onError: report })}
+                      onClick={() => clean.mutate(table.id, { onError: report })}
                     >
-                      Mark clean
+                      {t.tables.clean}
                     </button>
                   )}
                   {isAdmin && (
                     <button
                       type="button"
                       className="inline-flex min-h-9 items-center px-2 text-xs font-semibold text-ink-muted hover:text-ink"
-                      onClick={() => void openQr(t.id)}
+                      onClick={() => void openQr(table.id)}
                     >
-                      QR code
+                      {t.tables.qr}
                     </button>
                   )}
                 </div>

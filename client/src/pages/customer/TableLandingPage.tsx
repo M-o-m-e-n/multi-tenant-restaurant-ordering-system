@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { useTableSession } from '../../features/table/tableSession';
+import { useT } from '../../i18n';
 import { api, ApiError } from '../../shared/api/client';
 import { buttonClass } from '../../shared/ui/buttonClass';
 
-type State = { kind: 'loading' } | { kind: 'error'; title: string; message: string };
+type State = { kind: 'loading' } | { kind: 'error'; reason: 'dirty' | 'unknown' | 'failed' };
 
 /**
  * /t/:token — where a table's QR code lands (TABLE-03, BROWSE-04). It reads the
@@ -17,6 +18,7 @@ export function TableLandingPage() {
   const { token = '' } = useParams();
   const join = useTableSession((s) => s.join);
   const navigate = useNavigate();
+  const t = useT();
   const [state, setState] = useState<State>({ kind: 'loading' });
 
   useEffect(() => {
@@ -35,24 +37,11 @@ export function TableLandingPage() {
       } catch (err) {
         if (cancelled) return;
         if (err instanceof ApiError && err.code === 'TABLE_DIRTY') {
-          setState({
-            kind: 'error',
-            title: 'This table is being cleared',
-            message: 'Give us a moment — ask a member of staff to seat you.',
-          });
+          setState({ kind: 'error', reason: 'dirty' });
         } else if (err instanceof ApiError && (err.status === 404 || err.status === 400)) {
-          setState({
-            kind: 'error',
-            title: 'We don’t recognise this code',
-            message:
-              'The QR code may be out of date. Ask staff for a fresh one, or browse the menu.',
-          });
+          setState({ kind: 'error', reason: 'unknown' });
         } else {
-          setState({
-            kind: 'error',
-            title: 'We couldn’t open your table',
-            message: 'Check your connection and scan the code again.',
-          });
+          setState({ kind: 'error', reason: 'failed' });
         }
       }
     }
@@ -65,16 +54,16 @@ export function TableLandingPage() {
   if (state.kind === 'loading') {
     return (
       <p role="status" className="p-16 text-center text-ink-muted">
-        Finding your table…
+        {t.tableLanding.finding}
       </p>
     );
   }
   return (
     <main className="mx-auto max-w-md px-5 py-16 text-center">
-      <h1 className="font-display text-3xl font-bold">{state.title}</h1>
-      <p className="mt-3 text-ink-muted">{state.message}</p>
+      <h1 className="font-display text-3xl font-bold">{t.tableLanding[`${state.reason}Title`]}</h1>
+      <p className="mt-3 text-ink-muted">{t.tableLanding[`${state.reason}Body`]}</p>
       <Link to="/menu" className={`${buttonClass('ghost')} mt-6`}>
-        Browse the menu
+        {t.tableLanding.browse}
       </Link>
     </main>
   );

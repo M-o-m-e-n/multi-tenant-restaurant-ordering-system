@@ -26,6 +26,41 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-09-25 — M14 — Arabic and Egypt localisation
+
+**Slices:** M14-S1…S10 ☑
+**Done**
+- i18n core (`client/src/i18n`): typed dictionaries, `useT()`, `tNow()` for helpers, an
+  `Intl.PluralRules`-based `plural()`, a persisted language store, `LangToggle`. The page remounts on
+  a language change, so every label and price re-renders.
+- About 450 strings moved to the dictionaries across every guest, staff and admin screen. Tenant
+  copy (landing, menu banner, booking panel) is `{ en, ar }` data read through `useL()`.
+- `errorMessage()` translates server errors by code, and English keeps the server's wording.
+  Checkout and register map validation issues by field.
+- RTL: logical classes; direction-aware marquee, carousel, chip pill, toast, sheet and progress bar.
+  Loop variables named `t` were renamed wherever they shadowed the translator.
+- `formatMoney` reads the tenant currency (brand) and the reader's language. The new
+  `shared/format.ts` handles dates and times.
+- `phoneNumber` in shared schemas normalises Egyptian local mobiles to `+20…`.
+**Verified**
+- `npm run check`: shared 60, server 268, client 46, all green. New tests cover dictionary parity
+  and plurals, the English scan, EGP and USD formatting in Arabic, phone normalisation, and open
+  hours.
+- E2E: 15 of 15 in English. axe: 17 screens × 2 languages, 0 violations.
+- Screenshots in Arabic at 1280 px and 390 px; `<html lang="ar" dir="rtl">`; no overflow.
+**Issues / surprises**
+- Shell heredocs keep stripping backslashes, so every patch script went through the editor.
+- An `edit()` helper put an import inside a function in a file that had no imports; the helper
+  now handles that case.
+- USD formatted with `ar-EG` rules bidi-scrambles into "$US 14.00". Foreign currencies keep their
+  international form.
+- The dictionary parity test caught an Arabic string copied from English (the allergen
+  placeholder). It now says the codes are typed in English.
+**Decisions raised:** ADR-030 extended (register, digits, `dir="auto"` for menu data)
+**Next:** M15 — multiple branches.
+
+---
+
 ### 2026-09-25 — client motion pass 2 — an interactive, scroll- and pointer-driven layer
 
 **Slices:** none (user request: "more animation, more reactive, something out of the box")

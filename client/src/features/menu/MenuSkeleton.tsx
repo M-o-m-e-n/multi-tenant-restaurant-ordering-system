@@ -1,13 +1,16 @@
+import { useT } from '../../i18n';
+
 /**
  * Loading placeholder that mirrors the menu layout, so the page does not
  * jump when the dishes arrive. Visual only — the status line stays readable
  * for assistive tech.
  */
 export function MenuSkeleton() {
+  const t = useT();
   return (
     <div>
       <p role="status" className="sr-only">
-        Setting the table…
+        {t.menu.loading}
       </p>
       <div aria-hidden="true">
         <div className="skeleton h-44 rounded-frame md:h-56" />

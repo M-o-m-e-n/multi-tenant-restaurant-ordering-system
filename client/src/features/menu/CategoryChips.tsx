@@ -1,5 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
+import { useT } from '../../i18n';
+
 interface Chip {
   id: string;
   name: string;
@@ -21,6 +23,7 @@ export function CategoryChips({
   onChange: (id: string) => void;
 }) {
   const list = useRef<HTMLDivElement>(null);
+  const t = useT();
   const [pill, setPill] = useState<{ left: number; width: number } | null>(null);
 
   useLayoutEffect(() => {
@@ -32,8 +35,10 @@ export function CategoryChips({
       setPill({ left: active.offsetLeft, width: active.offsetWidth });
       // Centre the chosen chip on narrow screens — horizontally only, so the
       // page itself never jumps.
+      const centre = active.offsetLeft - host.clientWidth / 2 + active.offsetWidth / 2;
+      const rtl = getComputedStyle(host).direction === 'rtl';
       host.scrollTo({
-        left: active.offsetLeft - host.clientWidth / 2 + active.offsetWidth / 2,
+        left: rtl ? centre - (host.scrollWidth - host.clientWidth) : centre,
         behavior: 'smooth',
       });
     };
@@ -47,13 +52,13 @@ export function CategoryChips({
     <div
       ref={list}
       role="tablist"
-      aria-label="Categories"
+      aria-label={t.menu.categories}
       className="relative mt-4 flex gap-2 overflow-x-auto pb-2"
     >
       {pill && (
         <span
           aria-hidden="true"
-          className="absolute top-0 h-11 rounded-btn bg-flame shadow-glow transition-[transform,width] duration-500 ease-[cubic-bezier(.2,.8,.2,1)]"
+          className="absolute left-0 top-0 h-11 rounded-btn bg-flame shadow-glow transition-[transform,width] duration-500 ease-[cubic-bezier(.2,.8,.2,1)]"
           style={{ width: pill.width, transform: `translateX(${pill.left}px)` }}
         />
       )}

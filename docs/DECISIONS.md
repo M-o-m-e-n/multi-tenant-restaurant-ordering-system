@@ -404,6 +404,10 @@ has about 400 hard-coded English strings.
 - **Menu content** (names and descriptions) is data, not UI. Bilingual menu fields arrive with the
   tenant pack (M17).
 - **Layout** uses logical CSS (`ms-`, `start-`, `border-s`), and motion reads the direction.
+- **Register.** Guest-facing copy is friendly Egyptian Arabic ("شوف المنيو", "بكرة"), the way
+  Egyptian menus and the restaurant's own site speak. System lines (sign-in, errors) stay plain
+  and short. Numbers use Latin digits (`ar-EG-u-nu-latn`), as Egyptian menus do.
+- **Menu data** (dish names) gets `dir="auto"`, so a Latin name reads correctly inside an RTL page.
 **Consequences.** About 2 kB of runtime and no dependency. Plurals are handled per key with
 functions, which covers Arabic's forms for the few counted strings.
 

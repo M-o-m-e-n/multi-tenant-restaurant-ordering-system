@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { ReservationStatus } from '../domain/enums';
-import { businessDate, uuid } from './common';
+import { businessDate, phoneNumber, uuid } from './common';
 
 /** Minutes past its slot after which a PENDING booking is flagged overdue (TABLE-07). */
 export const RESERVATION_GRACE_MINUTES = 15;
@@ -10,7 +10,7 @@ export const RESERVATION_GRACE_MINUTES = 15;
 export const createReservationSchema = z
   .object({
     guestName: z.string().trim().min(1).max(120),
-    guestPhone: z.string().trim().min(5).max(30),
+    guestPhone: phoneNumber,
     partySize: z.number().int().min(1).max(20),
     slotAt: z.string().datetime({ offset: true }),
     notes: z.string().trim().max(300).optional(),

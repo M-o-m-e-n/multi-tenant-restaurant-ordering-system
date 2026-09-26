@@ -6,7 +6,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { useOrder } from '../../features/orders/ordersApi';
 import { createIntent, usePaymentsConfig } from '../../features/payments/paymentsApi';
-import { ApiError } from '../../shared/api/client';
+import { useLang, useT } from '../../i18n';
+import { errorMessage } from '../../shared/api/errorMessage';
 import { formatMoney } from '../../shared/money';
 import { buttonClass } from '../../shared/ui/buttonClass';
 
@@ -33,33 +34,31 @@ export function PayPage() {
   const key = useRef(crypto.randomUUID());
   const [intent, setIntent] = useState<IntentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
+  const lang = useLang();
 
   const owed = order?.balanceDue ?? 0;
   useEffect(() => {
     if (!config?.cardEnabled || !order || owed <= 0 || intent) return;
     createIntent(order.id, key.current)
       .then(setIntent)
-      .catch((err: unknown) =>
-        setError(err instanceof ApiError ? err.message : 'Payment could not start.'),
-      );
-  }, [config?.cardEnabled, order, owed, intent]);
+      .catch((err: unknown) => setError(errorMessage(err, t.pay.couldNotStart)));
+  }, [config?.cardEnabled, order, owed, intent, t.pay.couldNotStart]);
 
   if (!order || !config)
     return (
       <p role="status" className="p-10 text-center text-ink-muted">
-        Loading…
+        {t.common.loading}
       </p>
     );
 
   if (!config.cardEnabled) {
     return (
       <main className="mx-auto max-w-md px-5 py-16 text-center">
-        <h1 className="font-display text-3xl font-bold">Pay with our staff</h1>
-        <p className="mt-3 text-ink-muted">
-          Card payment online is switched off right now. Staff can take cash or card at the counter.
-        </p>
+        <h1 className="font-display text-3xl font-bold">{t.pay.staffTitle}</h1>
+        <p className="mt-3 text-ink-muted">{t.pay.staffBody}</p>
         <Link to={`/orders/${order.id}`} className={`${buttonClass('ghost')} mt-6`}>
-          Back to your order
+          {t.pay.backToOrder}
         </Link>
       </main>
     );
@@ -67,9 +66,9 @@ export function PayPage() {
   if (owed <= 0) {
     return (
       <main className="mx-auto max-w-md px-5 py-16 text-center">
-        <h1 className="font-display text-3xl font-bold">All paid — thank you</h1>
+        <h1 className="font-display text-3xl font-bold">{t.pay.paidTitle}</h1>
         <Link to={`/orders/${order.id}`} className={`${buttonClass('primary')} mt-6`}>
-          Back to your order
+          {t.pay.backToOrder}
         </Link>
       </main>
     );
@@ -77,11 +76,11 @@ export function PayPage() {
 
   return (
     <main className="mx-auto w-full max-w-lg px-5 pb-16">
-      <p className="text-sm text-ink-muted">Order {order.orderNumber}</p>
-      <h1 className="font-display text-3xl font-bold">Pay {formatMoney(intent?.amount ?? owed)}</h1>
-      <p className="mt-1 text-xs text-ink-muted">
-        Test mode: use card 4242 4242 4242 4242, any future date, any CVC.
-      </p>
+      <p className="text-sm text-ink-muted">{t.tracker.title(order.orderNumber)}</p>
+      <h1 className="font-display text-3xl font-bold">
+        {t.pay.pay(formatMoney(intent?.amount ?? owed))}
+      </h1>
+      <p className="mt-1 text-xs text-ink-muted">{t.pay.testMode}</p>
       {error && (
         <p role="alert" className="mt-4 rounded-icon border border-flame p-3 text-sm">
           {error}
@@ -92,6 +91,7 @@ export function PayPage() {
           stripe={stripeFor(intent.publishableKey)}
           options={{
             clientSecret: intent.clientSecret,
+            locale: lang === 'ar' ? 'ar' : 'en',
             appearance: {
               theme: 'night',
               variables: {
@@ -108,7 +108,7 @@ export function PayPage() {
       ) : (
         !error && (
           <p role="status" className="mt-6 text-ink-muted">
-            Preparing a secure payment…
+            {t.pay.preparing}
           </p>
         )
       )}
@@ -122,6 +122,7 @@ function CardForm({ orderId, amount }: { orderId: string; amount: number }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -136,7 +137,7 @@ function CardForm({ orderId, amount }: { orderId: string; amount: number }) {
     setBusy(false);
     if (result.error) {
       // A declined card leaves the order unpaid; the guest can simply try again (PAY-04).
-      setError(result.error.message ?? 'The card was declined.');
+      setError(result.error.message ?? t.pay.declined);
       return;
     }
     navigate(`/orders/${orderId}`, { replace: true });
@@ -154,7 +155,7 @@ function CardForm({ orderId, amount }: { orderId: string; amount: number }) {
         </p>
       )}
       <button type="submit" disabled={!stripe || busy} className={buttonClass('primary', 'lg')}>
-        {busy ? 'Paying…' : `Pay ${formatMoney(amount)}`}
+        {busy ? t.pay.paying : t.pay.pay(formatMoney(amount))}
       </button>
     </form>
   );

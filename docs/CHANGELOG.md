@@ -12,6 +12,22 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
 
 ## [Unreleased]
 
+### Added — M14, Arabic and Egypt localisation
+- **The whole app in Arabic RTL** with an English toggle (ADR-030):
+  - typed `ar`/`en` dictionaries with Arabic plural forms
+  - tenant copy in both languages
+  - a persisted language choice that sets `<html lang dir>`
+  - a test that fails if English is hard-coded in any screen
+- **Server errors** show in the reader's language by error code; validation messages map by field.
+- **RTL layout** uses logical CSS. The marquee, carousel, chip pill, toast, mobile sheet, progress bar
+  and garnish all follow the reading direction.
+- **Arabic type:** Cairo and El Messiri load behind the Latin faces.
+- **Money** is shown in the tenant's currency: "90 ج.م" in Arabic, "EGP 90" in English, no decimals
+  for whole pounds. Dates and times follow the reader's language.
+- **Phone numbers** are stored in international form; Egyptian mobiles written locally
+  (`010 1362 2622`) become `+201013622622`.
+- **axe** runs on all 17 screens in both languages (0 violations).
+
 ### Added
 - **Interactive motion layer (no new dependencies, ADR-028):**
   - Hero:

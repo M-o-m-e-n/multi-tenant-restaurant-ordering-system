@@ -1,15 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { useL } from '../../i18n/localized';
 import { formatMoney } from '../../shared/money';
 import { prefersReducedMotion } from '../../shared/ui/motionUtils';
 import { clamp, onScrollFrame } from '../../shared/ui/scrollFx';
-import { FIRE_STAGES } from './content';
+import { FIRE } from './content';
 
-const LINES = [
-  { name: 'Wagyu Burger', note: 'Large · Medium rare', photo: '/images/dishes/wagyu-burger.jpg' },
-  { name: 'Truffle Arancini', note: 'With saffron', photo: '/images/dishes/truffle-arancini.jpg' },
-  { name: 'Yuzu Lemonade', note: 'With mint', photo: '/images/dishes/yuzu-lemonade.jpg' },
-];
+const FIRE_STAGES = FIRE.stages;
 
 /**
  * Scroll-driven story (replaces the three static "how it works" cards). On
@@ -22,6 +19,7 @@ export function FireToTable() {
   const section = useRef<HTMLElement>(null);
   const [stage, setStage] = useState(0);
   const [pinned, setPinned] = useState(false);
+  const l = useL();
 
   useEffect(() => {
     const wide = matchMedia('(min-width: 768px)');
@@ -64,20 +62,20 @@ export function FireToTable() {
         <div aria-hidden="true" className={pinned ? 'relative mx-auto' : 'hidden'}>
           <div className="absolute inset-[-12%] rounded-full bg-flame/20 blur-3xl" />
           <div className="relative h-[520px] w-[260px] rounded-[42px] border border-line-strong bg-bg-deep p-3 shadow-plate">
-            <div className="absolute left-1/2 top-3 h-5 w-24 -translate-x-1/2 rounded-full bg-bg-deep" />
+            <div className="absolute inset-x-0 top-3 mx-auto h-5 w-24 rounded-full bg-bg-deep" />
             <div className="flex h-full flex-col overflow-hidden rounded-[32px] bg-bg px-4 pb-4 pt-9">
               <p className="text-[0.65rem] uppercase tracking-widest text-ink-muted">
-                Order A-1042 · Table 7
+                {l(FIRE.phoneHeader)}
               </p>
               <p
-                key={active.status}
+                key={active.status.en}
                 className="mt-1 font-display text-2xl font-bold motion-safe:animate-rise"
               >
-                {active.status}
+                {l(active.status)}
               </p>
               <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-line">
                 <div
-                  className="h-full origin-left rounded-full bg-flame shadow-glow transition-transform duration-700 ease-out"
+                  className="h-full origin-left rounded-full bg-flame rtl:origin-right shadow-glow transition-transform duration-700 ease-out"
                   style={{ transform: `scaleX(${active.progress})` }}
                 />
               </div>
@@ -100,25 +98,25 @@ export function FireToTable() {
               <ul className="mt-5 flex flex-col gap-3">
                 {/* Until the order is placed, lines still being chosen show as
                     shimmering placeholders (no dimmed text to fail contrast). */}
-                {LINES.map((l, i) =>
+                {FIRE.lines.map((line, i) =>
                   stage >= 1 || i === 0 ? (
                     <li
-                      key={l.name}
+                      key={line.name.en}
                       className="flex items-center gap-3 motion-safe:animate-rise"
                       style={{ animationDelay: `${i * 90}ms` }}
                     >
                       <img
-                        src={l.photo}
+                        src={line.photo}
                         alt=""
                         className={`size-10 rounded-full object-cover ${stage === 2 ? 'animate-pulse' : ''}`}
                       />
                       <div className="min-w-0">
-                        <p className="truncate text-xs font-semibold">{l.name}</p>
-                        <p className="truncate text-[0.65rem] text-ink-muted">{l.note}</p>
+                        <p className="truncate text-xs font-semibold">{l(line.name)}</p>
+                        <p className="truncate text-[0.65rem] text-ink-muted">{l(line.note)}</p>
                       </div>
                     </li>
                   ) : (
-                    <li key={l.name} className="flex items-center gap-3">
+                    <li key={line.name.en} className="flex items-center gap-3">
                       <span className="skeleton size-10 rounded-full" />
                       <span className="flex flex-1 flex-col gap-1.5">
                         <span className="skeleton h-2.5 w-2/3 rounded-full" />
@@ -130,10 +128,12 @@ export function FireToTable() {
               </ul>
               <div className="mt-auto rounded-2xl bg-flame px-4 py-3 text-white shadow-glow">
                 <p className="text-[0.65rem] opacity-90">
-                  {stage < 3 ? 'Ready in about' : 'Balance'}
+                  {stage < 3 ? l(FIRE.readyIn) : l(FIRE.balance)}
                 </p>
                 <p className="font-display text-xl font-bold">
-                  {stage < 3 ? `${Math.max(2, 18 - stage * 6)} min` : `Paid · ${formatMoney(4210)}`}
+                  {stage < 3
+                    ? `${Math.max(2, 18 - stage * 6)} ${l(FIRE.minutes)}`
+                    : `${l(FIRE.paid)} · ${formatMoney(4210)}`}
                 </p>
               </div>
             </div>
@@ -142,10 +142,10 @@ export function FireToTable() {
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-flame-text">
-            How it works
+            {l(FIRE.eyebrow)}
           </p>
           <h2 id="how" className="mt-3 font-display text-3xl font-bold md:text-4xl">
-            From your table to our fire, and back
+            {l(FIRE.title)}
           </h2>
           <ol className="mt-10 flex flex-col gap-2">
             {FIRE_STAGES.map((s, i) => {
@@ -162,7 +162,7 @@ export function FireToTable() {
                   {pinned && on && (
                     <span
                       aria-hidden="true"
-                      className="absolute inset-y-4 left-0 w-1 rounded-full bg-flame shadow-glow"
+                      className="absolute inset-y-4 start-0 w-1 rounded-full bg-flame shadow-glow"
                     />
                   )}
                   <div className="flex gap-4">
@@ -172,9 +172,9 @@ export function FireToTable() {
                       <h3
                         className={`text-lg font-semibold transition-colors duration-500 ${on ? 'text-ink' : 'text-ink-muted'}`}
                       >
-                        {s.title}
+                        {l(s.title)}
                       </h3>
-                      <p className="mt-1 text-sm text-ink-muted">{s.body}</p>
+                      <p className="mt-1 text-sm text-ink-muted">{l(s.body)}</p>
                     </div>
                   </div>
                 </li>
@@ -183,7 +183,7 @@ export function FireToTable() {
           </ol>
           {pinned && (
             <p className="mt-6 text-xs text-ink-muted" aria-hidden="true">
-              Keep scrolling ↓
+              {l(FIRE.keepScrolling)}
             </p>
           )}
         </div>

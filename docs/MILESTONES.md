@@ -546,16 +546,16 @@ fee**.
 
 | ☐ | ID | Slice | Size | Done when |
 |---|---|---|---|---|
-| ☐ | **M14-S1** | i18n core: typed `ar`/`en` dictionaries, `useT()`, a persisted language choice, `<html lang dir>`, an EN/ع toggle in the nav | M | The toggle flips language and direction without a reload; a missing key fails typecheck |
-| ☐ | **M14-S2** | Customer screens translated (landing, menu, cart, checkout, tracker, pay, receipt, booking, auth) | L | No English literal is left in `pages/customer` or `features/landing` (a test scans them) |
-| ☐ | **M14-S3** | Staff and admin screens translated (KDS, POS, tables, bookings, dashboard, reports, menu admin) | L | The same scan passes for `pages/{kitchen,pos,admin}` |
-| ☐ | **M14-S4** | Errors and validation in the active language, keyed by `error.code` and Zod message keys | M | A 409 and a form error show in Arabic |
-| ☐ | **M14-S5** | RTL layout with logical properties; motion that knows the direction (fly-to-cart, marquee, toast, chip pill) | M | axe clean in RTL; no mirrored-layout bugs at 360 and 1280 px |
-| ☐ | **M14-S6** | Arabic type: Cairo (body) and El Messiri (display), with Latin fallbacks; fork-flame-ui skill updated | S | Arabic renders in the brand fonts; no tofu glyphs |
-| ☐ | **M14-S7** | Money in the tenant's currency and locale (`ar-EG`, Latin digits, no decimals for whole pounds) | M | `formatMoney(9000)` gives "90 ج.م" in Arabic and "EGP 90" in English |
-| ☐ | **M14-S8** | Dates, times and hours in the active locale; `Africa/Cairo` for the tenant | S | The open chip, booking slots and tracker times read in Arabic |
-| ☐ | **M14-S9** | Egyptian mobile numbers validated and normalised (`01[0125]xxxxxxxx` → `+201…`) | S | `010 1362 2622` is accepted and stored as `+201013622622` |
-| ☐ | **M14-S10** | E2E and axe run in Arabic RTL as well as English | M | The suite passes in both languages |
+| ☑ | **M14-S1** | i18n core: typed `ar`/`en` dictionaries, `useT()`, a persisted language choice, `<html lang dir>`, an EN/ع toggle in the nav | M | The toggle flips language and direction without a reload; a missing key fails typecheck |
+| ☑ | **M14-S2** | Customer screens translated (landing, menu, cart, checkout, tracker, pay, receipt, booking, auth) | L | No English literal is left in `pages/customer` or `features/landing` (a test scans them) |
+| ☑ | **M14-S3** | Staff and admin screens translated (KDS, POS, tables, bookings, dashboard, reports, menu admin) | L | The same scan passes for `pages/{kitchen,pos,admin}` |
+| ☑ | **M14-S4** | Errors and validation in the active language, keyed by `error.code` and Zod message keys | M | A 409 and a form error show in Arabic |
+| ☑ | **M14-S5** | RTL layout with logical properties; motion that knows the direction (fly-to-cart, marquee, toast, chip pill) | M | axe clean in RTL; no mirrored-layout bugs at 360 and 1280 px |
+| ☑ | **M14-S6** | Arabic type: Cairo (body) and El Messiri (display), with Latin fallbacks; fork-flame-ui skill updated | S | Arabic renders in the brand fonts; no tofu glyphs |
+| ☑ | **M14-S7** | Money in the tenant's currency and locale (`ar-EG`, Latin digits, no decimals for whole pounds) | M | `formatMoney(9000)` gives "90 ج.م" in Arabic and "EGP 90" in English |
+| ☑ | **M14-S8** | Dates, times and hours in the active locale; `Africa/Cairo` for the tenant | S | The open chip, booking slots and tracker times read in Arabic |
+| ☑ | **M14-S9** | Egyptian mobile numbers validated and normalised (`01[0125]xxxxxxxx` → `+201…`) | S | `010 1362 2622` is accepted and stored as `+201013622622` |
+| ☑ | **M14-S10** | E2E and axe run in Arabic RTL as well as English | M | The suite passes in both languages |
 
 ### M15 — Multiple branches (outline; the slices are detailed when the milestone starts)
 Branch model and backfill; `branchId` on tables, orders, sequences, bookings and staff;

@@ -5,6 +5,11 @@
 @layer base {
   html {
     @apply bg-bg-deep;
+    /* Reading direction as a number, for motion that slides "in from the end". */
+    --flow: 1;
+  }
+  html[dir='rtl'] {
+    --flow: -1;
   }
   body {
     @apply min-h-screen bg-page bg-fixed font-sans text-ink antialiased;
@@ -210,8 +215,12 @@
   }
 
   .mobile-sheet {
+    /* Grows out of the menu button's corner: top-right in LTR, top-left in RTL. */
     transform-origin: top right;
     animation: sheet-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+  [dir='rtl'] .mobile-sheet {
+    transform-origin: top left;
   }
   .mobile-item {
     animation: route-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
@@ -241,7 +250,7 @@
   @keyframes toast-in {
     from {
       opacity: 0;
-      transform: translateX(24px) scale(0.96);
+      transform: translateX(calc(24px * var(--flow))) scale(0.96);
     }
   }
   @keyframes toast-timer {

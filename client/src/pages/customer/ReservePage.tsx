@@ -8,11 +8,15 @@ import {
 import { type FormEvent, type ReactNode, type SelectHTMLAttributes, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { RESERVE_PANEL } from '../../brand/copy';
 import { useAuth } from '../../features/auth/authStore';
 import { useSettings } from '../../features/cart/cartApi';
 import { useCreateReservation } from '../../features/reservations/reservationsApi';
 import { formatSlot, SLOT_TIMES, slotLabel } from '../../features/reservations/slots';
-import { ApiError } from '../../shared/api/client';
+import { useT } from '../../i18n';
+import { useL } from '../../i18n/localized';
+import { errorMessage } from '../../shared/api/errorMessage';
+import { formatLongDate } from '../../shared/format';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { Field } from '../../shared/ui/Field';
 import { formValue } from '../../shared/ui/formValue';
@@ -32,6 +36,8 @@ export function ReservePage() {
   const create = useCreateReservation();
   const [error, setError] = useState<string | null>(null);
   const [booked, setBooked] = useState<ReservationDto | null>(null);
+  const t = useT();
+  const l = useL();
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,18 +53,18 @@ export function ReservePage() {
     };
     const check = createReservationSchema.safeParse(dto);
     if (!check.success) {
-      setError(check.error.issues[0]?.message ?? 'Check the details and try again.');
+      setError(t.reserve.checkDetails);
       return;
     }
     if (new Date(dto.slotAt).getTime() <= Date.now()) {
-      setError('That time has already passed. Pick a later slot.');
+      setError(t.reserve.passed);
       return;
     }
     setError(null);
     try {
       setBooked(await create.mutateAsync(check.data));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'We could not book that. Try again.');
+      setError(errorMessage(err, t.reserve.failed));
     }
   }
 
@@ -69,37 +75,32 @@ export function ReservePage() {
         <div className="absolute inset-0 bg-gradient-to-t from-bg-deep via-bg-deep/40 to-transparent" />
         <div className="absolute bottom-0 p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-flame-text">
-            Reservations
+            {t.reserve.eyebrow}
           </p>
-          <p className="mt-2 font-display text-3xl font-bold">Your table, by the fire.</p>
-          <p className="mt-2 text-sm text-ink-muted">
-            We hold every booking for 15 minutes. Running late? Give us a call.
-          </p>
+          <p className="mt-2 font-display text-3xl font-bold">{l(RESERVE_PANEL.title)}</p>
+          <p className="mt-2 text-sm text-ink-muted">{l(RESERVE_PANEL.body)}</p>
         </div>
       </div>
 
       {booked ? (
         <section className="flex flex-col justify-center gap-4 rounded-card border border-line bg-surface p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ok">Confirmed</p>
-          <h1 className="font-display text-3xl font-bold">See you soon, {booked.guestName}.</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ok">
+            {t.reserve.confirmed}
+          </p>
+          <h1 className="font-display text-3xl font-bold">{t.reserve.seeYou(booked.guestName)}</h1>
           <p className="text-ink-muted">
-            A table for {booked.partySize} on{' '}
-            <strong className="text-ink">
-              {new Date(booked.slotAt).toLocaleDateString('en-US', {
-                timeZone: tz,
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </strong>{' '}
-            at <strong className="text-ink">{slotLabel(booked.slotAt, tz)}</strong>.
+            {t.reserve.summary(
+              booked.partySize,
+              formatLongDate(booked.slotAt, tz),
+              slotLabel(booked.slotAt, tz),
+            )}
           </p>
           <div className="flex flex-wrap gap-3">
             <Link to="/menu" className={buttonClass('primary')}>
-              Browse the menu
+              {t.reserve.browse}
             </Link>
             <button type="button" className={buttonClass('ghost')} onClick={() => setBooked(null)}>
-              Book another
+              {t.reserve.another}
             </button>
           </div>
         </section>
@@ -109,21 +110,19 @@ export function ReservePage() {
           onSubmit={(e) => void submit(e)}
         >
           <div>
-            <h1 className="font-display text-3xl font-bold">Book a table</h1>
-            <p className="mt-1 text-sm text-ink-muted">
-              Times are local to the restaurant. Parties over 12, please call us.
-            </p>
+            <h1 className="font-display text-3xl font-bold">{t.reserve.title}</h1>
+            <p className="mt-1 text-sm text-ink-muted">{t.reserve.hint}</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
-              label="Name"
+              label={t.reserve.name}
               name="name"
               autoComplete="name"
               defaultValue={user?.name}
               required
             />
             <Field
-              label="Phone"
+              label={t.reserve.phone}
               name="phone"
               type="tel"
               autoComplete="tel"
@@ -132,7 +131,7 @@ export function ReservePage() {
               required
             />
             <Field
-              label="Date"
+              label={t.reserve.date}
               name="date"
               type="date"
               min={today}
@@ -140,21 +139,26 @@ export function ReservePage() {
               defaultValue={addDays(today, 1)}
               required
             />
-            <Select label="Time" name="time" defaultValue="19:30">
-              {SLOT_TIMES.map((t) => (
-                <option key={t} value={t}>
-                  {formatSlot(t)}
+            <Select label={t.reserve.time} name="time" defaultValue="19:30">
+              {SLOT_TIMES.map((slot) => (
+                <option key={slot} value={slot}>
+                  {formatSlot(slot)}
                 </option>
               ))}
             </Select>
-            <Select label="Guests" name="party" defaultValue="2">
+            <Select label={t.reserve.guests} name="party" defaultValue="2">
               {Array.from({ length: 12 }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
-                  {n} {n === 1 ? 'guest' : 'guests'}
+                  {t.reserve.guestCount(n)}
                 </option>
               ))}
             </Select>
-            <Field label="Occasion or note" name="notes" maxLength={300} placeholder="Birthday…" />
+            <Field
+              label={t.reserve.note}
+              name="notes"
+              maxLength={300}
+              placeholder={t.reserve.notePlaceholder}
+            />
           </div>
           {error && (
             <p role="alert" className="rounded-icon border border-flame p-3 text-sm">
@@ -166,7 +170,7 @@ export function ReservePage() {
             className={buttonClass('primary', 'lg')}
             disabled={create.isPending}
           >
-            {create.isPending ? 'Booking…' : 'Book table'}
+            {create.isPending ? t.reserve.booking : t.reserve.book}
           </button>
         </form>
       )}

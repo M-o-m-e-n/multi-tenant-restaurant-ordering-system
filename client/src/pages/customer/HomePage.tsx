@@ -10,10 +10,12 @@ import { Footer, Marquee, QuoteBand, Reviews, Story, Visit } from '../../feature
 import { useMenu } from '../../features/menu/menuApi';
 import { SignatureRail } from '../../features/menu/SignatureRail';
 import { pickSignatures } from '../../features/menu/signatures';
+import { useT } from '../../i18n';
 
 /** The customer landing page (design 31): hero, live signatures, story, reviews, visit. */
 export function HomePage() {
   const { data } = useMenu();
+  const t = useT();
   const [open, setOpen] = useState<MenuItemDto | null>(null);
   const signatures = useMemo(() => pickSignatures(data), [data]);
   const categoryName = (item: MenuItemDto) =>
@@ -30,7 +32,8 @@ export function HomePage() {
               id="signatures"
               title={
                 <>
-                  Chef&rsquo;s <span className="text-flame">signatures</span>
+                  {t.menu.signaturesLead}{' '}
+                  <span className="text-flame">{t.menu.signaturesWord}</span>
                 </>
               }
               items={signatures}
@@ -39,7 +42,7 @@ export function HomePage() {
             />
             <div className="mt-4 text-center">
               <Link to="/menu" className="text-sm font-semibold text-flame-text hover:underline">
-                See the full menu →
+                {t.menu.seeFullMenu}
               </Link>
             </div>
           </div>
