@@ -1,6 +1,6 @@
-// Tenant landing copy for Fork & Flame, in both languages (ADR-030). The El
-// Demeshki pack replaces this file's content in M17. Photos live in
-// client/public/images (credits in the README).
+// Tenant landing copy for Fork & Flame, in both languages (ADR-030). Another
+// tenant brings its own landing (ADR-032). Photos live in client/public/images
+// (credits in the README).
 import type { L } from '../../i18n/localized';
 
 export const HERO = {

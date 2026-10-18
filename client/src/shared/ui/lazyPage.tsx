@@ -10,8 +10,13 @@ export function lazyPage<K extends string>(
   load: () => Promise<Record<K, ComponentType>>,
   name: K,
 ): ComponentType {
+  return lazyComponent(() => load().then((m) => m[name]));
+}
+
+/** A component loaded on first render, such as a tenant's page (brand/types.ts `PageLoader`). */
+export function lazyComponent(load: () => Promise<ComponentType>): ComponentType {
   const Page: LazyExoticComponent<ComponentType> = lazy(() =>
-    load().then((m) => ({ default: m[name] })),
+    load().then((component) => ({ default: component })),
   );
   return function LazyRoute() {
     const t = useT();

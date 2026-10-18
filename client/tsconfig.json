@@ -3,7 +3,13 @@
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    // Type-checks against the default tenant; a pack under ../tenants/<id>/client
+    // implements the same `Tenant` interface and is checked here too.
+    "paths": {
+      "@tenant": ["./src/tenants/forkandflame/index.ts"],
+      "@client/*": ["./src/*"]
+    }
   },
-  "include": ["src", "*.config.ts"]
+  "include": ["src", "*.config.ts", "../tenants/*/client"]
 }

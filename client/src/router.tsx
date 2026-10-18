@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 
+import { tenant } from './brand';
 import { RequireRole } from './features/auth/RequireRole';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
@@ -14,7 +15,7 @@ import { ReservePage } from './pages/customer/ReservePage';
 import { TableLandingPage } from './pages/customer/TableLandingPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AppShell } from './shared/ui/AppShell';
-import { lazyPage } from './shared/ui/lazyPage';
+import { lazyComponent, lazyPage } from './shared/ui/lazyPage';
 
 // Staff, admin and card-payment screens load on demand, so a guest never
 // downloads Recharts, Stripe or the KDS (NFR-P2).
@@ -33,6 +34,54 @@ const KitchenTicketPrintPage = lazyPage(
 const PosPage = lazyPage(() => import('./pages/pos/PosPage'), 'PosPage');
 const ReservationsPage = lazyPage(() => import('./pages/pos/ReservationsPage'), 'ReservationsPage');
 const TableMapPage = lazyPage(() => import('./pages/pos/TableMapPage'), 'TableMapPage');
+const BranchesPage = lazyPage(() => import('./pages/customer/BranchesPage'), 'BranchesPage');
+const ContactPage = lazyPage(() => import('./pages/customer/ContactPage'), 'ContactPage');
+const BranchesAdminPage = lazyPage(
+  () => import('./pages/admin/BranchesAdminPage'),
+  'BranchesAdminPage',
+);
+const MessagesPage = lazyPage(() => import('./pages/admin/MessagesPage'), 'MessagesPage');
+
+/**
+ * The site pages the tenant turns on (ADR-032). A tenant may draw a page
+ * itself; otherwise the generic one is used. About has no generic page.
+ */
+function sitePages() {
+  const pages = tenant.pages ?? {};
+  const on = tenant.brand.pages;
+  const About = pages.about ? lazyComponent(pages.about) : null;
+  const Branches = pages.branches ? lazyComponent(pages.branches) : BranchesPage;
+  const Contact = pages.contact ? lazyComponent(pages.contact) : ContactPage;
+  return [
+    ...(on.about && About ? [{ path: '/about', element: <About /> }] : []),
+    ...(on.branches
+      ? [
+          { path: '/branches', element: <Branches /> },
+          {
+            path: '/admin/branches',
+            element: (
+              <RequireRole roles={['ADMIN']}>
+                <BranchesAdminPage />
+              </RequireRole>
+            ),
+          },
+        ]
+      : []),
+    ...(on.contact
+      ? [
+          { path: '/contact', element: <Contact /> },
+          {
+            path: '/admin/messages',
+            element: (
+              <RequireRole roles={['ADMIN']}>
+                <MessagesPage />
+              </RequireRole>
+            ),
+          },
+        ]
+      : []),
+  ];
+}
 
 export const router = createBrowserRouter([
   // Print views sit outside the app shell: no navigation on paper.
@@ -49,6 +98,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/menu', element: <MenuPage /> },
+      ...sitePages(),
       { path: '/t/:token', element: <TableLandingPage /> },
       { path: '/cart', element: <CartPage /> },
       {

@@ -2,6 +2,7 @@ import type { MenuItemDto } from '@ros/shared';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { tenant } from '../../brand';
 import { CartBar } from '../../features/cart/CartBar';
 import { ModifierDialog } from '../../features/cart/ModifierDialog';
 import { FireToTable } from '../../features/landing/FireToTable';
@@ -11,9 +12,17 @@ import { useMenu } from '../../features/menu/menuApi';
 import { SignatureRail } from '../../features/menu/SignatureRail';
 import { pickSignatures } from '../../features/menu/signatures';
 import { useT } from '../../i18n';
+import { lazyComponent } from '../../shared/ui/lazyPage';
 
-/** The customer landing page (design 31): hero, live signatures, story, reviews, visit. */
+// A tenant may bring its own landing (ADR-032); otherwise it is design 31's.
+const TenantHome = tenant.home ? lazyComponent(tenant.home) : null;
+
 export function HomePage() {
+  return TenantHome ? <TenantHome /> : <ForkAndFlameHome />;
+}
+
+/** The Fork & Flame landing page (design 31): hero, live signatures, story, reviews, visit. */
+function ForkAndFlameHome() {
   const { data } = useMenu();
   const t = useT();
   const [open, setOpen] = useState<MenuItemDto | null>(null);
