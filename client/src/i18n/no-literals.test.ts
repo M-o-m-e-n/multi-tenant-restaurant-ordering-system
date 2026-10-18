@@ -30,6 +30,9 @@ const SCANNED = [
   'features/pos',
   'features/admin',
   'features/reservations',
+  'features/branches',
+  'features/contact',
+  'tenants',
 ];
 
 /** Literals that are not language: brand art, symbols, codes, test cards. */
