@@ -14,6 +14,15 @@ const PAGES: { role: Role | null; paths: string[] }[] = [
 async function audit(page: Page, path: string) {
   await page.goto(path);
   await page.waitForLoadState('networkidle');
+  // Entrance animations fade content in; measuring contrast mid-fade reads grey on grey.
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
+    ),
+  );
   const result = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();

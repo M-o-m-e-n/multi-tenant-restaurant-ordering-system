@@ -20,6 +20,7 @@ export default tseslint.config(
       '.sheet.mjs',
       '.overflow.mjs',
       'scripts/*.mjs',
+      'tenants/*/scripts/**',
       'server/prisma/migrations/**',
     ],
   },
@@ -56,11 +57,11 @@ export default tseslint.config(
     ...tseslint.configs.disableTypeChecked,
   },
   {
-    files: ['server/**/*.ts', 'shared/**/*.ts'],
+    files: ['server/**/*.ts', 'shared/**/*.ts', 'tenants/*/server/**/*.ts'],
     languageOptions: { globals: globals.node },
   },
   {
-    files: ['client/**/*.{ts,tsx}'],
+    files: ['client/**/*.{ts,tsx}', 'tenants/*/client/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
     rules: {

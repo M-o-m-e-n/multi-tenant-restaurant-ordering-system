@@ -13,9 +13,12 @@ import { defineConfig, devices } from '@playwright/test';
 const apiPort = process.env.E2E_API_PORT ?? '4000';
 const webPort = process.env.E2E_WEB_PORT ?? '5173';
 const web = `http://localhost:${webPort}`;
+// VITE_TENANT=<id> builds a private tenant's site and runs only the specs in its
+// pack, tenants/<id>/e2e (ADR-032).
+const tenant = process.env.VITE_TENANT ?? 'forkandflame';
 
 export default defineConfig({
-  testDir: 'e2e',
+  testDir: tenant === 'forkandflame' ? 'e2e' : `tenants/${tenant}/e2e`,
   fullyParallel: false,
   workers: 1,
   retries: 0,
