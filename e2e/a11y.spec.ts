@@ -84,3 +84,25 @@ test('touch targets: KDS bump buttons are at least 44 px high', async ({ page })
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
   }
 });
+
+test('menu text follows the language: Arabic dish, group and option names (ADR-037)', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await useLanguage(page, 'ar');
+  await page.goto('/menu');
+  await expect(page.getByText('بيتزا مارجريتا').first()).toBeVisible();
+  await expect(page.getByText('Margherita D.O.C.')).toHaveCount(0);
+  await page
+    .getByRole('button', { name: /بيتزا مارجريتا/ })
+    .first()
+    .click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByText('الحجم')).toBeVisible();
+  await expect(dialog.getByText('كبير')).toBeVisible();
+
+  // Back to English: the restaurant's own names return.
+  await useLanguage(page, 'en');
+  await page.goto('/menu');
+  await expect(page.getByText('Margherita D.O.C.').first()).toBeVisible();
+});

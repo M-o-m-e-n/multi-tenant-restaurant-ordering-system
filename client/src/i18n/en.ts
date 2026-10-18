@@ -765,5 +765,9 @@ export const en = {
     save: 'Save changes',
     add: 'Add dish',
     failed: 'Saving failed. Try again.',
+    translations: 'Name for guests in each language',
+    translationsHint: 'Optional. Orders, the kitchen and receipts keep the name above.',
+    nameIn: { en: 'Name in English', ar: 'Name in Arabic' },
+    descriptionIn: { en: 'Description in English', ar: 'Description in Arabic' },
   },
 } as const;

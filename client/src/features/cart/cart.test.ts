@@ -106,22 +106,24 @@ describe('modifier selection (CART-03)', () => {
     {
       id: 'size',
       name: 'Size',
+      translations: {},
       minSelect: 1,
       maxSelect: 1,
       items: [
-        { id: 'reg', name: 'Regular', priceDelta: 0, isAvailable: true },
-        { id: 'lg', name: 'Large', priceDelta: 400, isAvailable: true },
+        { id: 'reg', name: 'Regular', translations: {}, priceDelta: 0, isAvailable: true },
+        { id: 'lg', name: 'Large', translations: {}, priceDelta: 400, isAvailable: true },
       ],
     },
     {
       id: 'extras',
       name: 'Extras',
+      translations: {},
       minSelect: 0,
       maxSelect: 2,
       items: [
-        { id: 'a', name: 'A', priceDelta: 100, isAvailable: true },
-        { id: 'b', name: 'B', priceDelta: 100, isAvailable: true },
-        { id: 'c', name: 'C', priceDelta: 100, isAvailable: true },
+        { id: 'a', name: 'A', translations: {}, priceDelta: 100, isAvailable: true },
+        { id: 'b', name: 'B', translations: {}, priceDelta: 100, isAvailable: true },
+        { id: 'c', name: 'C', translations: {}, priceDelta: 100, isAvailable: true },
       ],
     },
   ];

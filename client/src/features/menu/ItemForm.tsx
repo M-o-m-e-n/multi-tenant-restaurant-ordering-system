@@ -1,4 +1,4 @@
-import type { AdminMenuDto, CreateItemDto } from '@ros/shared';
+import { type AdminMenuDto, type CreateItemDto, MENU_LANGS, type Translations } from '@ros/shared';
 import { type FormEvent, useState } from 'react';
 
 import { useT } from '../../i18n';
@@ -36,6 +36,12 @@ export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
       .map((a) => a.trim())
       .filter(Boolean);
     const optional = (name: string) => formValue(form, name).trim() || null;
+    // A language is stored only when it has a name (ADR-037).
+    const translations: Translations = {};
+    for (const lang of MENU_LANGS) {
+      const name = optional(`name-${lang}`);
+      if (name) translations[lang] = { name, description: optional(`description-${lang}`) };
+    }
     setBusy(true);
     setError(null);
     try {
@@ -43,6 +49,7 @@ export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
         categoryId: formValue(form, 'categoryId'),
         name: formValue(form, 'name'),
         description: optional('description'),
+        translations,
         price,
         station: optional('station'),
         imageUrl: optional('imageUrl'),
@@ -100,6 +107,31 @@ export function ItemForm({ categories, initial, onSubmit, onDone }: Props) {
         defaultValue={initial?.description ?? ''}
         className="sm:col-span-2"
       />
+      <fieldset className="grid gap-4 rounded-card border border-line p-4 sm:col-span-2 sm:grid-cols-2">
+        <legend className="px-1 text-xs font-medium uppercase tracking-wider text-ink-muted">
+          {t.itemForm.translations}
+        </legend>
+        <p className="text-xs text-ink-muted sm:col-span-2">{t.itemForm.translationsHint}</p>
+        {MENU_LANGS.map((lang) => (
+          <div
+            key={lang}
+            className="flex flex-col gap-4"
+            lang={lang}
+            dir={lang === 'ar' ? 'rtl' : 'ltr'}
+          >
+            <Field
+              label={t.itemForm.nameIn[lang]}
+              name={`name-${lang}`}
+              defaultValue={initial?.translations[lang]?.name ?? ''}
+            />
+            <Field
+              label={t.itemForm.descriptionIn[lang]}
+              name={`description-${lang}`}
+              defaultValue={initial?.translations[lang]?.description ?? ''}
+            />
+          </div>
+        ))}
+      </fieldset>
       <Field
         label={t.itemForm.station}
         name="station"
