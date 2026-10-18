@@ -168,6 +168,58 @@ describe('menu', () => {
     expect(diff.after.price).toBe(1950);
   });
 
+  it('stores translations and serves them with the menu (ADR-037)', async () => {
+    const admin = await tokenFor('ADMIN');
+    const item = await request(app)
+      .post('/api/v1/staff/menu/items')
+      .set(bearer(admin))
+      .send({
+        categoryId: menu.categories.mains.id,
+        name: 'Steak',
+        description: 'With pepper sauce',
+        translations: { ar: { name: 'ستيك', description: 'بصوص الفلفل' } },
+        price: 3200,
+      });
+    expect(item.status).toBe(201);
+    expect(item.body.translations).toEqual({ ar: { name: 'ستيك', description: 'بصوص الفلفل' } });
+
+    const group = await request(app)
+      .post('/api/v1/staff/menu/modifier-groups')
+      .set(bearer(admin))
+      .send({ name: 'Sauce', translations: { ar: { name: 'الصوص' } }, minSelect: 0, maxSelect: 1 });
+    expect(group.body.translations).toEqual({ ar: { name: 'الصوص' } });
+
+    // The public menu carries them; the restaurant's own name is unchanged.
+    const res = await request(app).get('/api/v1/menu');
+    const steak = res.body.categories
+      .flatMap((c: { items: { id: string }[] }) => c.items)
+      .find((i: { id: string }) => i.id === item.body.id);
+    expect(steak).toMatchObject({ name: 'Steak', translations: { ar: { name: 'ستيك' } } });
+    const burger = res.body.categories
+      .flatMap((c: { items: { id: string }[] }) => c.items)
+      .find((i: { id: string }) => i.id === menu.items.burger.id);
+    expect(burger.translations).toEqual({});
+
+    // An update replaces the whole object, so a translation can be removed.
+    const cleared = await request(app)
+      .patch(`/api/v1/staff/menu/items/${item.body.id}`)
+      .set(bearer(admin))
+      .send({ translations: {} });
+    expect(cleared.body.translations).toEqual({});
+  });
+
+  it('rejects translations in an unknown language or with extra fields', async () => {
+    const admin = await tokenFor('ADMIN');
+    const send = (translations: unknown) =>
+      request(app)
+        .patch(`/api/v1/staff/menu/items/${menu.items.burger.id}`)
+        .set(bearer(admin))
+        .send({ translations });
+    expect((await send({ fr: { name: 'Burger' } })).status).toBe(400);
+    expect((await send({ ar: { name: 'برجر', price: 1 } })).status).toBe(400);
+    expect((await send({ ar: { name: '' } })).status).toBe(400);
+  });
+
   it('rejects unknown fields on admin writes', async () => {
     const admin = await tokenFor('ADMIN');
     const res = await request(app)

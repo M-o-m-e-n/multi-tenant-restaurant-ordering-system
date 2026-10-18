@@ -9,10 +9,38 @@ export const clockTime = z
 
 const name = (max: number) => z.string().trim().min(1).max(max);
 
+/** The languages menu text can be translated into (ADR-030). */
+export const MENU_LANGS = ['en', 'ar'] as const;
+export type MenuLang = (typeof MENU_LANGS)[number];
+
+/**
+ * Menu text in other languages (ADR-037): `{ ar: { name, description? } }`.
+ * `name`/`description` stay the restaurant's own wording, used by snapshots.
+ */
+const translationsOf = <T extends z.ZodRawShape>(entry: T) =>
+  z
+    .object({ en: z.object(entry).strict().optional(), ar: z.object(entry).strict().optional() })
+    .strict();
+
+/** Translations of a name only (modifier groups and options). */
+export const nameTranslationsSchema = (max: number) => translationsOf({ name: name(max) });
+
+/** Translations of a name and description (categories and items). */
+export const translationsSchema = (nameMax: number, descriptionMax: number) =>
+  translationsOf({
+    name: name(nameMax),
+    description: z.string().trim().max(descriptionMax).nullish(),
+  });
+
+// A type alias, not an interface, so it is assignable to Prisma's JSON input type.
+export type TranslatedText = { name: string; description?: string | null };
+export type Translations = Partial<Record<MenuLang, TranslatedText>>;
+
 export const createCategorySchema = z
   .object({
     name: name(80),
     description: z.string().trim().max(255).nullish(),
+    translations: translationsSchema(80, 255).optional(),
     sortOrder: z.number().int().min(0).max(10_000).optional(),
   })
   .strict();
@@ -35,6 +63,7 @@ const itemShape = {
   categoryId: z.string().uuid(),
   name: name(120),
   description: z.string().trim().max(500).nullish(),
+  translations: translationsSchema(120, 500).optional(),
   price: nonNegativeCents.max(1_000_000),
   imageUrl: imageUrl.nullish(),
   allergens: z.array(z.string().trim().min(1).max(30)).max(14).optional(),
@@ -62,6 +91,7 @@ export type AvailabilityDto = z.infer<typeof availabilitySchema>;
 export const modifierGroupSchema = z
   .object({
     name: name(80),
+    translations: nameTranslationsSchema(80).optional(),
     minSelect: z.number().int().min(0).max(20),
     maxSelect: z.number().int().min(1).max(20),
   })
@@ -75,6 +105,7 @@ export type ModifierGroupInput = z.infer<typeof modifierGroupSchema>;
 export const updateModifierGroupSchema = z
   .object({
     name: name(80).optional(),
+    translations: nameTranslationsSchema(80).optional(),
     minSelect: z.number().int().min(0).max(20).optional(),
     maxSelect: z.number().int().min(1).max(20).optional(),
   })
@@ -84,6 +115,7 @@ export type UpdateModifierGroupDto = z.infer<typeof updateModifierGroupSchema>;
 export const modifierItemSchema = z
   .object({
     name: name(80),
+    translations: nameTranslationsSchema(80).optional(),
     // Cents; may be negative ("no bun").
     priceDelta: cents.min(-100_000).max(100_000),
     isAvailable: z.boolean().optional(),
@@ -113,6 +145,7 @@ export const itemGroupParamsSchema = z
 export interface ModifierItemDto {
   id: string;
   name: string;
+  translations: Translations;
   priceDelta: number;
   isAvailable: boolean;
 }
@@ -120,6 +153,7 @@ export interface ModifierItemDto {
 export interface ModifierGroupDto {
   id: string;
   name: string;
+  translations: Translations;
   minSelect: number;
   maxSelect: number;
   items: ModifierItemDto[];
@@ -130,6 +164,7 @@ export interface MenuItemDto {
   categoryId: string;
   name: string;
   description: string | null;
+  translations: Translations;
   price: number;
   imageUrl: string | null;
   /** False means 86'd: shown as sold out, never omitted (MENU-05). */
@@ -147,6 +182,7 @@ export interface MenuCategoryDto {
   id: string;
   name: string;
   description: string | null;
+  translations: Translations;
   sortOrder: number;
   items: MenuItemDto[];
 }

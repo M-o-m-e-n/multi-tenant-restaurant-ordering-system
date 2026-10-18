@@ -17,7 +17,7 @@ import { prisma, type Tx } from '../../lib/prisma';
 import { clockToTime } from '../../lib/time';
 import type { AuthUser } from '../../types/express';
 import * as admin from './menu.admin.repo';
-import { toGroupDto, toItemDto } from './menu.dto';
+import { toGroupDto, toItemDto, toTranslations } from './menu.dto';
 import * as repo from './menu.repo';
 import { menuChanged } from './menu.service';
 
@@ -59,6 +59,7 @@ export function createCategory(dto: CreateCategoryDto, actor: AuthUser) {
     const created = await admin.categories.create(tx, {
       name: dto.name,
       description: dto.description ?? null,
+      translations: dto.translations ?? {},
       sortOrder,
     });
     return { id: created.id, before: null, after: created, result: created };
@@ -115,6 +116,7 @@ export function createItem(dto: CreateItemDto, actor: AuthUser) {
         categoryId: dto.categoryId,
         name: dto.name,
         description: dto.description ?? null,
+        translations: dto.translations ?? {},
         price: dto.price,
         imageUrl: dto.imageUrl ?? null,
         allergens: dto.allergens ?? [],
@@ -309,6 +311,7 @@ export async function adminMenu(): Promise<AdminMenuDto> {
       id: c.id,
       name: c.name,
       description: c.description,
+      translations: toTranslations(c.translations),
       sortOrder: c.sortOrder,
       isActive: c.isActive,
       items: c.items.map((i) => ({ ...toItemDto(i, { withGroups: true }), isActive: i.isActive })),

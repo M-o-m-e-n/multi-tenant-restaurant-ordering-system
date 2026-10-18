@@ -230,12 +230,14 @@ model AuditLog {
 // ---------------------------------------------------------------------------
 
 model MenuCategory {
-  id          String  @id @default(uuid()) @db.Uuid
-  name        String  @db.VarChar(80)
-  description String? @db.VarChar(255)
-  sortOrder   Int     @default(0)
+  id           String  @id @default(uuid()) @db.Uuid
+  name         String  @db.VarChar(80)
+  description  String? @db.VarChar(255)
+  // Other-language menu text for guests, keyed by language (ADR-037).
+  translations Json    @default("{}")
+  sortOrder    Int     @default(0)
   // Soft delete: categories cascade to items, so they are never removed.
-  isActive    Boolean @default(true)
+  isActive     Boolean @default(true)
 
   items MenuItem[]
 }
@@ -245,6 +247,8 @@ model MenuItem {
   categoryId    String    @db.Uuid
   name          String    @db.VarChar(120)
   description   String?   @db.VarChar(500)
+  // Other-language menu text for guests, keyed by language (ADR-037).
+  translations  Json      @default("{}")
   price         Int
   imageUrl      String?   @db.VarChar(500)
   // The 86 flag: shown as sold out, not hidden (MENU-05).
@@ -265,11 +269,13 @@ model MenuItem {
 }
 
 model ModifierGroup {
-  id        String  @id @default(uuid()) @db.Uuid
-  name      String  @db.VarChar(80)
-  minSelect Int     @default(0)
-  maxSelect Int     @default(1)
-  isActive  Boolean @default(true)
+  id           String  @id @default(uuid()) @db.Uuid
+  name         String  @db.VarChar(80)
+  // Other-language menu text for guests, keyed by language (ADR-037).
+  translations Json    @default("{}")
+  minSelect    Int     @default(0)
+  maxSelect    Int     @default(1)
+  isActive     Boolean @default(true)
 
   items     ModifierItem[]
   menuItems MenuItemModifierGroup[]
@@ -288,12 +294,14 @@ model MenuItemModifierGroup {
 }
 
 model ModifierItem {
-  id          String  @id @default(uuid()) @db.Uuid
-  groupId     String  @db.Uuid
-  name        String  @db.VarChar(80)
+  id           String  @id @default(uuid()) @db.Uuid
+  groupId      String  @db.Uuid
+  name         String  @db.VarChar(80)
+  // Other-language menu text for guests, keyed by language (ADR-037).
+  translations Json    @default("{}")
   // Cents; may be negative.
-  priceDelta  Int     @default(0)
-  isAvailable Boolean @default(true)
+  priceDelta   Int     @default(0)
+  isAvailable  Boolean @default(true)
 
   group ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
 

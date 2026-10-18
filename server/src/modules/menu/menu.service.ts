@@ -4,7 +4,7 @@ import { BusinessRuleError, NotFoundError } from '../../lib/errors';
 import { publish } from '../../lib/events';
 import { localClock, timeToClock, withinWindow } from '../../lib/time';
 import { getSettings } from '../settings';
-import { activeGroups, toItemDto } from './menu.dto';
+import { activeGroups, toItemDto, toTranslations } from './menu.dto';
 import * as repo from './menu.repo';
 
 const CACHE_TTL_MS = 30_000;
@@ -43,6 +43,7 @@ export async function getPublicMenu(now: Date = new Date()): Promise<MenuDto> {
         id: c.id,
         name: c.name,
         description: c.description,
+        translations: toTranslations(c.translations),
         sortOrder: c.sortOrder,
         items: c.items
           .filter((i) =>
