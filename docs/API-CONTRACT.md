@@ -4,9 +4,9 @@
 | | |
 |---|---|
 | **Document ID** | ROS-API-001 |
-| **Version** | 1.3 (API `v1`) |
+| **Version** | 1.4 (API `v1`) |
 | **Status** | Draft |
-| **Date** | 2026-09-25 |
+| **Date** | 2026-10-18 |
 | **Authority** | **ROS-LLD-001 v1.1 §5 and §6 define the endpoint set.** This document is the wire contract: exact payloads, status codes, headers and error bodies. Where the two disagree, the LLD wins and this file is the bug. |
 | **Base URL** | `https://<host>/api/v1` |
 
@@ -344,6 +344,7 @@ Never contains `passwordHash`. `phone` appears only for the owner or staff (NFR-
   "id": "uuid",
   "name": "Roast Halibut",
   "description": "Brown butter · capers · confit potato",
+  "translations": { "ar": { "name": "هلبوت مشوي", "description": "زبدة بنية · كبر · بطاطس كونفي" } },
   "price": 2100,
   "imageUrl": "https://…/halibut.jpg",
   "isAvailable": true,
@@ -351,17 +352,20 @@ Never contains `passwordHash`. `phone` appears only for the owner or staff (NFR-
   "station": "grill",
   "modifierGroups": [
     {
-      "id": "uuid", "name": "Size", "minSelect": 1, "maxSelect": 1,
+      "id": "uuid", "name": "Size", "translations": { "ar": { "name": "الحجم" } },
+      "minSelect": 1, "maxSelect": 1,
       "items": [
-        { "id": "uuid", "name": "Regular", "priceDelta": 0,   "isAvailable": true },
-        { "id": "uuid", "name": "Large",   "priceDelta": 400, "isAvailable": true }
+        { "id": "uuid", "name": "Regular", "translations": {}, "priceDelta": 0,   "isAvailable": true },
+        { "id": "uuid", "name": "Large",   "translations": {}, "priceDelta": 400, "isAvailable": true }
       ]
     }
   ]
 }
 ```
 An 86'd item is returned with `isAvailable: false`, **not omitted** (MENU-05).
-`modifierGroups` appears on the item-detail endpoint only.
+`modifierGroups` appears on the item-detail endpoint only. `translations` holds the menu text in
+other languages, keyed by `en` / `ar`, each entry optional (ADR-037); a client shows
+`translations[lang].name` and falls back to `name`, which order snapshots keep.
 
 ### PricingBreakdown
 ```json
@@ -518,7 +522,7 @@ Revokes one session. `204`. Errors: `404` if the family is not yours.
 ## 11. Menu endpoints
 
 ### `GET /menu` 🔓
-`200` → `{ "categories": [ { "id", "name", "description", "sortOrder", "items": MenuItemDto[] } ] }`
+`200` → `{ "categories": [ { "id", "name", "description", "translations", "sortOrder", "items": MenuItemDto[] } ] }`
 
 Filtered to `isActive` categories and items, within their `availableFrom`/`availableTo` window
 (MENU-06). 86'd items are present with `isAvailable: false`. Cached 30 s, invalidated on any write.
@@ -938,6 +942,7 @@ misspelled field is how a tip or a discount goes missing without anyone noticing
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
+| 1.4 | 2026-10-18 | Dev Team | `translations` on menu categories, items, modifier groups and options, in responses and in admin create/update bodies (ADR-037, LLD 1.5) |
 | 1.3 | 2026-09-26 | Dev Team | Branch and contact endpoints, the `POST /contact` rate limit and the `message:new` event (§8, §18b; ADR-032). |
 | 1.2 | 2026-09-25 | Dev Team | Recorded the build's additive changes in §18a and pointed to the generated `openapi.json` for request shapes. |
 | 1.1 | 2026-09-25 | Dev Team | Replaced the single 24 h bearer token with the access/refresh model (§2): 15-minute access tokens held in memory, a 30-day `httpOnly` refresh cookie with rotation and reuse detection, new `/auth/refresh`, `/auth/logout`, `/auth/logout-all` and `/auth/sessions` endpoints (§10), three session error codes (§5), a refresh rate limit (§8), CORS credentials, and the socket-token note (§17). **Breaking for clients**: `login` and `register` now return `accessToken` rather than `token`, and requests must be sent with `credentials: 'include'`. |

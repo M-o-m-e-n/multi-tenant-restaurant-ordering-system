@@ -4,9 +4,9 @@
 | | |
 |---|---|
 | **Document ID** | ROS-LLD-001 |
-| **Version** | 1.4 |
+| **Version** | 1.5 |
 | **Status** | Draft |
-| **Date** | 2026-09-26 |
+| **Date** | 2026-10-18 |
 | **Preceded by** | ROS-SRS-001 · ROS-HLD-001 |
 
 ---
@@ -99,6 +99,7 @@ Indexes: `UNIQUE(email)`.
 | id | uuid | PK |
 | name | varchar(80) | NOT NULL |
 | description | varchar(255) | NULL |
+| translations | jsonb | NOT NULL DEFAULT '{}' — other-language text (ADR-037) |
 | sortOrder | int | DEFAULT 0 |
 | isActive | boolean | DEFAULT true |
 
@@ -109,6 +110,7 @@ Indexes: `UNIQUE(email)`.
 | categoryId | uuid | FK → MenuCategory, CASCADE |
 | name | varchar(120) | NOT NULL |
 | description | varchar(500) | NULL |
+| translations | jsonb | NOT NULL DEFAULT '{}' — other-language text (ADR-037) |
 | price | integer | NOT NULL (cents) |
 | imageUrl | varchar(500) | NULL |
 | isAvailable | boolean | DEFAULT true (86 flag) |
@@ -119,11 +121,20 @@ Indexes: `UNIQUE(email)`.
 
 Indexes: `(categoryId)`, partial `(isAvailable)`.
 
+**Menu text in two languages (ADR-037).** `name` and `description` are the restaurant's own
+wording, in whatever language it writes its menu; order snapshots, kitchen tickets, receipts and
+reports use them. `translations` adds other languages for guests, keyed by language:
+`{ "ar": { "name": "…", "description": "…" }, "en": { … } }` (`description` only on categories
+and items; each entry optional; validated by `translationsSchema` in `shared/schemas/menu.ts`). The
+menu API returns `translations` on every category, item, group and option, and the client shows
+`translations[lang].name`, falling back to `name`.
+
 #### ModifierGroup
 | Column | Type | Constraints |
 |---|---|---|
 | id | uuid | PK |
 | name | varchar(80) | NOT NULL (e.g., "Size") |
+| translations | jsonb | NOT NULL DEFAULT '{}' — other-language text (ADR-037) |
 | minSelect | int | DEFAULT 0 |
 | maxSelect | int | DEFAULT 1 |
 | isActive | boolean | DEFAULT true |
@@ -141,6 +152,7 @@ Indexes: `(categoryId)`, partial `(isAvailable)`.
 | id | uuid | PK |
 | groupId | uuid | FK → ModifierGroup CASCADE |
 | name | varchar(80) | NOT NULL |
+| translations | jsonb | NOT NULL DEFAULT '{}' — other-language text (ADR-037) |
 | priceDelta | integer | DEFAULT 0 (cents, may be negative) |
 | isAvailable | boolean | DEFAULT true |
 
@@ -791,6 +803,9 @@ Legend: 🔓 public · 🔒 auth any · 👤 customer · 🛎 staff · 🛠 admi
 | POST | `/api/v1/staff/menu/items/:id/modifier-groups` | 🛠 | attach group |
 | CRUD | `/api/v1/staff/menu/modifier-groups[/:id]` | 🛠 | groups + items |
 
+Every category, item, group and option in these responses carries `translations`, and the create
+and update bodies accept it (optional; on update it replaces the whole object). See §2.2 and ADR-037.
+
 ### 5.3 Orders
 | Method | Path | Access | Notes |
 |---|---|---|---|
@@ -1158,6 +1173,7 @@ Middleware maps `AppError` → JSON; unknown errors → logged with stack + `500
 | 1.2 | 2026-09-25 | Dev Team | Added the access/refresh token model. New `RefreshToken` model (§2.2) with rotation and reuse detection; auth module rewritten with the refresh algorithm (§4.2); new endpoints `/auth/refresh`, `/auth/logout`, `/auth/logout-all`, `/auth/sessions` (§5.1); session error codes (§8); token, CORS-credentials and CSRF rules (§9); purge job (§4.10); tests I28–I32. Supersedes the v1.1 note that no refresh tokens were needed — that reasoning did not account for always-on KDS devices (SRS §8.1). |
 | 1.1.1 | 2026-09-25 | Dev Team | Admitted two error codes the API contract required and this document lacked: `REFUND_NOT_AVAILABLE` (422) and `TABLE_NUMBER_TAKEN` (409), added to §5.3 and §8. No behavioural change. |
 | 1.3.2 | 2026-09-25 | Dev Team | Doc debt from the build: `Order` pricing-snapshot columns and `OrderItem.addedAt` / `lineNo` added to §2.2 (ADR-021); test P8 corrected to `EMPTY_CART`. |
+| 1.5 | 2026-10-18 | Dev Team | Menu text in two languages (ADR-037): `translations` jsonb on MenuCategory, MenuItem, ModifierGroup and ModifierItem (§2.2); menu DTOs and admin create/update bodies carry it (§5.2). Snapshots keep the restaurant's own `name` |
 | 1.4 | 2026-09-26 | Dev Team | Tenant site pages (ADR-032): `ContactKind` enum, `Branch` and `ContactMessage` entities (§2), branch and contact endpoints (§5.9), `message:new` event (§6.2), error codes `BRANCH_NOT_FOUND` and `MESSAGE_NOT_FOUND`. Additive; no existing behaviour changes. |
 | 1.3.1 | 2026-09-25 | Dev Team | Built M13. §9 records what was implemented: the JSON-API helmet profile (not an SPA CSP), wider log redaction with per-request logs, and the E2E-only rate-limit switch. Behaviour elsewhere unchanged; see SECURITY.md and ACCEPTANCE.md. |
 | 1.3 | 2026-09-25 | Dev Team | Built M12. Added `PATCH /orders/:id/delivery` (§5.3); specified the reservation request/response and rules (§5.5); `GET /settings` now includes `timezone` (§5.6); new error codes `NOT_A_DELIVERY`, `TABLE_OCCUPIED`, `DRIVER_REQUIRED`, `RESERVATION_IN_PAST`, `RESERVATION_TOO_FAR`, `TABLE_REQUIRED` (§5.3). See ADR-024, ADR-025. |

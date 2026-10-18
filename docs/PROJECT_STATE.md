@@ -46,7 +46,7 @@
 | `client/` | React 18 SPA in the Fork & Flame design with real food photography. Screens: landing page, menu, cart, checkout, tracker, pay, receipt, booking, KDS, POS, table map, bookings, and admin dashboard, reports and menu. Staff and admin routes lazy-load. Arabic RTL with an English toggle (M14). 46 tests |
 | E2E | Playwright on the production builds: LLD §10.3 scenarios 1–6, AC-1/2/22, and axe on 17 screens in English and Arabic (`npm run e2e`) |
 | Database | 4 migrations; a deterministic seed with 30 days of history; backup and restore scripts with a recorded drill |
-| Docs | SRS 1.2.1, HLD 1.2.1, LLD 1.3.2, API contract 1.2 + `openapi.json`, SECURITY, ACCEPTANCE, OPERATIONS, ADR-001…036 |
+| Docs | SRS 1.2.1, HLD 1.2.1, LLD 1.5, API contract 1.4 + `openapi.json`, SECURITY, ACCEPTANCE, OPERATIONS, ADR-001…037 |
 | Measured | KDS gets a new order 63 ms after commit (target 500). `GET /menu` p95 ≈ 69 ms at 100 concurrent (target 300). Guest JS bundle 444 kB |
 
 ## 3. Open decisions

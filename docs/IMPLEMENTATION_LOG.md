@@ -26,6 +26,26 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-10-18 — Menu text in two languages (ADR-037)
+
+**Done**
+- `translations` jsonb on MenuCategory, MenuItem, ModifierGroup and ModifierItem (migration
+  `menu_translations`); strict `translationsSchema` on admin bodies; DTOs always carry it.
+- The client's menu queries resolve the active language (`features/menu/localize.ts`), so every
+  dish list, the dish dialog and the POS add dialog follow the toggle.
+- Arabic for the whole Fork & Flame seed menu; per-language fields in the admin dish form.
+- LLD 1.5, API contract 1.4, OpenAPI regenerated.
+**Verified**
+- `npm run check`: shared 60, server 292, client 62 (new: translation round trip and rejection,
+  fallback rules).
+- E2E Fork & Flame 20/20 (new: the Arabic menu shows بيتزا مارجريتا, الحجم, كبير, and English
+  returns); pilot tenant 4/4.
+**Issues / surprises**
+- An interface type was not assignable to Prisma's JSON input; `TranslatedText` is a type alias.
+**Decisions raised:** ADR-037.
+
+---
+
 ### 2026-10-18 — Private tenant packs (ADR-036)
 
 **Done**

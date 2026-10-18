@@ -576,7 +576,8 @@ landing page with both branches. The pack is private (ADR-036).
 **Built early (2026-09-26, ADR-032):** the importer and reviewed menu JSON with their photos; the
 tenant seed with both branches (no zones or per-branch availability yet); their Arabic home, About,
 Branches (free maps, nearest branch) and Contact pages; the admin pin editor and feedback inbox.
-Still open for M17: delivery zones, per-branch availability (needs M15) and brand tokens.
+Bilingual menu text (ADR-037) was built on 2026-10-18. Still open for M17: delivery zones,
+per-branch availability (needs M15) and brand tokens.
 
 ### M18 — Demo deploy and sales kit (outline)
 A private HTTPS demo on one VPS (Docker Compose and Caddy); demo accounts and QR cards; a

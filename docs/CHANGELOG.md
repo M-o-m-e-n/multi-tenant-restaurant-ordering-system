@@ -12,6 +12,12 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
 
 ## [Unreleased]
 
+### Added — menu text in two languages (ADR-037)
+- Dish, category, size and extra names follow the language toggle: Fork & Flame's menu reads in
+  Arabic in Arabic mode. Menu rows carry `translations`; the restaurant's own name stays on orders,
+  kitchen tickets, receipts and reports.
+- The admin dish form has an optional name and description in each language.
+
 ### Added — tenant packs, branches, themes and a catalogue menu (ADR-032…036)
 - **Tenant packs.** `VITE_TENANT=<id>` builds one restaurant's site and `SEED_TENANT=<id>` (or
   `--tenant=`) seeds its data. Fork & Flame is the default and ships here; another restaurant is a

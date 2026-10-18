@@ -546,6 +546,31 @@ submodules (the public repository would reference the private one by name).
 **Consequences.** A restaurant's material never enters the public history. A pack can break when
 the app's internals change; its type-check under `npm run check` catches that.
 
+### ADR-037 — Menu text in two languages
+**Status:** Accepted · 2026-10-18
+**Context.** The interface follows the language toggle (ADR-030), but dish, category and modifier
+names are data with one `name` column, so an Arabic page listed English dishes (and an Arabic menu
+stayed Arabic in English). ADR-030 deferred bilingual menu fields to the tenant pack.
+**Decision.**
+- **One own name, plus translations.** `name`/`description` stay the restaurant's own wording, in
+  whatever language it writes its menu. A `translations` jsonb column on categories, items,
+  modifier groups and options holds other languages: `{ ar: { name, description? }, en: {…} }`.
+- **Strict at the edge.** Admin create and update bodies take `translations`, validated by a strict
+  schema (`en`/`ar` only, non-empty names, the same length limits). An update replaces the whole
+  object. The DTO always has `translations`, `{}` when there are none.
+- **Resolved on the client.** `useMenu`/`useMenuItem` select the active language from the cached
+  server shape (`translations[lang]`, falling back to the own text), so every screen that lists
+  dishes follows the toggle without its own code, and a switch needs no refetch.
+- **Snapshots unchanged.** Orders snapshot the own `name`, so the kitchen, receipts and reports read
+  one consistent wording. A cart line keeps the name it was added under.
+- **Admin form.** The dish form has an optional name and description per language. Categories,
+  groups and options take translations through the API for now.
+**Alternatives.** `nameEn`/`nameAr` columns (four columns per table, and one of them duplicates
+`name`). A translations table (joins on the hottest read for two languages). Translating on the
+server per request (the cached menu would vary by language).
+**Consequences.** Fork & Flame's seed carries Arabic for every dish, category, group and option. A
+missing translation shows the own wording. Searching the menu matches the displayed language.
+
 ---
 
 ## Template
