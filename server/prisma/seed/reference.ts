@@ -1,7 +1,7 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 
 import type { PrismaClient } from '@prisma/client';
-import { DEFAULT_SETTINGS, encodeSetting, type SettingKey } from '@ros/shared';
+import { DEFAULT_SETTINGS, encodeSetting, type SettingKey, type Translations } from '@ros/shared';
 import bcrypt from 'bcrypt';
 
 import type { SeedTenant } from './tenants/types';
@@ -24,11 +24,13 @@ export const DEMO_USERS = {
 export interface SeedModifier {
   id: string;
   name: string;
+  translations?: Translations;
   priceDelta: number;
 }
 export interface SeedGroup {
   id: string;
   name: string;
+  translations?: Translations;
   minSelect: number;
   maxSelect: number;
   items: SeedModifier[];
@@ -38,6 +40,7 @@ export interface SeedDish {
   categoryId: string;
   name: string;
   description: string | null;
+  translations?: Translations;
   price: number;
   station: string;
   allergens: string[];
@@ -61,25 +64,71 @@ const DISH_PHOTOS: Record<string, string> = {
   'Yuzu Lemonade': '/images/dishes/yuzu-lemonade.jpg',
 };
 
+/** Fork & Flame's menu in Arabic (ADR-037), keyed by the English name. */
+const AR: Record<string, { name: string; description?: string }> = {
+  Starters: { name: 'مقبلات', description: 'أطباق صغيرة للمشاركة' },
+  Mains: { name: 'أطباق رئيسية', description: 'من الشواية والفرن' },
+  Desserts: { name: 'حلويات', description: 'تستاهل تسيب لها مكان' },
+  Drinks: { name: 'مشروبات', description: 'ساقعة ومنعشة ومعمولة عندنا' },
+  'Truffle Arancini': { name: 'أرانشيني بالترافل', description: 'بالزعفران' },
+  'Winter Caesar': { name: 'سلطة سيزر شتوي', description: 'بالخس الصغير' },
+  'Wagyu Burger': { name: 'برجر واجيو', description: 'بالشيدر المعتّق' },
+  'Margherita D.O.C.': { name: 'بيتزا مارجريتا', description: 'بالريحان' },
+  'Roast Halibut': { name: 'سمك هلبوت مشوي', description: 'بالزبدة البنية' },
+  'Lava Fondant': { name: 'لافا فوندان', description: 'بالجيلاتو' },
+  Tiramisu: { name: 'تيراميسو', description: 'بالإسبريسو' },
+  'Iced Matcha': { name: 'ماتشا مثلجة', description: 'بلبن الشوفان' },
+  'Yuzu Lemonade': { name: 'ليموناضة يوزو', description: 'بالنعناع' },
+  Size: { name: 'الحجم' },
+  Regular: { name: 'عادي' },
+  Large: { name: 'كبير' },
+  Doneness: { name: 'درجة الاستواء' },
+  'Medium rare': { name: 'ميديم رير' },
+  Medium: { name: 'ميديم' },
+  'Well done': { name: 'ويل دن' },
+  Extras: { name: 'إضافات' },
+  'Extra cheese': { name: 'جبنة زيادة' },
+  'Smoked bacon': { name: 'بيكون مدخن' },
+  'No bun': { name: 'من غير عيش' },
+  Milk: { name: 'اللبن' },
+  'Oat milk': { name: 'لبن شوفان' },
+  'Almond milk': { name: 'لبن لوز' },
+};
+
+/** The Arabic translation of an English menu name, if there is one. */
+const ar = (name: string): Translations => {
+  const t = AR[name];
+  return t ? { ar: t } : {};
+};
+
 const mod = (name: string, priceDelta = 0): SeedModifier => ({
   id: randomUUID(),
   name,
+  translations: ar(name),
   priceDelta,
 });
 
 /** Reference data built once per seed run so the history generator can reuse the ids. */
 export function buildMenu() {
+  const category = (name: string, description: string, sortOrder: number) => ({
+    id: randomUUID(),
+    name,
+    description,
+    translations: ar(name),
+    sortOrder,
+  });
   const categories = [
-    { id: randomUUID(), name: 'Starters', description: 'Small plates to share', sortOrder: 1 },
-    { id: randomUUID(), name: 'Mains', description: 'From the grill and the oven', sortOrder: 2 },
-    { id: randomUUID(), name: 'Desserts', description: 'Worth saving room for', sortOrder: 3 },
-    { id: randomUUID(), name: 'Drinks', description: 'Cold, bright and house-made', sortOrder: 4 },
+    category('Starters', 'Small plates to share', 1),
+    category('Mains', 'From the grill and the oven', 2),
+    category('Desserts', 'Worth saving room for', 3),
+    category('Drinks', 'Cold, bright and house-made', 4),
   ] as const;
   const [starters, mains, desserts, drinks] = categories;
 
   const size: SeedGroup = {
     id: randomUUID(),
     name: 'Size',
+    translations: ar('Size'),
     minSelect: 1,
     maxSelect: 1,
     items: [mod('Regular'), mod('Large', 400)],
@@ -87,6 +136,7 @@ export function buildMenu() {
   const doneness: SeedGroup = {
     id: randomUUID(),
     name: 'Doneness',
+    translations: ar('Doneness'),
     minSelect: 1,
     maxSelect: 1,
     items: [mod('Medium rare'), mod('Medium'), mod('Well done')],
@@ -95,6 +145,7 @@ export function buildMenu() {
   const extras: SeedGroup = {
     id: randomUUID(),
     name: 'Extras',
+    translations: ar('Extras'),
     minSelect: 0,
     maxSelect: 3,
     items: [mod('Extra cheese', 150), mod('Smoked bacon', 250), mod('No bun', -100)],
@@ -102,6 +153,7 @@ export function buildMenu() {
   const milk: SeedGroup = {
     id: randomUUID(),
     name: 'Milk',
+    translations: ar('Milk'),
     minSelect: 0,
     maxSelect: 1,
     items: [mod('Oat milk'), mod('Almond milk', 50)],
@@ -121,6 +173,7 @@ export function buildMenu() {
     categoryId,
     name,
     description,
+    translations: ar(name),
     price,
     station,
     allergens,
@@ -187,6 +240,7 @@ export interface SeedMenuData {
     id: string;
     name: string;
     description: string | null;
+    translations?: Translations;
     sortOrder: number;
   }[];
   groups: SeedGroup[];
