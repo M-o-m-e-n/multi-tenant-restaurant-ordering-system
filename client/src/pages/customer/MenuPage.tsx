@@ -1,9 +1,12 @@
 import type { MenuItemDto } from '@ros/shared';
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
-import { MENU_BANNER } from '../../brand/copy';
+import { brand } from '../../brand';
+import { MENU_BANNER, MENU_PHOTO } from '../../brand/copy';
 import { CartBar } from '../../features/cart/CartBar';
 import { ModifierDialog } from '../../features/cart/ModifierDialog';
+import { CatalogMenu } from '../../features/menu/CatalogMenu';
 import { CategoryChips } from '../../features/menu/CategoryChips';
 import { useMenu } from '../../features/menu/menuApi';
 import { MenuRow } from '../../features/menu/MenuRow';
@@ -22,7 +25,9 @@ export function MenuPage() {
   const { data, isLoading, isError, refetch } = useMenu();
   const t = useT();
   const l = useL();
-  const [category, setCategory] = useState<string>('all');
+  // `?c=<categoryId>` opens one category (the landing's category tiles link here).
+  const [params] = useSearchParams();
+  const [category, setCategory] = useState<string>(() => params.get('c') ?? 'all');
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<{ item: MenuItemDto; category: string } | null>(null);
 
@@ -77,12 +82,27 @@ export function MenuPage() {
     );
   }
 
+  if (brand.menu === 'catalog') {
+    return (
+      <main className="mx-auto w-full max-w-[1320px] px-4 pb-24 md:px-8">
+        <TableBanner />
+        <CatalogMenu menu={data} initialCategory={params.get('c')} onOpen={openItem} />
+        <ModifierDialog
+          item={open?.item ?? null}
+          category={open?.category ?? ''}
+          onClose={() => setOpen(null)}
+        />
+        <CartBar />
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto w-full max-w-content px-5 pb-24 md:px-10">
       <TableBanner />
       <header className="relative mb-6 overflow-hidden rounded-frame border border-line motion-safe:animate-rise">
         <img
-          src="/images/spread.jpg"
+          src={MENU_PHOTO}
           alt=""
           className="absolute inset-0 size-full object-cover opacity-60"
         />
@@ -134,6 +154,7 @@ export function MenuPage() {
               <h3 className="text-xs font-medium uppercase tracking-wider text-ink-muted">
                 {c.name}
               </h3>
+              {c.description && <p className="mt-1 text-xs text-ink-muted">{c.description}</p>}
               <ul>
                 {c.items.map((item, i) => (
                   <MenuRow
