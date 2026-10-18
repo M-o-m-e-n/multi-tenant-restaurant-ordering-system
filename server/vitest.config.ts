@@ -2,7 +2,8 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
+    // A private tenant pack's tests run too when it is checked out (ADR-032).
+    include: ['src/**/*.test.ts', 'test/**/*.test.ts', '../tenants/*/server/**/*.test.ts'],
     setupFiles: ['test/setup-env.ts'],
     globalSetup: ['test/global-setup.ts'],
     // Integration tests share one database, so files run one at a time.

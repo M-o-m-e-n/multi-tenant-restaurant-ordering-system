@@ -4,8 +4,16 @@ import type { PrismaClient } from '@prisma/client';
 import { DEFAULT_SETTINGS, encodeSetting, type SettingKey } from '@ros/shared';
 import bcrypt from 'bcrypt';
 
+import type { SeedTenant } from './tenants/types';
+
 /** Password for every demo account (README). */
 export const DEMO_PASSWORD = 'password123';
+
+export interface SeedUser {
+  email: string;
+  name: string;
+  role: 'ADMIN' | 'STAFF' | 'CUSTOMER';
+}
 
 export const DEMO_USERS = {
   admin: { email: 'admin@forkandflame.test', name: 'Ava Admin', role: 'ADMIN' },
@@ -29,7 +37,7 @@ export interface SeedDish {
   id: string;
   categoryId: string;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
   station: string;
   allergens: string[];
@@ -173,20 +181,46 @@ export function buildMenu() {
   return { categories, groups: [size, doneness, extras, milk], dishes };
 }
 
-export type SeedMenu = ReturnType<typeof buildMenu>;
+/** What a tenant's menu builder returns: rows ready for createMany, plus weights for the history. */
+export interface SeedMenuData {
+  categories: readonly {
+    id: string;
+    name: string;
+    description: string | null;
+    sortOrder: number;
+  }[];
+  groups: SeedGroup[];
+  dishes: SeedDish[];
+}
 
-export async function seedReference(prisma: PrismaClient, rounds: number) {
+export type SeedMenu = SeedMenuData;
+
+/** Fork & Flame, the default tenant; tenants/index.ts re-exports it with the others. */
+const DEFAULT_TENANT: SeedTenant = {
+  id: 'forkandflame',
+  settings: DEFAULT_SETTINGS,
+  users: DEMO_USERS,
+  buildMenu,
+  branches: [],
+  tableCount: 14,
+};
+
+export async function seedReference(
+  prisma: PrismaClient,
+  rounds: number,
+  tenant: SeedTenant = DEFAULT_TENANT,
+) {
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, rounds);
   const users = Object.fromEntries(
     await Promise.all(
-      Object.entries(DEMO_USERS).map(async ([key, u]) => [
+      Object.entries(tenant.users).map(async ([key, u]) => [
         key,
         await prisma.user.create({ data: { ...u, passwordHash } }),
       ]),
     ),
-  ) as Record<keyof typeof DEMO_USERS, { id: string }>;
+  ) as Record<keyof SeedTenant['users'], { id: string }>;
 
-  const menu = buildMenu();
+  const menu = tenant.buildMenu();
   await prisma.menuCategory.createMany({ data: [...menu.categories] });
   await prisma.modifierGroup.createMany({
     data: menu.groups.map(({ items: _items, ...g }) => g),
@@ -203,7 +237,7 @@ export async function seedReference(prisma: PrismaClient, rounds: number) {
     ),
   });
 
-  const tables = Array.from({ length: 14 }, (_, i) => ({
+  const tables = Array.from({ length: tenant.tableCount }, (_, i) => ({
     id: randomUUID(),
     number: String(i + 1),
     seats: [2, 2, 4, 4, 4, 4, 6, 6, 2, 4, 4, 6, 8, 2][i] ?? 4,
@@ -220,11 +254,13 @@ export async function seedReference(prisma: PrismaClient, rounds: number) {
   });
 
   await prisma.setting.createMany({
-    data: (Object.keys(DEFAULT_SETTINGS) as SettingKey[]).map((key) => ({
+    data: (Object.keys(tenant.settings) as SettingKey[]).map((key) => ({
       key,
-      value: encodeSetting(DEFAULT_SETTINGS[key]),
+      value: encodeSetting(tenant.settings[key]),
     })),
   });
+
+  await prisma.branch.createMany({ data: tenant.branches.map((b) => ({ ...b })) });
 
   return { users, menu, tables };
 }

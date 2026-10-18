@@ -39,3 +39,9 @@ test-results/
 .shots-motion.mjs
 .shots-phone.mjs
 .shots-arabic.mjs
+.shots-*.mjs
+
+# Private tenant packs (ADR-032): each lives in its own private repository,
+# checked out under tenants/<id>/. Only the README is public.
+/tenants/*
+!/tenants/README.md

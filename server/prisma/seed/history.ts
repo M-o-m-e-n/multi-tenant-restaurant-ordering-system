@@ -112,7 +112,14 @@ export async function seedHistory(
   prisma: PrismaClient,
   refs: Refs,
   settings: Settings,
-  opts: { days: number; seed: number; now?: Date },
+  opts: {
+    days: number;
+    seed: number;
+    now?: Date;
+    guestNames?: readonly string[];
+    /** Share of payments by card; the rest are cash. */
+    cardShare?: number;
+  },
 ): Promise<SeedFixture> {
   const r = rng(opts.seed);
   const tz = settings.timezone;
@@ -184,7 +191,10 @@ export async function seedHistory(
       const discount: PricingDiscount | null = r.chance(0.1)
         ? { type: 'PERCENT', value: 1000 }
         : null;
-      const tipPct = type !== 'DELIVERY' && r.chance(0.4) ? r.pick(settings.tipPresetsBps) : 0;
+      const tipPct =
+        settings.tipPresetsBps.length > 0 && type !== 'DELIVERY' && r.chance(0.4)
+          ? r.pick(settings.tipPresetsBps)
+          : 0;
       const preTip = computeTotals({
         orderType: type,
         lines: lines.map((l) => ({
@@ -215,9 +225,10 @@ export async function seedHistory(
       // One in three cancelled orders was paid first and refunded (AC-13); 2% of completed are refunded.
       const paid = cancelled ? r.chance(0.33) : true;
       const refunded = paid && (cancelled || r.chance(0.02));
-      const method: PaymentMethod = r.chance(0.6) ? 'STRIPE' : 'CASH';
+      const method: PaymentMethod = r.chance(opts.cardShare ?? 0.6) ? 'STRIPE' : 'CASH';
       const cashTip = method === 'CASH' && !refunded && r.chance(0.25) ? r.int(1, 5) * 100 : 0;
-      const guest = type === 'DINE_IN' && r.chance(0.5) ? null : r.pick(GUEST_NAMES);
+      const guest =
+        type === 'DINE_IN' && r.chance(0.5) ? null : r.pick(opts.guestNames ?? GUEST_NAMES);
       const online = r.chance(0.6);
 
       // Timeline: each step a few minutes after the last, in canonical order (BR-12).
