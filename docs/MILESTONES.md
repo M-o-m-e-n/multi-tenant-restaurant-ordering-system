@@ -29,7 +29,7 @@
 15. [M11 — Reports & admin dashboard](#m11--reports--admin-dashboard)
 16. [M12 — Delivery, takeaway & reservations](#m12--delivery-takeaway--reservations)
 17. [M13 — Hardening, accessibility & deploy](#m13--hardening-accessibility--deploy)
-17a. [Phase 2 — El Demeshki (M14–M18)](#phase-2--el-demeshki-m14m18)
+17a. [Phase 2 — a pilot restaurant (M14–M18)](#phase-2--a-pilot-restaurant-m14m18)
 18. [Requirement → milestone traceability](#18-requirement--milestone-traceability)
 19. [Risk checkpoints](#19-risk-checkpoints)
 20. [Revision history](#20-revision-history)
@@ -518,17 +518,17 @@ documents that drifted from the code read worse than no documents.
 
 ---
 
-## Phase 2 — El Demeshki (M14–M18)
+## Phase 2 — a pilot restaurant (M14–M18)
 
 **Why.** v1 is feature-complete for one English-speaking restaurant. Phase 2 adapts it to its
-first real customer: **El Demeshki (مطاعم الدمشقي)**, a Syrian fast-food chain in Shibin El Kom,
-Egypt, with two branches (الجلاء and باريس). Its site is a catalogue only, and orders come by phone.
+first real customer: a Syrian fast-food chain in Egypt with two branches. Its site is a catalogue
+only, and orders come by phone. The restaurant is not named here until it agrees (ADR-036).
 The goal is a private, Arabic-first demo good enough to win a **free 30-day pilot, then a monthly
 fee**.
 
 **Rules.**
-- **Generic product.** The product stays generic. El Demeshki is a *tenant pack* (brand and seed
-  data), and Fork & Flame remains the default tenant, so every v1 test and acceptance criterion
+- **Generic product.** The product stays generic. The restaurant is a private *tenant pack* (brand
+  and seed data), and Fork & Flame remains the default tenant, so every v1 test and acceptance criterion
   keeps passing.
 - **Non-negotiables.** The CLAUDE.md rules hold unchanged: integer money, the single writers of
   `status` and `paymentStatus`, events after commit, and `tableId` from QR only.
@@ -539,7 +539,7 @@ fee**.
 | **M14** | Arabic and Egypt localisation | The whole app in Arabic RTL with an English toggle; prices in ج.م; Egyptian phones | M13 |
 | **M15** | Multiple branches | Two branches with their own tables, KDS, POS, numbering, 86 list and reports | M14 |
 | **M16** | Egyptian ordering | Delivery by area with cash on delivery; phone orders entered at the POS; 80 mm tickets | M15 |
-| **M17** | El Demeshki tenant pack | Their real menu, branches and brand in the app, with 30 days of history per branch | M16 |
+| **M17** | The pilot tenant pack | Their real menu, branches and brand in the app, with 30 days of history per branch | M16 |
 | **M18** | Demo deploy and sales kit | A private HTTPS demo, a 3-minute demo script, an Arabic one-pager and a video | M17 |
 
 ### M14 — Arabic and Egypt localisation
@@ -554,7 +554,7 @@ fee**.
 | ☑ | **M14-S6** | Arabic type: Cairo (body) and El Messiri (display), with Latin fallbacks; fork-flame-ui skill updated | S | Arabic renders in the brand fonts; no tofu glyphs |
 | ☑ | **M14-S7** | Money in the tenant's currency and locale (`ar-EG`, Latin digits, no decimals for whole pounds) | M | `formatMoney(9000)` gives "90 ج.م" in Arabic and "EGP 90" in English |
 | ☑ | **M14-S8** | Dates, times and hours in the active locale; `Africa/Cairo` for the tenant | S | The open chip, booking slots and tracker times read in Arabic |
-| ☑ | **M14-S9** | Egyptian mobile numbers validated and normalised (`01[0125]xxxxxxxx` → `+201…`) | S | `010 1362 2622` is accepted and stored as `+201013622622` |
+| ☑ | **M14-S9** | Egyptian mobile numbers validated and normalised (`01[0125]xxxxxxxx` → `+201…`) | S | `010 0123 4567` is accepted and stored as `+201001234567` |
 | ☑ | **M14-S10** | E2E and axe run in Arabic RTL as well as English | M | The suite passes in both languages |
 
 ### M15 — Multiple branches (outline; the slices are detailed when the milestone starts)
@@ -568,10 +568,15 @@ Delivery areas that set the fee and branch; cash on delivery as a payment prefer
 phone and walk-in order entry with returning-customer lookup; WhatsApp contact and share links;
 size, weight and add-on groups for their menu shapes; 80 mm Arabic ticket and receipt printing.
 
-### M17 — El Demeshki tenant pack (outline)
-A menu importer from eldemeshki.com into reviewed JSON; a tenant seed (`--tenant=eldemeshki`)
+### M17 — The pilot tenant pack (outline)
+A menu importer from the restaurant's site into reviewed JSON; a tenant seed (`--tenant=<id>`)
 with branches, zones, availability and 30 days of history; brand tokens from their logo; an Arabic
-landing page with both branches.
+landing page with both branches. The pack is private (ADR-036).
+
+**Built early (2026-09-26, ADR-032):** the importer and reviewed menu JSON with their photos; the
+tenant seed with both branches (no zones or per-branch availability yet); their Arabic home, About,
+Branches (free maps, nearest branch) and Contact pages; the admin pin editor and feedback inbox.
+Still open for M17: delivery zones, per-branch availability (needs M15) and brand tokens.
 
 ### M18 — Demo deploy and sales kit (outline)
 A private HTTPS demo on one VPS (Docker Compose and Caddy); demo accounts and QR cards; a
@@ -649,7 +654,7 @@ The HLD risk register, mapped to the milestone where each risk is actually retir
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
-| 1.3 | 2026-09-25 | Dev Team | Added Phase 2 (M14–M18) for the first customer, El Demeshki: Arabic and Egypt localisation, multiple branches, Egyptian ordering, a tenant pack, and the demo and sales kit. M14 is sliced; M15–M18 are outlined and get their slices when each starts. |
+| 1.3 | 2026-09-25 | Dev Team | Added Phase 2 (M14–M18) for the first customer, a pilot restaurant: Arabic and Egypt localisation, multiple branches, Egyptian ordering, a tenant pack, and the demo and sales kit. M14 is sliced; M15–M18 are outlined and get their slices when each starts. |
 | 1.2 | 2026-09-25 | Dev Team | Recounted slices from the milestone tables. v1.1 added seven M3 slices (S2b…S2g, S10b), not nine: M3 is 18 slices, ~19d, not 20 / ~17d. §1 and §2 updated to match — total 169 slices, ~184 working days (was 162 / ~175); first end-to-end demo moves from ~day 100 to ~day 110. "Derived from" updated to SRS/HLD/LLD v1.2. |
 | 1.1 | 2026-09-25 | Dev Team | Added nine M3 slices for the access/refresh token model (SRS v1.2 AUTH-10…14). M3 grows from 11 to 20 slices, ~10d to ~17d. |
 | 1.0 | 2026-09-25 | Dev Team | Initial plan. 14 milestones, 162 slices, derived from SRS/HLD/LLD v1.1. |

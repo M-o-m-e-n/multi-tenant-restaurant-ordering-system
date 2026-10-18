@@ -12,6 +12,24 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
 
 ## [Unreleased]
 
+### Added — tenant packs, branches, themes and a catalogue menu (ADR-032…036)
+- **Tenant packs.** `VITE_TENANT=<id>` builds one restaurant's site and `SEED_TENANT=<id>` (or
+  `--tenant=`) seeds its data. Fork & Flame is the default and ships here; another restaurant is a
+  private pack checked out under `tenants/<id>/`, which this repository ignores (ADR-036). A pack
+  can bring its own landing, pages, stylesheet, fonts, photos, seed data and E2E specs.
+- **Branches on a free map:** a keyless Google Maps embed, directions, call and WhatsApp for each
+  branch, a live open/closed chip (hours past midnight), and "find the branch nearest me".
+- **Admin pin editor:** drag the pin on an OpenStreetMap map or paste a Google Maps link.
+- **Feedback inbox:** complaints, suggestions and questions from the contact page land in an admin
+  inbox with an unread badge, live over the socket.
+- **Themes.** Colour tokens are CSS variables; a sun/moon toggle in the nav switches light and dark
+  for tenants that offer both, and the choice is remembered. Fork & Flame is unchanged (dark only).
+- **Catalogue menu** for long menus: categories with photos down the side, the chosen category as a
+  photo grid under a large title, a category strip on phones, and search across the whole menu.
+  A dish with choices shows its "from" price.
+### Fixed
+- The phone header no longer overflows: the theme button moves into the menu sheet.
+
 ### Added — M14, Arabic and Egypt localisation
 - **The whole app in Arabic RTL** with an English toggle (ADR-030):
   - typed `ar`/`en` dictionaries with Arabic plural forms
@@ -25,7 +43,7 @@ Sections per release: **Added · Changed · Deprecated · Removed · Fixed · Se
 - **Money** is shown in the tenant's currency: "90 ج.م" in Arabic, "EGP 90" in English, no decimals
   for whole pounds. Dates and times follow the reader's language.
 - **Phone numbers** are stored in international form; Egyptian mobiles written locally
-  (`010 1362 2622`) become `+201013622622`.
+  (`010 0123 4567`) become `+201001234567`.
 - **axe** runs on all 17 screens in both languages (0 violations).
 
 ### Added

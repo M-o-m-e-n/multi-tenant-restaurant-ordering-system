@@ -4,7 +4,7 @@
 | | |
 |---|---|
 | **Document ID** | ROS-API-001 |
-| **Version** | 1.2 (API `v1`) |
+| **Version** | 1.3 (API `v1`) |
 | **Status** | Draft |
 | **Date** | 2026-09-25 |
 | **Authority** | **ROS-LLD-001 v1.1 §5 and §6 define the endpoint set.** This document is the wire contract: exact payloads, status codes, headers and error bodies. Where the two disagree, the LLD wins and this file is the bug. |
@@ -323,6 +323,7 @@ intent — not per retry attempt.
 | `/auth/refresh` | 60 per IP | 15 min |
 | `POST /orders` | 30 per user | 5 min |
 | `GET /tables/qr/:token`, `POST /tables/sessions` | 20 per IP | 1 min |
+| `POST /contact` | 5 per IP | 15 min |
 | Everything else | 300 per IP | 5 min |
 
 Exceeding a limit returns `429 RATE_LIMITED` with `Retry-After`. The Stripe webhook is exempt.
@@ -884,6 +885,38 @@ routes the server actually mounts.
 | Error codes | 404 `ROUTE_NOT_FOUND`, `USER_NOT_FOUND`, `SESSION_NOT_FOUND`, `RESERVATION_NOT_FOUND` · 409 `TABLE_NOT_SEATED`, `TABLE_NOT_DIRTY`, `DISCOUNT_CODE_TAKEN`, `ORDER_REFUNDED`, `NOT_A_DELIVERY`, `TABLE_OCCUPIED` · 413 `PAYLOAD_TOO_LARGE` · 422 `DRIVER_REQUIRED`, `RESERVATION_IN_PAST`, `RESERVATION_TOO_FAR`, `TABLE_REQUIRED` · 503 `PAYMENTS_UNAVAILABLE` |
 | Realtime | `reservation:flag` is emitted by the `reservationAlerts` job; an `order:status` with `from === to` also announces a delivery update |
 
+## 18b. Branches and contact (v1.3, ADR-032)
+
+Additive. Request shapes are in `openapi.json`; the table is LLD §5.9.
+
+```ts
+BranchDto {
+  id, slug,
+  name: { en, ar }, address: { en, ar },
+  phones: string[],            // "+201001234567"
+  whatsapp: string | null,
+  position: { lat, lng } | null,
+  hours: ({ open: number, close: number } | null)[7],   // Sunday first; close 26 = 02:00
+  features: string[], isActive: boolean
+}
+ContactMessageDto {
+  id, name, phone, kind: 'COMPLAINT'|'SUGGESTION'|'QUESTION',
+  branch: { id, name: { en, ar } } | null,
+  tableNumber: string | null, visitDate: 'YYYY-MM-DD' | null,
+  message, createdAt, readAt: string | null
+}
+```
+
+| | |
+|---|---|
+| `GET /branches` 🔓 | `200 { data: BranchDto[] }` |
+| `GET /staff/branches` 🛠 | `200 { data: BranchDto[] }` |
+| `PATCH /staff/branches/:id` 🛠 | `200 BranchDto` · 400 (empty body, lone `lat`, range) · 404 `BRANCH_NOT_FOUND` |
+| `POST /contact` 🔓 | `201 { id }` · 400 · 404 `BRANCH_NOT_FOUND` · 429 |
+| `GET /staff/messages` 🛠 | `200 { data: ContactMessageDto[], meta, unread }` |
+| `PATCH /staff/messages/:id` 🛠 | `200 ContactMessageDto` · 404 `MESSAGE_NOT_FOUND` |
+| Socket `message:new` → `admin` | `{ id, kind, unread }` |
+
 ## 19. Versioning policy
 
 The version lives in the path (`/api/v1`). Within a major version:
@@ -905,6 +938,7 @@ misspelled field is how a tip or a discount goes missing without anyone noticing
 
 | Version | Date | Author | Changes |
 |---|---|---|---|
+| 1.3 | 2026-09-26 | Dev Team | Branch and contact endpoints, the `POST /contact` rate limit and the `message:new` event (§8, §18b; ADR-032). |
 | 1.2 | 2026-09-25 | Dev Team | Recorded the build's additive changes in §18a and pointed to the generated `openapi.json` for request shapes. |
 | 1.1 | 2026-09-25 | Dev Team | Replaced the single 24 h bearer token with the access/refresh model (§2): 15-minute access tokens held in memory, a 30-day `httpOnly` refresh cookie with rotation and reuse detection, new `/auth/refresh`, `/auth/logout`, `/auth/logout-all` and `/auth/sessions` endpoints (§10), three session error codes (§5), a refresh rate limit (§8), CORS credentials, and the socket-token note (§17). **Breaking for clients**: `login` and `register` now return `accessToken` rather than `token`, and requests must be sent with `credentials: 'include'`. |
 | 1.0 | 2026-09-25 | Dev Team | Initial wire contract for API v1, derived from LLD v1.1 §5, §6 and §8. |

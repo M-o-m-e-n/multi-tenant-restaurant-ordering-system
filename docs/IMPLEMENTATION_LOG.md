@@ -26,6 +26,82 @@ what comes next. Newest entry first. Keep entries factual — decisions go in
 
 ---
 
+### 2026-10-18 — Private tenant packs (ADR-036)
+
+**Done**
+- The pilot tenant's code, photos, seed data and specs moved out of the public tree into a pack
+  under `tenants/<id>/`, which the repository ignores.
+- `@tenant` and `@client/*` aliases; `Tenant` interface (`client/src/brand/types.ts`) with page
+  loaders; Fork & Flame as `client/src/tenants/forkandflame`. Generic design-31 Branches and
+  Contact pages; `SocialLinks` shared.
+- The seed loads `tenants/<id>/server/index.ts`; Playwright runs `tenants/<id>/e2e`; lint,
+  type-check and Vitest include a checked-out pack.
+- Test fixtures use invented phone numbers, places and coordinates.
+**Verified**
+- `npm run check` green with the pack checked out, and on a clean clone without it.
+- E2E Fork & Flame and the pilot tenant on side ports; the default build contains none of the
+  pack's text or photos.
+**Decisions raised:** ADR-036.
+
+---
+
+### 2026-10-12 — Tenant identity, catalogue menu and sizes
+
+**Done**
+- `CatalogMenu`: category sidebar with photos, photo grid, phone strip, cross-menu search; chosen
+  per tenant with `brand.menu`.
+- A pack's seed can fold size lines into one dish with a required size modifier group.
+- `brand-*` poster colour tokens and a `font-hand` face for a tenant's own identity.
+**Verified**
+- `npm run check`: shared 60, server 290, client 58. E2E Fork & Flame 19/19; pilot tenant 4/4 with
+  axe clean. No horizontal overflow at 390 px.
+**Issues / surprises**
+- The theme button pushed the phone header 10 px too wide; it now lives in the menu sheet there.
+**Decisions raised:** ADR-034, ADR-035.
+
+---
+
+### 2026-10-11 — Light theme
+
+**Done**
+- Tailwind colours, shadows, gradients and font stacks now read CSS variables
+  (`client/src/styles/themes.css`): `dark` (design 31) and `light`.
+- Theme store and nav toggle; tenant default (`brand.themes`); no flash on reload.
+- Receipts and tickets moved to fixed `paper` tokens; charts, embers and the Stripe form read the
+  active theme.
+**Verified**
+- `npm run check`: shared 60, server 284, client 58. E2E Fork & Flame 19/19; axe clean in the light
+  theme. Screenshots in light and dark.
+**Issues / surprises**
+- Saffron fails contrast on a light page; darker ambers carry the text.
+- The axe sweep began catching the hero button mid-fade; it now waits for animations to finish.
+**Decisions raised:** ADR-033.
+
+---
+
+### 2026-09-26 — Tenant packs and branches (pulled forward from M17/M15)
+
+**Done**
+- Tenant selection at build (`VITE_TENANT`) and seed (`SEED_TENANT` / `--tenant`).
+- `Branch` and `ContactMessage` models; `branches` and `contact` server modules with strict
+  schemas, admin-only writes, audits, a rate limit and the `message:new` event.
+- Client: Branches (keyless Google embed, directions, WhatsApp, nearest branch), Contact (feedback
+  form), admin Branches (Leaflet pin, paste a link) and Messages (inbox, unread badge). Open hours
+  now take a per-branch week and closing after midnight.
+**Verified**
+- `npm run check`: shared 60, server 284, client 58.
+- E2E Fork & Flame 19/19 (axe in en and ar); the pilot tenant's RTL pages with both maps, axe on
+  the guest and admin pages, and complaint → inbox → pin moved via a pasted link.
+**Issues / surprises**
+- `public/` ships in every build, which would have published a tenant's photos in the portfolio
+  build; tenant photos are served from the pack instead.
+- A signed-in admin's nav overflowed with the site links; the site pages now show only to guests.
+- An address can geocode far from the door, so pins start approximate for the owner to drag.
+**Decisions raised:** ADR-032.
+**Next:** M15 (orders per branch).
+
+---
+
 ### 2026-09-25 — M14 — Arabic and Egypt localisation
 
 **Slices:** M14-S1…S10 ☑

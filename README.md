@@ -78,7 +78,7 @@ Run from the repository root.
 | `npm run db:migrate` | apply Prisma migrations to the dev database |
 | `npm run db:seed` | wipe and reload the demo data |
 | `npm run db:studio` | browse the database in Prisma Studio |
-| `npm run e2e` | build, reseed, and run the 15 Playwright tests (scenarios, acceptance, axe) on the production builds |
+| `npm run e2e` | build, reseed, and run the Playwright tests (scenarios, acceptance, axe) on the production builds |
 | `npm run perf` | 100 concurrent `GET /menu` for 30 s against the built API (needs `npm run build`) |
 | `npm run openapi -w server` | regenerate `docs/openapi.json` from the Zod schemas |
 | `scripts/backup.sh` / `scripts/restore.sh` | nightly `pg_dump` with 30-day retention, and restore into an empty database |
@@ -97,6 +97,51 @@ charge, timezone, KDS thresholds) live in the database and are edited by an admi
 | [docs/SECURITY.md](docs/SECURITY.md) | NFR-S1…S10 mapped to code and tests, findings fixed, and accepted risks |
 | [docs/OPERATIONS.md](docs/OPERATIONS.md) | Backups and the restore drill, scaling past one instance, the deploy checklist, and the Stripe webhook round trip |
 | [docs/openapi.json](docs/openapi.json) | OpenAPI 3 for every endpoint, generated from the shared Zod schemas |
+
+## Tenants
+
+One deployment serves one restaurant (ADR-029, ADR-032). Fork & Flame is the default and ships in
+this repository. Another restaurant is a **private tenant pack**: its own repository, checked out
+at `tenants/<id>/`, which this repository ignores (ADR-036). The public code never names it, and a
+pack can bring its own landing, pages, stylesheet, fonts, photos, seed data and E2E specs. See
+[tenants/README.md](tenants/README.md) for the layout.
+
+The website (`VITE_TENANT`) and the data (`SEED_TENANT`, or `--tenant=`) are chosen separately, so
+set both:
+
+| | |
+|---|---|
+| Seed its data | `SEED_TENANT=<id> npm run db:seed` (wipes the database it points at) |
+| Run it locally | `VITE_TENANT=<id> npm run dev` |
+| Build its site | `VITE_TENANT=<id> npm run build` |
+| Its E2E specs | `VITE_TENANT=<id> DATABASE_URL=<scratch db> npm run e2e` (builds, reseeds that database with the tenant, and runs only `tenants/<id>/e2e`) |
+
+These are Git Bash commands. In PowerShell, set the variable first:
+`$env:VITE_TENANT='<id>'; npm run dev`, and `Remove-Item Env:VITE_TENANT` to go back.
+
+**Switching between tenants.** Reset the database on every switch: `npm run db:reset` drops
+everything, applies the checked-out branch's migrations and seeds with `SEED_TENANT`. A plain
+`db:migrate` stops on a migration from another branch, and a plain `db:seed` after
+`docker compose down -v` fails because the tables are gone. Stop `npm run dev` before switching
+branches, and empty the cart: the browser keeps one cart for `localhost:5173` across tenants.
+
+A tenant (PowerShell):
+
+```powershell
+docker compose up -d
+$env:SEED_TENANT='<id>'; $env:VITE_TENANT='<id>'
+npm run db:reset
+npm run dev
+```
+
+Fork & Flame:
+
+```powershell
+docker compose up -d
+Remove-Item Env:SEED_TENANT, Env:VITE_TENANT -ErrorAction SilentlyContinue
+npm run db:reset
+npm run dev
+```
 
 ## Money
 

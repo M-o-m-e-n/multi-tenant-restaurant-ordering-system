@@ -4,9 +4,9 @@
 | | |
 |---|---|
 | **Document ID** | ROS-LLD-001 |
-| **Version** | 1.3.2 |
+| **Version** | 1.4 |
 | **Status** | Draft |
-| **Date** | 2026-09-25 |
+| **Date** | 2026-09-26 |
 | **Preceded by** | ROS-SRS-001 · ROS-HLD-001 |
 
 ---
@@ -54,6 +54,7 @@ enum TableStatus   { FREE  SEATED  DIRTY }
 enum DiscountType  { PERCENT  FIXED }
 enum DeliveryStatus{ PENDING  ASSIGNED  PICKED_UP  DELIVERED }
 enum ReservationStatus { PENDING  SEATED  CANCELLED  COMPLETED }
+enum ContactKind   { COMPLAINT  SUGGESTION  QUESTION }
 ```
 
 Two deliberate points:
@@ -319,6 +320,36 @@ where one is checked and the other is not.
 | slotAt | timestamptz | NOT NULL |
 | status | ReservationStatus | DEFAULT `PENDING` |
 | notes | varchar(300) | |
+
+#### Branch (ADR-032)
+| Column | Type | Constraints |
+|---|---|---|
+| id | uuid | PK |
+| slug | varchar(40) | UNIQUE |
+| nameAr / nameEn | varchar(80) | NOT NULL |
+| addressAr / addressEn | varchar(200) | NOT NULL |
+| phones | text[] | international form `+20…` |
+| whatsapp | varchar(30) | NULL |
+| lat / lng | double | NULL until the pin is placed |
+| hours | jsonb | 7 entries, Sunday first: `{open, close}` in hours, `close` ≤ 30 (after midnight), or null |
+| features | text[] | e.g. `ac-hall`, `grills` |
+| sortOrder | int | DEFAULT 0 |
+| isActive | bool | DEFAULT true |
+| updatedAt | timestamptz | |
+
+#### ContactMessage (ADR-032)
+| Column | Type | Constraints |
+|---|---|---|
+| id | uuid | PK |
+| branchId | uuid | FK → Branch SET NULL |
+| name | varchar(120) | NOT NULL |
+| phone | varchar(30) | NOT NULL, normalised |
+| kind | ContactKind | NOT NULL |
+| tableNumber | varchar(10) | NULL |
+| visitDate | date | NULL |
+| message | varchar(1000) | NOT NULL |
+| createdAt | timestamptz | DEFAULT now() |
+| readAt | timestamptz | NULL = unread; INDEX (readAt, createdAt) |
 
 #### Delivery
 | Column | Type | Constraints |
@@ -849,6 +880,16 @@ client's action buttons), isAmendable.
 
 ---
 
+### 5.9 Branches & Contact (ADR-032)
+| Method | Path | Access | Notes |
+|---|---|---|---|
+| GET | `/api/v1/branches` | 🔓 | active branches as `BranchDto` |
+| GET | `/api/v1/staff/branches` | 🛠 | every branch, inactive included |
+| PATCH | `/api/v1/staff/branches/:id` | 🛠 | any of names, addresses, phones, whatsapp, `lat`+`lng` together, hours, isActive; audited `BRANCH_UPDATE` · 404 `BRANCH_NOT_FOUND` |
+| POST | `/api/v1/contact` | 🔓 | `{name, phone, kind, message 5–1000, branchId?, tableNumber?, visitDate?}` → `201 {id}`; 5 per 15 min per IP · 404 `BRANCH_NOT_FOUND` |
+| GET | `/api/v1/staff/messages?unread=&kind=&branchId=&page=&limit=` | 🛠 | newest first; `{data, meta, unread}` |
+| PATCH | `/api/v1/staff/messages/:id` | 🛠 | `{read}`; keeps the first read time; audited `CONTACT_MESSAGE_UPDATE` · 404 `MESSAGE_NOT_FOUND` |
+
 ## 6. Realtime Protocol
 
 ### 6.1 Namespaces & Auth
@@ -867,6 +908,7 @@ client's action buttons), isAmendable.
 | `menu:changed` | menu (all) | `{ itemId?, categoryId? }` | admin menu edit / 86 |
 | `metrics:update` | admin | `{ ...dashboardToday }` | every order/payment change (throttled 5 s) |
 | `reservation:flag` | pos | `{ reservationId, state:'OVERDUE' }` | job |
+| `message:new` | admin | `{ id, kind, unread }` | contact message committed (ADR-032) |
 
 ### 6.3 Client Responsibilities
 1. On `connect` → refetch snapshot (REST) — events are hints, not source of truth.
@@ -1116,6 +1158,7 @@ Middleware maps `AppError` → JSON; unknown errors → logged with stack + `500
 | 1.2 | 2026-09-25 | Dev Team | Added the access/refresh token model. New `RefreshToken` model (§2.2) with rotation and reuse detection; auth module rewritten with the refresh algorithm (§4.2); new endpoints `/auth/refresh`, `/auth/logout`, `/auth/logout-all`, `/auth/sessions` (§5.1); session error codes (§8); token, CORS-credentials and CSRF rules (§9); purge job (§4.10); tests I28–I32. Supersedes the v1.1 note that no refresh tokens were needed — that reasoning did not account for always-on KDS devices (SRS §8.1). |
 | 1.1.1 | 2026-09-25 | Dev Team | Admitted two error codes the API contract required and this document lacked: `REFUND_NOT_AVAILABLE` (422) and `TABLE_NUMBER_TAKEN` (409), added to §5.3 and §8. No behavioural change. |
 | 1.3.2 | 2026-09-25 | Dev Team | Doc debt from the build: `Order` pricing-snapshot columns and `OrderItem.addedAt` / `lineNo` added to §2.2 (ADR-021); test P8 corrected to `EMPTY_CART`. |
+| 1.4 | 2026-09-26 | Dev Team | Tenant site pages (ADR-032): `ContactKind` enum, `Branch` and `ContactMessage` entities (§2), branch and contact endpoints (§5.9), `message:new` event (§6.2), error codes `BRANCH_NOT_FOUND` and `MESSAGE_NOT_FOUND`. Additive; no existing behaviour changes. |
 | 1.3.1 | 2026-09-25 | Dev Team | Built M13. §9 records what was implemented: the JSON-API helmet profile (not an SPA CSP), wider log redaction with per-request logs, and the E2E-only rate-limit switch. Behaviour elsewhere unchanged; see SECURITY.md and ACCEPTANCE.md. |
 | 1.3 | 2026-09-25 | Dev Team | Built M12. Added `PATCH /orders/:id/delivery` (§5.3); specified the reservation request/response and rules (§5.5); `GET /settings` now includes `timezone` (§5.6); new error codes `NOT_A_DELIVERY`, `TABLE_OCCUPIED`, `DRIVER_REQUIRED`, `RESERVATION_IN_PAST`, `RESERVATION_TOO_FAR`, `TABLE_REQUIRED` (§5.3). See ADR-024, ADR-025. |
 | 1.2.1 | 2026-09-25 | Dev Team | Money columns `bigint` → `integer` (§2.2) per ADR-004: integer cents as a Prisma `Int` / TS `number`, which agrees with §1. `SUM()` promotes to `bigint`, so aggregates are unaffected. No behavioural change. |

@@ -75,6 +75,16 @@ at a given size, fall back to Playfair Display, which the prototype uses.
 - White on a `flame` fill is 5.3 : 1. That's fine for button labels.
 - `ink-muted` on `bg` is 7.4 : 1. Use it for descriptions, captions and labels.
 
+### Themes (ADR-033)
+The values above are the **dark** theme. Tokens are CSS variables in
+`client/src/styles/themes.css`, and a tenant may also offer **light** (cream page `#f6f1e7`,
+charcoal accent fill, saffron `#eaa01a` for fills and stars, a dark amber for small accent text). Rules:
+- Keep using the token classes; never branch on the theme in a component. For the rare
+  theme-specific touch, use the `light:` variant.
+- `bg-flame` + `text-white` is safe in both themes. For text on photos keep `text-white`.
+- Paper (receipts, tickets) uses `bg-paper text-paper-ink`, which never changes.
+- Canvas, chart and third-party colours come from `shared/theme.ts`, read at render time.
+
 ## 3. Type scale
 
 | Role | Font | Size (desktop / mobile) | Weight | Notes |

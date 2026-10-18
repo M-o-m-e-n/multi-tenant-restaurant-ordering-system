@@ -14,7 +14,7 @@ snapshot under a dated heading when the phase or milestone changes; do not edit 
 
 ## Snapshot — 2026-09-26 — Feature-complete, M13 local part done
 
-**Closed because:** Phase 2 (El Demeshki) started; M14 Arabic and Egypt localisation is built.
+**Closed because:** Phase 2 (a pilot restaurant) started; M14 Arabic and Egypt localisation is built.
 
 > Read this first each session. When the phase or milestone changes, move this whole snapshot into
 > [PROJECT_STATE_ARCHIVED.md](PROJECT_STATE_ARCHIVED.md) before rewriting it.

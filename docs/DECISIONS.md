@@ -375,14 +375,14 @@ on every screen.
 
 ### ADR-029 — One tenant per deployment, many branches
 **Status:** Accepted · 2026-09-25
-**Context.** The first customer, El Demeshki, has two branches with different dine-in, menu and
-kitchen needs. ROS has no branch concept. Selling to further restaurants is the business goal.
+**Context.** A pilot restaurant has two branches with different dine-in, menu and kitchen needs.
+ROS has no branch concept. Selling to further restaurants is the business goal.
 **Decision.**
 - **One restaurant per deployment**, with its own database and brand. Inside it, a `Branch` model
   scopes tables, orders, order sequences, bookings, staff, settings overrides, menu availability
   and realtime rooms.
 - **Tenant packs.** Each restaurant's brand and seed data live in a tenant pack. Fork & Flame is
-  the default pack; El Demeshki is the second.
+  the default pack and ships in this repository; other packs are private (ADR-036).
 - **No multi-tenancy.** No tenant id on rows, no cross-restaurant data, no shared database.
 **Consequences.**
 - Isolation between customers comes from infrastructure, not code. The schema change is limited
@@ -392,21 +392,21 @@ kitchen needs. ROS has no branch concept. Selling to further restaurants is the 
 
 ### ADR-030 — Arabic-first i18n without a library
 **Status:** Accepted · 2026-09-25
-**Context.** El Demeshki's customers and staff read Arabic, and the site must be RTL. The client
-has about 400 hard-coded English strings.
+**Context.** The pilot restaurant's customers and staff read Arabic, and the site must be RTL. The
+client has about 400 hard-coded English strings.
 **Decision.**
 - **Dictionaries.** Typed dictionaries (`client/src/i18n/ar.ts`, `en.ts`) behind a small
   `useT()` hook, with no i18next. The English dictionary defines the key type, so a key missing
   in Arabic fails typecheck.
-- **Language choice.** It persists per device. The tenant sets the default (Arabic for El
-  Demeshki, English for Fork & Flame). `<html lang dir>` follows it.
+- **Language choice.** It persists per device. The tenant sets the default (Arabic for an Egyptian
+  tenant, English for Fork & Flame). `<html lang dir>` follows it.
 - **Server errors** stay English for logs. The client translates them by `error.code`.
 - **Menu content** (names and descriptions) is data, not UI. Bilingual menu fields arrive with the
   tenant pack (M17).
 - **Layout** uses logical CSS (`ms-`, `start-`, `border-s`), and motion reads the direction.
 - **Register.** Guest-facing copy is friendly Egyptian Arabic ("شوف المنيو", "بكرة"), the way
-  Egyptian menus and the restaurant's own site speak. System lines (sign-in, errors) stay plain
-  and short. Numbers use Latin digits (`ar-EG-u-nu-latn`), as Egyptian menus do.
+  Egyptian menus speak. System lines (sign-in, errors) stay plain and short. Numbers use Latin
+  digits (`ar-EG-u-nu-latn`), as Egyptian menus do.
 - **Menu data** (dish names) gets `dir="auto"`, so a Latin name reads correctly inside an RTL page.
 **Consequences.** About 2 kB of runtime and no dependency. Plurals are handled per key with
 functions, which covers Arabic's forms for the few counted strings.
@@ -414,14 +414,137 @@ functions, which covers Arabic's forms for the few counted strings.
 ### ADR-031 — Menu prices are final for the demo
 **Status:** Accepted · 2026-09-25
 **Context.** Egyptian fast-food menus show the price the guest pays. The pricing engine adds tax
-and service charge on top. How El Demeshki accounts for VAT (14%) is unknown until they are asked.
+and service charge on top. How a pilot restaurant accounts for VAT (14%) is unknown until it is
+asked.
 **Decision.**
-- **Tenant settings.** The El Demeshki tenant uses `taxBps = 0`, `serviceChargeBps = 0` and
+- **Tenant settings.** An Egyptian tenant uses `taxBps = 0`, `serviceChargeBps = 0` and
   `tipPresetsBps = []`, so totals equal the menu prices plus any delivery fee.
 - **VAT later.** A VAT-inclusive mode (extracting 14% for receipts) is deferred to the pilot
-  (plan B2), after confirming their tax setup.
+  (plan B2), after confirming the restaurant's tax setup.
 - **Engine unchanged.** The shared pricing engine and its tests are not changed now.
-**Consequences.** The demo shows exactly their menu prices. Receipts carry no tax line until B2.
+**Consequences.** The demo shows exactly the menu prices. Receipts carry no tax line until B2.
+
+### ADR-032 — Tenant packs, branches and a free map
+**Status:** Accepted · 2026-09-26 · how packs are stored and resolved is amended by ADR-036
+**Context.** A pilot restaurant needs a website: its About and Contact content, its photos, its
+branches on a map, and a complaints form. This pulls the tenant pack (M17) and the branch record
+(the start of M15) forward. The Fork & Flame portfolio build must never carry a customer's
+material, and maps must cost nothing.
+**Decision.**
+- **One tenant per build.** `VITE_TENANT` picks the client tenant at build time; the seed takes
+  `--tenant=` or `SEED_TENANT`. A tenant's photos are served and copied only into its own build.
+- **Imported, reviewed data.** A pack's importer reads the restaurant's public menu once and writes
+  reviewed JSON (prices in piastres) and resized photos. The app never scrapes at runtime. Dishes
+  without a photo show their category's photo.
+- **Branch model.** `Branch` holds names, addresses, phones, WhatsApp, a map pin (`lat`/`lng` as
+  doubles; coordinates are not money) and weekly hours where a close after 24 means after midnight.
+  Orders, tables and the KDS gain a `branchId` in M15, not now.
+- **Maps.** Guests see the keyless Google Maps embed and directions deep links. The admin places the
+  pin by dragging it on a Leaflet map over OpenStreetMap tiles (admin-only, lazy-loaded) or by
+  pasting a Google Maps link, whose coordinates are parsed on the client. "Nearest branch" uses the
+  browser's Geolocation API; the position never leaves the device.
+- **Feedback inbox.** `POST /contact` is public, strict and rate-limited (5 per 15 minutes per IP).
+  Messages land in an admin inbox with an unread badge; `message:new` goes to the `admin` room
+  after commit; marking read is audited.
+- **Site pages.** A tenant turns on branches, about and contact (`brand.pages`). Branches and
+  contact have generic pages in design 31; a tenant may draw its own.
+**Alternatives.** A Google Maps JavaScript API key (billing account, not free). Mapbox (a key and
+quotas). Scraping a restaurant's site live (fragile, and its site may be replaced). A runtime
+tenant switch (would ship every tenant to every visitor).
+**Consequences.** The OpenStreetMap tile policy allows light admin use; a busy deployment should
+use a tile provider. Pins start approximate and must be confirmed by the owner. LLD 1.4 and API
+contract 1.3 record the schema and endpoints.
+
+### ADR-033 — Colour themes as CSS variables, with a light theme
+**Status:** Accepted · 2026-10-11
+**Context.** A restaurant whose own site is light should not be forced into design 31's dark
+look. Every colour token was a fixed hex in the Tailwind config.
+**Decision.**
+- **Tokens are variables.** Each Tailwind colour reads `rgb(var(--c-…) / <alpha-value>)` from
+  `client/src/styles/themes.css`; shadows, page and card gradients and the font stacks are variables
+  too. Class names in components do not change.
+- **Two themes.** `dark` is design 31, unchanged. `light` is cream paper and charcoal ink. A tenant
+  lists the themes it offers, the first being its default: Fork & Flame `['dark']` (no toggle), a
+  light tenant `['light', 'dark']`. The choice persists per device (`ros-theme`) and sets
+  `<html data-theme>`; an inline script applies it before first paint.
+- **Accent in light.** The accent fill is charcoal (white text 13:1). Saffron `#eaa01a` is 2:1 on
+  the page, so it is used for fills and stars only; small accent text is a dark amber (5.3:1) and
+  headline accents a mid amber (large text) through a separate `text-flame` value.
+- **Per-tenant shape.** `<html data-tenant>` lets a tenant's own stylesheet change faces and
+  shapes.
+- **Paper stays paper.** Receipts and kitchen tickets use fixed `paper` tokens in every theme.
+- **Runtime colours.** Charts, the ember canvas and the Stripe form read the variables when they
+  render; pages remount on a theme change.
+**Alternatives.** Tailwind's `dark:` variant on every class (hundreds of edits, and two palettes
+frozen into markup). A separate stylesheet per tenant (duplicates every rule).
+**Consequences.** A new theme is one block of variables. The E2E axe sweep now waits for entrance
+animations, because a faster first paint let it measure buttons mid-fade. The fork-flame-ui skill
+notes the light palette.
+
+### ADR-034 — A tenant may have its own visual identity
+**Status:** Accepted · 2026-10-12
+**Context.** A tenant that only recolours design 31 reads as a reskin. A restaurant with a strong
+look of its own (the reference was momofuku.com: stacked photo panels, one huge line of type each,
+a cream page, one handwritten accent face) needs its own pages.
+**Decision.**
+- **Own pages.** A tenant pack may replace the landing page and draw its own about, branches and
+  contact pages (ADR-036), built from the app's pieces.
+- **Poster tokens.** Fixed `brand-*` colours (charcoal, cream, sand, saffron, amber) for blocks
+  that look the same in light and dark, and a `font-hand` face a tenant's stylesheet can set.
+- **Faces per tenant.** A pack's page head loads its own fonts, only in its build.
+- **Photos.** A pack uses the restaurant's own photos, never stock; photos with text overlays or
+  identifiable guests are left out or cropped.
+**Alternatives.** Stock photography (not theirs). Copying a reference site's layout outright (its
+identity, not the restaurant's).
+**Consequences.** An identity depends on the restaurant's photos; better originals from the owner
+improve it.
+
+### ADR-035 — A catalogue menu, and sizes as a choice
+**Status:** Accepted · 2026-10-12
+**Context.** A long menu (hundreds of dishes in dozens of categories) behind a row of chips over
+one list is slow to use. Restaurants also often publish each size as its own line, where a guest
+thinks of one dish with a size.
+**Decision.**
+- **Catalogue layout.** A tenant chooses its menu layout (`brand.menu`). `catalog` shows the
+  categories down the side, each with a photo, and the chosen category as a photo grid with a
+  large title; on a phone the categories are a strip under the header. Search looks across every
+  category. Fork & Flame keeps `list`, design 31's chips and rows.
+- **Sizes are modifiers.** A pack's seed may fold size lines together: dishes whose names differ
+  only by a size word become one dish priced at its smallest size, with a required single-choice
+  size group whose options carry the price difference. Each dish gets its own group, because the
+  step between sizes differs per dish.
+- **No engine change.** It uses the existing modifier groups, so pricing, order snapshots, the
+  kitchen ticket and reports already handle it. The imported JSON stays as published.
+- **Display.** A dish with choices shows "from <price>".
+**Alternatives.** A size column on the dish (a schema and pricing change for what a modifier
+already does). Merging in the importer (loses the record of what was published).
+**Consequences.** M16's "size and weight groups" is done for sizes; weights remain.
+
+### ADR-036 — Private tenant packs outside the public tree
+**Status:** Accepted · 2026-10-18
+**Context.** This repository is public (a portfolio). A pilot tenant's name, menu, text and photos
+belong to the restaurant and must not be published before it agrees. ADR-032 kept a tenant's code
+in `client/src` behind literal `VITE_TENANT` comparisons, which keeps it out of other builds but
+not out of the repository.
+**Decision.**
+- **Packs live outside the tree.** A private tenant is a pack in its own private repository,
+  checked out at `tenants/<id>/`, which this repository ignores. The public code never names it.
+- **Layout.** `client/index.ts` exports a `Tenant` (brand, copy, optional `home` and page loaders);
+  `client/` may hold its pages and stylesheet. `site.json` gives the page title, language,
+  direction, theme and extra head tags. `assets/` holds its photos, served at `/tenants/<id>/`.
+  `server/index.ts` exports a `SeedTenant`. `e2e/` holds its Playwright specs.
+- **Resolution.** Vite resolves `@tenant` to the built tenant's module (Fork & Flame in
+  `client/src/tenants/forkandflame` by default) and `@client/*` to `client/src`, so a pack imports
+  the app's pieces. Tailwind scans only the built pack. The seed imports
+  `tenants/<id>/server/index.ts`. Playwright runs `tenants/<id>/e2e` for that tenant.
+- **No cycles.** Page fields are loaders (`() => Promise<Component>`), so a tenant module imports
+  nothing from the app at run time.
+- **Checks.** When a pack is checked out, `npm run check` lints, type-checks and tests it with the
+  app; without one, nothing changes.
+**Alternatives.** A private branch of this repository (one `git push --all` publishes it). Git
+submodules (the public repository would reference the private one by name).
+**Consequences.** A restaurant's material never enters the public history. A pack can break when
+the app's internals change; its type-check under `npm run check` catches that.
 
 ---
 

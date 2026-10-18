@@ -6,10 +6,10 @@
 
 | | |
 |---|---|
-| **Last updated** | 2026-09-26 |
-| **Phase** | Phase 2 — El Demeshki (first customer, private demo) |
-| **Current milestone** | M14 done. Next: the El Demeshki website (tenant pack and branches pulled forward from M17/M15) |
-| **Next slice** | Tenant selection (`VITE_TENANT`, `--tenant`) and the El Demeshki menu and photo import |
+| **Last updated** | 2026-10-18 |
+| **Phase** | Phase 2 — a pilot restaurant (first customer, private demo) |
+| **Current milestone** | M14 done; tenant packs, branches, themes and the catalogue menu built (pulled forward from M15–M17, ADR-032…036). The pilot tenant is a private pack under `tenants/<id>/` |
+| **Next slice** | Confirm hours, delivery fee and branch pins with the owner, then M15 (orders, tables and KDS per branch) |
 | **Overall progress** | Phase 1: 165 / 169 slices. Phase 2: M14 10 / 10. Open: M0-S1 (folder rename) and M13-S11/S12. Skipped: M13-S9 (single instance) |
 | **Health** | 🟢 `npm run check` green (351 tests); `npm run e2e` 15 / 15; 21/22 AC pass, AC-5 with a named exception |
 
@@ -46,7 +46,7 @@
 | `client/` | React 18 SPA in the Fork & Flame design with real food photography. Screens: landing page, menu, cart, checkout, tracker, pay, receipt, booking, KDS, POS, table map, bookings, and admin dashboard, reports and menu. Staff and admin routes lazy-load. Arabic RTL with an English toggle (M14). 46 tests |
 | E2E | Playwright on the production builds: LLD §10.3 scenarios 1–6, AC-1/2/22, and axe on 17 screens in English and Arabic (`npm run e2e`) |
 | Database | 4 migrations; a deterministic seed with 30 days of history; backup and restore scripts with a recorded drill |
-| Docs | SRS 1.2.1, HLD 1.2.1, LLD 1.3.2, API contract 1.2 + `openapi.json`, SECURITY, ACCEPTANCE, OPERATIONS, ADR-001…031 |
+| Docs | SRS 1.2.1, HLD 1.2.1, LLD 1.3.2, API contract 1.2 + `openapi.json`, SECURITY, ACCEPTANCE, OPERATIONS, ADR-001…036 |
 | Measured | KDS gets a new order 63 ms after commit (target 500). `GET /menu` p95 ≈ 69 ms at 100 concurrent (target 300). Guest JS bundle 444 kB |
 
 ## 3. Open decisions
@@ -72,8 +72,9 @@ None blocking. Build-time decisions are ADR-020…027 in [DECISIONS.md](DECISION
 
 ## 6. Next three actions
 
-0. **El Demeshki website** (plan approved 2026-09-26): tenant pack, their menu and photos, two
-   branches with maps, About and Contact pages, and a feedback inbox. Private demo only.
+0. **Pilot demo:** with the private pack checked out under `tenants/<id>/`, build with
+   `VITE_TENANT=<id>`, seed a scratch database with `SEED_TENANT=<id>`, and walk the owner
+   through it. Nothing of theirs is published until they agree (ADR-036).
 
 1. **Rename the folder, push to GitHub** so CI runs.
 2. **Deploy** following OPERATIONS.md §3. Add Stripe **test** keys and the webhook secret.

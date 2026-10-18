@@ -46,6 +46,7 @@ npm workspaces `shared` / `server` / `client`, all TypeScript 5.9 `strict`, Node
 | `npm run build` | tsup server bundle and Vite client build |
 | `npm run e2e` | Build, reseed, and run Playwright (scenarios, acceptance, axe) on the production builds. Needs about 1 GB of free memory. With dev servers running: `E2E_SKIP_SEED=1 E2E_API_PORT=4100 E2E_WEB_PORT=5273 npx playwright test` |
 | `npm run perf` | Load test `GET /menu` (after `npm run build`) |
+| `VITE_TENANT=<id> npm run build` · `SEED_TENANT=<id> npm run db:seed` | Build and seed another tenant (ADR-032). Private packs live in `tenants/<id>/`, ignored by git (ADR-036): never commit, copy or name a pack's material in this repository |
 | `npm run openapi -w server` | Regenerate `docs/openapi.json`. A test fails if it is stale or misses a route |
 
 Demo logins (password `password123`): `admin@`, `staff@`, `guest@forkandflame.test`.
