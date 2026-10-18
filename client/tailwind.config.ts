@@ -1,28 +1,72 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
+
+// A private tenant pack (ADR-032) is scanned only when it is the one being built.
+const tenant = process.env.VITE_TENANT ?? 'forkandflame';
+const pack = tenant === 'forkandflame' ? [] : [`../tenants/${tenant}/client/**/*.{ts,tsx}`];
 
 // Design direction 31 "Fork & Flame" (ADR-019). Components use these tokens
 // only — never a raw hex value (CODING-STANDARDS §15, fork-flame-ui skill §2).
 export default {
-  content: ['./index.html', './src/**/*.{ts,tsx}'],
+  content: ['./index.html', './src/**/*.{ts,tsx}', ...pack],
   theme: {
     extend: {
+      // Every colour reads a CSS variable from styles/themes.css, so a theme
+      // (dark, or the cream light) swaps them all at once (ADR-033).
       colors: {
-        bg: { DEFAULT: '#141414', deep: '#0b0b0b' },
-        surface: { DEFAULT: '#1e1e1e', raised: '#2b2b2b' },
-        card: { DEFAULT: '#242424', top: '#2a2a2a', bottom: '#1a1a1a' },
-        line: { DEFAULT: '#333333', strong: '#3d3d3d' },
-        ink: { DEFAULT: '#f5f2ec', muted: '#a9a49a', inverse: '#141414' },
-        // `flame` is for fills and large text only; small red text uses
-        // `flame-text`, which keeps 6:1 contrast on bg (NFR-U3).
-        flame: { DEFAULT: '#e5322d', light: '#f0443e', dark: '#b91414', text: '#ff5a52' },
-        star: '#f5a623',
-        ok: '#3ecf8e',
-        warn: '#f5a623',
+        bg: {
+          DEFAULT: 'rgb(var(--c-bg) / <alpha-value>)',
+          deep: 'rgb(var(--c-bg-deep) / <alpha-value>)',
+        },
+        surface: {
+          DEFAULT: 'rgb(var(--c-surface) / <alpha-value>)',
+          raised: 'rgb(var(--c-surface-raised) / <alpha-value>)',
+        },
+        card: {
+          DEFAULT: 'rgb(var(--c-card) / <alpha-value>)',
+          top: 'rgb(var(--c-card-top) / <alpha-value>)',
+          bottom: 'rgb(var(--c-card-bottom) / <alpha-value>)',
+        },
+        line: {
+          DEFAULT: 'rgb(var(--c-line) / <alpha-value>)',
+          strong: 'rgb(var(--c-line-strong) / <alpha-value>)',
+        },
+        ink: {
+          DEFAULT: 'rgb(var(--c-ink) / <alpha-value>)',
+          muted: 'rgb(var(--c-ink-muted) / <alpha-value>)',
+          inverse: 'rgb(var(--c-ink-inverse) / <alpha-value>)',
+        },
+        // `flame` is the accent, for fills and large text only; small accent
+        // text uses `flame-text`, which keeps AA contrast on bg (NFR-U3).
+        flame: {
+          DEFAULT: 'rgb(var(--c-flame) / <alpha-value>)',
+          light: 'rgb(var(--c-flame-light) / <alpha-value>)',
+          dark: 'rgb(var(--c-flame-dark) / <alpha-value>)',
+          text: 'rgb(var(--c-flame-text) / <alpha-value>)',
+        },
+        star: 'rgb(var(--c-star) / <alpha-value>)',
+        ok: 'rgb(var(--c-ok) / <alpha-value>)',
+        warn: 'rgb(var(--c-warn) / <alpha-value>)',
+        // Receipts and tickets look like paper in every theme.
+        paper: { DEFAULT: '#ffffff', ink: '#141414' },
+        // Poster blocks for a tenant's own identity (ADR-034): the same in every theme.
+        brand: {
+          ink: '#1f1d1d',
+          cream: '#f6f1e7',
+          sand: '#ebe3d3',
+          saffron: '#eaa01a',
+          amber: '#7d5100',
+        },
       },
+      // Headline-size accent text has its own value: in the light theme the
+      // accent fill is charcoal, which would not stand out from body text.
+      textColor: { flame: { DEFAULT: 'rgb(var(--c-flame-large) / <alpha-value>)' } },
       fontFamily: {
-        // Latin faces first; Arabic glyphs fall through to El Messiri / Cairo (M14-S6).
-        display: ['Philosopher', '"El Messiri"', '"Playfair Display"', 'serif'],
-        sans: ['Poppins', 'Cairo', 'Inter', 'system-ui', 'sans-serif'],
+        // Latin faces first; Arabic glyphs fall through to El Messiri / Cairo
+        // (M14-S6). The stacks are set in styles/themes.css; a tenant's stylesheet may override them.
+        display: ['var(--font-display)'],
+        sans: ['var(--font-sans)'],
+        hand: ['var(--font-hand)'],
       },
       fontSize: {
         hero: ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.01em' }],
@@ -36,15 +80,15 @@ export default {
         icon: '12px',
       },
       boxShadow: {
-        plate: '0 30px 70px rgba(0,0,0,.6), inset 0 4px 14px rgba(255,255,255,.08)',
-        dish: '0 14px 26px rgba(0,0,0,.5)',
-        glow: '0 6px 18px rgba(229,50,45,.40)',
+        plate: 'var(--shadow-plate)',
+        dish: 'var(--shadow-dish)',
+        glow: 'var(--shadow-glow)',
       },
       backgroundImage: {
-        page: 'radial-gradient(ellipse at 70% 20%, #232323 0%, #141414 45%, #0b0b0b 100%)',
-        flame: 'linear-gradient(180deg, #f0443e, #b91414)',
-        card: 'linear-gradient(180deg, #2a2a2a, #1a1a1a)',
-        slate: 'radial-gradient(circle at 50% 42%, #3a3a3a 0 58%, #2b2b2b 59% 68%, #171717 69%)',
+        page: 'var(--bg-page)',
+        flame: 'linear-gradient(180deg, rgb(var(--c-flame-light)), rgb(var(--c-flame-dark)))',
+        card: 'linear-gradient(180deg, rgb(var(--c-card-top)), rgb(var(--c-card-bottom)))',
+        slate: 'var(--bg-slate)',
       },
       maxWidth: { content: '1100px' },
       keyframes: {
@@ -87,5 +131,8 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // `light:` styles apply only in the light theme; unprefixed styles are the dark design.
+    plugin((api) => api.addVariant('light', 'html[data-theme="light"] &')),
+  ],
 } satisfies Config;

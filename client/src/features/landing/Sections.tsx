@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useLang, useT } from '../../i18n';
-import { useL } from '../../i18n/localized';
+import { type L, useL } from '../../i18n/localized';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { Parallax } from '../../shared/ui/interactive';
 import { Logo } from '../../shared/ui/Logo';
@@ -22,10 +22,10 @@ function Eyebrow({ children }: { children: string }) {
  * with the scroll, runs backwards when you scroll up, and leans into the
  * motion — the page answering the guest's hand. Static under reduced motion.
  */
-export function Marquee() {
+export function Marquee({ items = MARQUEE }: { items?: readonly L[] }) {
   const l = useL();
   const lang = useLang();
-  const words = [...MARQUEE, ...MARQUEE].map(l);
+  const words = [...items, ...items].map(l);
   const track = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

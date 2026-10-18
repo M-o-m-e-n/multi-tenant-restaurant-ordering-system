@@ -31,7 +31,7 @@ export function KitchenTicketPrintPage() {
       </p>
     );
   return (
-    <main className="mx-auto max-w-sm bg-white p-6 font-sans text-ink-inverse print:max-w-none print:p-0">
+    <main className="mx-auto max-w-sm bg-paper p-6 font-sans text-paper-ink print:max-w-none print:p-0">
       <h1 className="font-display text-5xl font-bold">{order.orderNumber}</h1>
       <p className="mt-1 text-xl font-bold">
         {order.table
@@ -41,7 +41,7 @@ export function KitchenTicketPrintPage() {
             : t.kds.printTakeaway}
       </p>
       <p className="text-sm">{formatTime(order.placedAt)}</p>
-      <hr className="my-3 border-ink-inverse" />
+      <hr className="my-3 border-paper-ink" />
       <ul className="flex flex-col gap-3">
         {order.items.map((i) => (
           <li key={i.id}>
@@ -63,7 +63,7 @@ export function KitchenTicketPrintPage() {
         ))}
       </ul>
       {order.notes && (
-        <p className="mt-3 border-t border-ink-inverse pt-2 text-lg font-bold">
+        <p className="mt-3 border-t border-paper-ink pt-2 text-lg font-bold">
           {t.kds.printNote} {order.notes}
         </p>
       )}

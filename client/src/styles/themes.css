@@ -1,0 +1,83 @@
+/*
+ * Colour themes (ADR-033). Every colour token in tailwind.config.ts reads one
+ * of these variables, as an "R G B" triplet so Tailwind's opacity modifiers
+ * still work. Dark is design 31 "Fork & Flame", unchanged. Light (ADR-034)
+ * is cream paper, charcoal ink and a saffron accent. Saffron (#eaa01a) is only 2:1
+ * on cream, so it is kept for fills, blocks and stars; small accent text uses
+ * a dark amber (5.3:1) and headline accents a mid amber (3.6:1, large text).
+ *
+ * Edit the palettes here and keep the contrast notes true.
+ */
+:root,
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --c-bg: 20 20 20;
+  --c-bg-deep: 11 11 11;
+  --c-surface: 30 30 30;
+  --c-surface-raised: 43 43 43;
+  --c-card: 36 36 36;
+  --c-card-top: 42 42 42;
+  --c-card-bottom: 26 26 26;
+  --c-line: 51 51 51;
+  --c-line-strong: 61 61 61;
+  --c-ink: 245 242 236;
+  --c-ink-muted: 169 164 154;
+  --c-ink-inverse: 20 20 20;
+  --c-flame: 229 50 45;
+  --c-flame-light: 240 68 62;
+  --c-flame-dark: 185 20 20;
+  --c-flame-text: 255 90 82;
+  --c-flame-large: 229 50 45;
+  --c-star: 245 166 35;
+  --c-ok: 62 207 142;
+  --c-warn: 245 166 35;
+  --shadow-plate: 0 30px 70px rgb(0 0 0 / 0.6), inset 0 4px 14px rgb(255 255 255 / 0.08);
+  --shadow-dish: 0 14px 26px rgb(0 0 0 / 0.5);
+  --shadow-glow: 0 6px 18px rgb(229 50 45 / 0.4);
+  --bg-page: radial-gradient(ellipse at 70% 20%, #232323 0%, #141414 45%, #0b0b0b 100%);
+  --bg-slate: radial-gradient(circle at 50% 42%, #3a3a3a 0 58%, #2b2b2b 59% 68%, #171717 69%);
+  --skeleton-sheen: rgb(255 255 255 / 0.07);
+  /* The heat band across headline accent words (.flame-shimmer). */
+  --c-shimmer: 240 68 62;
+  --c-shimmer-peak: 245 166 35;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+  --c-bg: 246 241 231;
+  --c-bg-deep: 235 227 211;
+  --c-surface: 255 253 248;
+  --c-surface-raised: 239 231 214;
+  --c-card: 255 253 248;
+  --c-card-top: 255 253 248;
+  --c-card-bottom: 248 243 234;
+  --c-line: 224 214 195;
+  --c-line-strong: 140 132 117;
+  --c-ink: 31 29 29;
+  --c-ink-muted: 92 86 78;
+  --c-ink-inverse: 255 253 248;
+  --c-flame: 31 29 29;
+  --c-flame-light: 58 54 53;
+  --c-flame-dark: 0 0 0;
+  --c-flame-text: 125 81 0;
+  --c-flame-large: 176 111 0;
+  --c-star: 234 160 26;
+  --c-ok: 19 107 64;
+  --c-warn: 125 81 0;
+  --shadow-plate: 0 18px 40px rgb(31 29 29 / 0.16);
+  --shadow-dish: 0 10px 22px rgb(31 29 29 / 0.14);
+  --shadow-glow: 0 6px 16px rgb(31 29 29 / 0.22);
+  --bg-page: linear-gradient(#f6f1e7, #f6f1e7);
+  --bg-slate: radial-gradient(circle at 50% 42%, #fffdf8 0 58%, #efe7d6 59% 68%, #e0d6c3 69%);
+  --skeleton-sheen: rgb(255 255 255 / 0.7);
+  /* Kept at 3:1 or better on the page, as large text needs. */
+  --c-shimmer: 176 111 0;
+  --c-shimmer-peak: 190 120 0;
+}
+
+/* Type: a tenant's stylesheet may set its own faces (ADR-034). */
+:root {
+  --font-display: Philosopher, 'El Messiri', 'Playfair Display', serif;
+  --font-sans: Poppins, Cairo, Inter, system-ui, sans-serif;
+  --font-hand: var(--font-display);
+}

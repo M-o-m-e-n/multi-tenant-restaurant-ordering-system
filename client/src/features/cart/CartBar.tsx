@@ -27,7 +27,7 @@ export function CartBar() {
         </div>
         <Link
           to="/cart"
-          className="inline-flex min-h-11 items-center rounded-icon bg-white px-5 text-sm font-bold text-flame-dark"
+          className="inline-flex min-h-11 items-center rounded-icon bg-paper px-5 text-sm font-bold text-flame-dark"
         >
           {t.cartBar.view}
         </Link>

@@ -14,7 +14,8 @@ interface Props {
 }
 
 const sizes = {
-  sm: 'size-14 text-3xl',
+  // `dish-thumb` lets a tenant reshape list thumbnails (styles/themes.css).
+  sm: 'dish-thumb size-14 text-3xl',
   md: 'size-32 text-6xl',
   lg: 'size-44 text-7xl',
 } as const;

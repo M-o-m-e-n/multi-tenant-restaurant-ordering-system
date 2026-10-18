@@ -2,7 +2,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 
 import { useT } from '../../i18n';
 import { formatMoney } from '../../shared/money';
-import { chartTheme } from '../../shared/theme';
+import { chartTheme as readChartTheme } from '../../shared/theme';
 
 interface BarDatum {
   label: string;
@@ -29,6 +29,7 @@ const fmt = (kind: Props['kind']) => (v: number) =>
 export function BarChartCard({ data, kind, title, height = 240 }: Props) {
   const format = fmt(kind);
   const t = useT();
+  const chartTheme = readChartTheme();
   return (
     <figure aria-label={title} className="w-full">
       <ResponsiveContainer width="100%" height={height}>

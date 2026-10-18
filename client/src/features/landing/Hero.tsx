@@ -1,54 +1,19 @@
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
-import { useLang, useT } from '../../i18n';
+import { useT } from '../../i18n';
 import { useL } from '../../i18n/localized';
 import { buttonClass } from '../../shared/ui/buttonClass';
 import { KineticText, Magnetic } from '../../shared/ui/interactive';
 import { usePointerParallax } from '../../shared/ui/pointerFx';
-import { useSettings } from '../cart/cartApi';
+import { OpenChip } from '../branches/OpenChip';
 import { GUESTS, HERO } from './content';
 import { EmberField } from './EmberField';
-import { hourLabel, openStatus } from './openHours';
 
 /** A layer that drifts `px` pixels with the pointer (negative = against it). */
 const depth = (px: number): CSSProperties => ({
   transform: `translate3d(calc(var(--px, 0) * ${px}px), calc(var(--py, 0) * ${px}px), 0)`,
 });
-
-/** The live "open now" chip, on the restaurant's clock; re-checked every minute. */
-function OpenChip() {
-  const { data: settings } = useSettings();
-  const tz = settings?.timezone ?? 'America/New_York';
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(t);
-  }, []);
-  const status = openStatus(now, tz);
-  const t = useT();
-  const lang = useLang();
-  const label = status.open
-    ? (status.closingSoon ? t.landing.closingSoon : t.landing.openNow)(
-        hourLabel(status.closesAt, lang),
-      )
-    : (status.opens === 'today' ? t.landing.opensToday : t.landing.opensTomorrow)(
-        hourLabel(status.opensAt, lang),
-      );
-  return (
-    <p className="inline-flex items-center gap-2 rounded-btn border border-line-strong bg-surface/80 px-4 py-1.5 text-xs font-medium text-ink-muted backdrop-blur">
-      <span className="relative flex size-2" aria-hidden="true">
-        {status.open && (
-          <span className="absolute inline-flex size-full animate-ping rounded-full bg-ok opacity-75" />
-        )}
-        <span
-          className={`relative inline-flex size-2 rounded-full ${status.open ? 'bg-ok' : 'bg-ink-muted'}`}
-        />
-      </span>
-      {label}
-    </p>
-  );
-}
 
 /**
  * Landing hero (fork-flame-ui §4), made reactive: embers rise off the plate

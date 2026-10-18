@@ -9,6 +9,7 @@ import { createIntent, usePaymentsConfig } from '../../features/payments/payment
 import { useLang, useT } from '../../i18n';
 import { errorMessage } from '../../shared/api/errorMessage';
 import { formatMoney } from '../../shared/money';
+import { paymentFormTheme, useTheme } from '../../shared/theme';
 import { buttonClass } from '../../shared/ui/buttonClass';
 
 const stripeCache = new Map<string, Promise<Stripe | null>>();
@@ -36,6 +37,8 @@ export function PayPage() {
   const [error, setError] = useState<string | null>(null);
   const t = useT();
   const lang = useLang();
+  const theme = useTheme();
+  const formColors = paymentFormTheme();
 
   const owed = order?.balanceDue ?? 0;
   useEffect(() => {
@@ -93,12 +96,12 @@ export function PayPage() {
             clientSecret: intent.clientSecret,
             locale: lang === 'ar' ? 'ar' : 'en',
             appearance: {
-              theme: 'night',
+              theme: theme === 'dark' ? 'night' : 'stripe',
               variables: {
-                colorPrimary: '#e5322d',
-                colorBackground: '#1e1e1e',
+                colorPrimary: formColors.primary,
+                colorBackground: formColors.background,
                 borderRadius: '12px',
-                fontFamily: 'Poppins, system-ui, sans-serif',
+                fontFamily: 'Cairo, Poppins, system-ui, sans-serif',
               },
             },
           }}

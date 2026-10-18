@@ -48,7 +48,7 @@ export function ReceiptPage() {
           {t.receipt.print}
         </button>
       </div>
-      <article className="rounded-card border border-line bg-white p-6 font-sans text-sm text-ink-inverse print:border-0 print:p-0">
+      <article className="rounded-card border border-line bg-paper p-6 font-sans text-sm text-paper-ink print:border-0 print:p-0">
         <header className="text-center">
           <h1 className="font-display text-2xl font-bold">{r.restaurant.name}</h1>
           <p className="mt-1">{t.receipt.order(r.orderNumber)}</p>
@@ -64,7 +64,7 @@ export function ReceiptPage() {
           </p>
           <p className="text-xs">{t.receipt.placed(formatDateTime(r.placedAt))}</p>
         </header>
-        <hr className="my-4 border-dashed border-ink-inverse/30" />
+        <hr className="my-4 border-dashed border-paper-ink/30" />
         <ul className="flex flex-col gap-2">
           {r.lines.map((l, i) => (
             <li key={i}>
@@ -83,7 +83,7 @@ export function ReceiptPage() {
             </li>
           ))}
         </ul>
-        <hr className="my-4 border-dashed border-ink-inverse/30" />
+        <hr className="my-4 border-dashed border-paper-ink/30" />
         <dl className="flex flex-col gap-1">
           {row(t.totals.subtotal, r.totals.subtotal)}
           {r.totals.discountAmount > 0 &&
@@ -96,7 +96,7 @@ export function ReceiptPage() {
         </dl>
         {r.payments.length > 0 && (
           <>
-            <hr className="my-4 border-dashed border-ink-inverse/30" />
+            <hr className="my-4 border-dashed border-paper-ink/30" />
             <ul className="flex flex-col gap-1 text-xs">
               {r.payments.map((p, i) => (
                 <li key={i} className="flex justify-between">

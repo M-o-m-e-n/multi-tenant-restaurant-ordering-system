@@ -3,7 +3,7 @@ export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variants: Record<ButtonVariant, string> = {
   primary: 'bg-flame text-white shadow-glow hover:brightness-110',
-  secondary: 'bg-white text-ink-inverse hover:bg-ink',
+  secondary: 'border border-line bg-paper text-paper-ink hover:brightness-95',
   ghost: 'border border-line-strong bg-surface-raised text-ink hover:border-ink-muted',
   danger: 'border border-flame-text text-flame-text hover:bg-flame hover:text-white',
 };

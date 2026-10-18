@@ -41,6 +41,7 @@ export function EmberField({ className = '' }: { className?: string }) {
     const pointer = { x: -9999, y: -9999 };
     let raf = 0;
     let visible = true;
+    const palette = emberPalette();
 
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
@@ -62,7 +63,7 @@ export function EmberField({ className = '' }: { className?: string }) {
         r: 0.8 + Math.random() * 2.2,
         life: 0,
         max,
-        hue: emberPalette[Math.floor(Math.random() * emberPalette.length)] ?? emberPalette[0],
+        hue: palette[Math.floor(Math.random() * palette.length)] ?? 'transparent',
         wobble: Math.random() * Math.PI * 2,
         ...e,
       };

@@ -136,7 +136,7 @@ export function KdsPage() {
       {toast && (
         <p
           role="status"
-          className="fixed inset-x-0 top-4 z-20 mx-auto w-fit rounded-btn bg-white px-5 py-3 text-sm font-semibold text-ink-inverse shadow-plate"
+          className="fixed inset-x-0 top-4 z-20 mx-auto w-fit rounded-btn bg-paper px-5 py-3 text-sm font-semibold text-paper-ink shadow-plate"
         >
           {toast}
         </p>
