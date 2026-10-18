@@ -14,7 +14,8 @@ export type EventName =
   | 'table:changed'
   | 'menu:changed'
   | 'metrics:update'
-  | 'reservation:flag';
+  | 'reservation:flag'
+  | 'message:new';
 
 export type Room = 'menu' | 'kitchen' | 'pos' | 'admin' | `customer:${string}`;
 

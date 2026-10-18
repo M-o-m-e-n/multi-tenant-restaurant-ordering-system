@@ -8,6 +8,8 @@ import { requestId } from './middleware/request-id';
 import { requestLog } from './middleware/request-log';
 import { securityHeaders } from './middleware/security-headers';
 import { authRouter } from './modules/auth';
+import { publicBranchesRouter, staffBranchesRouter } from './modules/branches';
+import { contactRouter, staffMessagesRouter } from './modules/contact';
 import { discountsRouter, staffDiscountsRouter } from './modules/discounts';
 import { publicMenuRouter, staffMenuRouter } from './modules/menu';
 import { ordersRouter } from './modules/orders';
@@ -73,6 +75,10 @@ export function createApp(options: AppOptions = {}): Express {
   api.use('/reports', reportsRouter());
   api.use('/dashboard', dashboardRouter());
   api.use('/staff/users', usersRouter());
+  api.use('/branches', publicBranchesRouter());
+  api.use('/staff/branches', staffBranchesRouter());
+  api.use('/contact', contactRouter({ sendLimiter: limiter(LIMITS.contact, limits) }));
+  api.use('/staff/messages', staffMessagesRouter());
   app.use('/api/v1', api);
 
   app.use(notFoundHandler);

@@ -19,6 +19,8 @@ export const LIMITS = {
   qr: { windowMs: 60_000, limit: 20 },
   orders: { windowMs: 5 * 60_000, limit: 30, perUser: true },
   general: { windowMs: 5 * 60_000, limit: 300 },
+  // The public feedback form (ADR-032): enough for a real guest, not for a flood.
+  contact: { windowMs: 15 * 60_000, limit: 5 },
 } satisfies Record<string, LimitSpec>;
 
 /**

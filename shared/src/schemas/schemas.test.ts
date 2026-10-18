@@ -111,18 +111,18 @@ describe('schemas', () => {
 
 describe('phone numbers (M14-S9)', () => {
   it('stores Egyptian mobiles written locally in international form', () => {
-    expect(normalizePhone('010 1362 2622')).toBe('+201013622622');
-    expect(normalizePhone('0111-547-8747')).toBe('+201115478747');
-    expect(normalizePhone('00201050086850')).toBe('+201050086850');
+    expect(normalizePhone('010 0123 4567')).toBe('+201001234567');
+    expect(normalizePhone('0111-222-3333')).toBe('+201112223333');
+    expect(normalizePhone('00201055554444')).toBe('+201055554444');
     expect(normalizePhone('+1 (555) 014-2')).toBe('+15550142');
   });
 
   it('accepts reachable numbers and refuses junk', () => {
     const ok = (p: string) => phoneNumber.safeParse(p).success;
-    expect(ok('01013622622')).toBe(true);
+    expect(ok('01001234567')).toBe(true);
     expect(ok('+15550142')).toBe(true);
     expect(ok('12345')).toBe(false);
-    expect(ok('01913622622')).toBe(false);
+    expect(ok('01901234567')).toBe(false);
     expect(ok('call me')).toBe(false);
   });
 });

@@ -9,8 +9,8 @@ export type IdParam = z.infer<typeof idParamSchema>;
 /**
  * A phone number as people type it, stored in one international form
  * (M14-S9). Spaces, dashes, dots and brackets are dropped; a `00` prefix
- * becomes `+`; an Egyptian mobile written locally (`010 1362 2622`) becomes
- * `+201013622622`. Anything else must already be E.164-like (`+` and 8–15
+ * becomes `+`; an Egyptian mobile written locally (`010 0123 4567`) becomes
+ * `+201001234567`. Anything else must already be E.164-like (`+` and 8–15
  * digits), so any tenant's customers can still be reached.
  */
 export function normalizePhone(raw: string): string {

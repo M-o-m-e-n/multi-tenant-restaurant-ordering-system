@@ -54,6 +54,8 @@ const MUTATIONS: [method: 'post' | 'put' | 'patch' | 'delete', path: string, gat
   ['post', `/tables/${ID}/clean`, 'STAFF'],
   ['post', '/staff/users', 'ADMIN'],
   ['patch', `/staff/users/${ID}`, 'ADMIN'],
+  ['patch', `/staff/branches/${ID}`, 'ADMIN'],
+  ['patch', `/staff/messages/${ID}`, 'ADMIN'],
 ];
 
 const app = createApp({ rateLimits: false });
